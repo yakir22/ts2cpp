@@ -1,0 +1,374 @@
+0-SourceFile: class Point
+{
+    private mX : number = 18;
+    private mY : string;
+    private mP : Point = null;
+    private mP2 : string = "lala";
+	
+    constructor(x : number,y:number = 66)
+    {
+        this.mX = x;
+        this.mY = y;
+    }
+
+    public toString() : string
+    {
+        return "(" + this.mX + "," + this.mY + ")";
+    }
+}
+
+namespace Testing
+{
+    function main()
+    {
+		for ( let i : number = 12,j = 24; i < 100 ; i-- , j+=55){
+			let p = new Point(10,20);
+			console.log(p.toString());
+		}
+		return 77;
+    }
+    main();
+}
+1-SyntaxList: class Point
+{
+    private mX : number = 18;
+    private mY : string;
+    private mP : Point = null;
+    private mP2 : string = "lala";
+	
+    constructor(x : number,y:number = 66)
+    {
+        this.mX = x;
+        this.mY = y;
+    }
+
+    public toString() : string
+    {
+        return "(" + this.mX + "," + this.mY + ")";
+    }
+}
+
+namespace Testing
+{
+    function main()
+    {
+		for ( let i : number = 12,j = 24; i < 100 ; i-- , j+=55){
+			let p = new Point(10,20);
+			console.log(p.toString());
+		}
+		return 77;
+    }
+    main();
+}
+2-ClassDeclaration: class Point
+{
+    private mX : number = 18;
+    private mY : string;
+    private mP : Point = null;
+    private mP2 : string = "lala";
+	
+    constructor(x : number,y:number = 66)
+    {
+        this.mX = x;
+        this.mY = y;
+    }
+
+    public toString() : string
+    {
+        return "(" + this.mX + "," + this.mY + ")";
+    }
+}
+3-ClassKeyword: class
+3-Identifier: Point
+3-OpenBraceToken: {
+3-SyntaxList: private mX : number = 18;
+    private mY : string;
+    private mP : Point = null;
+    private mP2 : string = "lala";
+	
+    constructor(x : number,y:number = 66)
+    {
+        this.mX = x;
+        this.mY = y;
+    }
+
+    public toString() : string
+    {
+        return "(" + this.mX + "," + this.mY + ")";
+    }
+4-PropertyDeclaration: private mX : number = 18;
+5-SyntaxList: private
+6-PrivateKeyword: private
+5-Identifier: mX
+5-ColonToken: :
+5-NumberKeyword: number
+5-EqualsToken: =
+5-NumericLiteral: 18
+5-SemicolonToken: ;
+4-PropertyDeclaration: private mY : string;
+5-SyntaxList: private
+6-PrivateKeyword: private
+5-Identifier: mY
+5-ColonToken: :
+5-StringKeyword: string
+5-SemicolonToken: ;
+4-PropertyDeclaration: private mP : Point = null;
+5-SyntaxList: private
+6-PrivateKeyword: private
+5-Identifier: mP
+5-ColonToken: :
+5-TypeReference: Point
+6-Identifier: Point
+5-EqualsToken: =
+5-NullKeyword: null
+5-SemicolonToken: ;
+4-PropertyDeclaration: private mP2 : string = "lala";
+5-SyntaxList: private
+6-PrivateKeyword: private
+5-Identifier: mP2
+5-ColonToken: :
+5-StringKeyword: string
+5-EqualsToken: =
+5-StringLiteral: "lala"
+5-SemicolonToken: ;
+4-Constructor: constructor(x : number,y:number = 66)
+    {
+        this.mX = x;
+        this.mY = y;
+    }
+5-ConstructorKeyword: constructor
+5-OpenParenToken: (
+5-SyntaxList: x : number,y:number = 66
+6-Parameter: x : number
+7-Identifier: x
+7-ColonToken: :
+7-NumberKeyword: number
+6-CommaToken: ,
+6-Parameter: y:number = 66
+7-Identifier: y
+7-ColonToken: :
+7-NumberKeyword: number
+7-EqualsToken: =
+7-NumericLiteral: 66
+5-CloseParenToken: )
+5-Block: {
+        this.mX = x;
+        this.mY = y;
+    }
+6-OpenBraceToken: {
+6-SyntaxList: this.mX = x;
+        this.mY = y;
+7-ExpressionStatement: this.mX = x;
+8-BinaryExpression: this.mX = x
+9-PropertyAccessExpression: this.mX
+10-ThisKeyword: this
+10-DotToken: .
+10-Identifier: mX
+9-EqualsToken: =
+9-Identifier: x
+8-SemicolonToken: ;
+7-ExpressionStatement: this.mY = y;
+8-BinaryExpression: this.mY = y
+9-PropertyAccessExpression: this.mY
+10-ThisKeyword: this
+10-DotToken: .
+10-Identifier: mY
+9-EqualsToken: =
+9-Identifier: y
+8-SemicolonToken: ;
+6-CloseBraceToken: }
+4-MethodDeclaration: public toString() : string
+    {
+        return "(" + this.mX + "," + this.mY + ")";
+    }
+5-SyntaxList: public
+6-PublicKeyword: public
+5-Identifier: toString
+5-OpenParenToken: (
+5-SyntaxList: 
+5-CloseParenToken: )
+5-ColonToken: :
+5-StringKeyword: string
+5-Block: {
+        return "(" + this.mX + "," + this.mY + ")";
+    }
+6-OpenBraceToken: {
+6-SyntaxList: return "(" + this.mX + "," + this.mY + ")";
+7-ReturnStatement: return "(" + this.mX + "," + this.mY + ")";
+8-ReturnKeyword: return
+8-BinaryExpression: "(" + this.mX + "," + this.mY + ")"
+9-BinaryExpression: "(" + this.mX + "," + this.mY
+10-BinaryExpression: "(" + this.mX + ","
+11-BinaryExpression: "(" + this.mX
+12-StringLiteral: "("
+12-PlusToken: +
+12-PropertyAccessExpression: this.mX
+13-ThisKeyword: this
+13-DotToken: .
+13-Identifier: mX
+11-PlusToken: +
+11-StringLiteral: ","
+10-PlusToken: +
+10-PropertyAccessExpression: this.mY
+11-ThisKeyword: this
+11-DotToken: .
+11-Identifier: mY
+9-PlusToken: +
+9-StringLiteral: ")"
+8-SemicolonToken: ;
+6-CloseBraceToken: }
+3-CloseBraceToken: }
+2-ModuleDeclaration: namespace Testing
+{
+    function main()
+    {
+		for ( let i : number = 12,j = 24; i < 100 ; i-- , j+=55){
+			let p = new Point(10,20);
+			console.log(p.toString());
+		}
+		return 77;
+    }
+    main();
+}
+3-NamespaceKeyword: namespace
+3-Identifier: Testing
+3-ModuleBlock: {
+    function main()
+    {
+		for ( let i : number = 12,j = 24; i < 100 ; i-- , j+=55){
+			let p = new Point(10,20);
+			console.log(p.toString());
+		}
+		return 77;
+    }
+    main();
+}
+4-OpenBraceToken: {
+4-SyntaxList: function main()
+    {
+		for ( let i : number = 12,j = 24; i < 100 ; i-- , j+=55){
+			let p = new Point(10,20);
+			console.log(p.toString());
+		}
+		return 77;
+    }
+    main();
+5-FunctionDeclaration: function main()
+    {
+		for ( let i : number = 12,j = 24; i < 100 ; i-- , j+=55){
+			let p = new Point(10,20);
+			console.log(p.toString());
+		}
+		return 77;
+    }
+6-FunctionKeyword: function
+6-Identifier: main
+6-OpenParenToken: (
+6-SyntaxList: 
+6-CloseParenToken: )
+6-Block: {
+		for ( let i : number = 12,j = 24; i < 100 ; i-- , j+=55){
+			let p = new Point(10,20);
+			console.log(p.toString());
+		}
+		return 77;
+    }
+7-OpenBraceToken: {
+7-SyntaxList: for ( let i : number = 12,j = 24; i < 100 ; i-- , j+=55){
+			let p = new Point(10,20);
+			console.log(p.toString());
+		}
+		return 77;
+8-ForStatement: for ( let i : number = 12,j = 24; i < 100 ; i-- , j+=55){
+			let p = new Point(10,20);
+			console.log(p.toString());
+		}
+9-ForKeyword: for
+9-OpenParenToken: (
+9-VariableDeclarationList: let i : number = 12,j = 24
+10-LetKeyword: let
+10-SyntaxList: i : number = 12,j = 24
+11-VariableDeclaration: i : number = 12
+12-Identifier: i
+12-ColonToken: :
+12-NumberKeyword: number
+12-EqualsToken: =
+12-NumericLiteral: 12
+11-CommaToken: ,
+11-VariableDeclaration: j = 24
+12-Identifier: j
+12-EqualsToken: =
+12-NumericLiteral: 24
+9-SemicolonToken: ;
+9-BinaryExpression: i < 100
+10-Identifier: i
+10-LessThanToken: <
+10-NumericLiteral: 100
+9-SemicolonToken: ;
+9-BinaryExpression: i-- , j+=55
+10-PostfixUnaryExpression: i--
+11-Identifier: i
+11-MinusMinusToken: --
+10-CommaToken: ,
+10-BinaryExpression: j+=55
+11-Identifier: j
+11-PlusEqualsToken: +=
+11-NumericLiteral: 55
+9-CloseParenToken: )
+9-Block: {
+			let p = new Point(10,20);
+			console.log(p.toString());
+		}
+10-OpenBraceToken: {
+10-SyntaxList: let p = new Point(10,20);
+			console.log(p.toString());
+11-VariableStatement: let p = new Point(10,20);
+12-VariableDeclarationList: let p = new Point(10,20)
+13-LetKeyword: let
+13-SyntaxList: p = new Point(10,20)
+14-VariableDeclaration: p = new Point(10,20)
+15-Identifier: p
+15-EqualsToken: =
+15-NewExpression: new Point(10,20)
+16-NewKeyword: new
+16-Identifier: Point
+16-OpenParenToken: (
+16-SyntaxList: 10,20
+17-NumericLiteral: 10
+17-CommaToken: ,
+17-NumericLiteral: 20
+16-CloseParenToken: )
+12-SemicolonToken: ;
+11-ExpressionStatement: console.log(p.toString());
+12-CallExpression: console.log(p.toString())
+13-PropertyAccessExpression: console.log
+14-Identifier: console
+14-DotToken: .
+14-Identifier: log
+13-OpenParenToken: (
+13-SyntaxList: p.toString()
+14-CallExpression: p.toString()
+15-PropertyAccessExpression: p.toString
+16-Identifier: p
+16-DotToken: .
+16-Identifier: toString
+15-OpenParenToken: (
+15-SyntaxList: 
+15-CloseParenToken: )
+13-CloseParenToken: )
+12-SemicolonToken: ;
+10-CloseBraceToken: }
+8-ReturnStatement: return 77;
+9-ReturnKeyword: return
+9-NumericLiteral: 77
+9-SemicolonToken: ;
+7-CloseBraceToken: }
+5-ExpressionStatement: main();
+6-CallExpression: main()
+7-Identifier: main
+7-OpenParenToken: (
+7-SyntaxList: 
+7-CloseParenToken: )
+6-SemicolonToken: ;
+4-CloseBraceToken: }
+1-EndOfFileToken: 

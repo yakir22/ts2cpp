@@ -1,0 +1,335 @@
+0-SourceFile: import {Entity} from './Entity'
+
+export class Episode
+{
+    private mModel : Entity;
+
+    public init() : void
+    {
+        this.mModel = new Entity(0,0);
+    }
+
+    public update(dt: number) : void
+    {
+        this.mModel.Update(dt);
+    }
+
+    public getModel() : Entity
+    {
+        return this.mModel;
+    }
+}
+
+
+
+
+namespace Testing
+{
+    function main()
+    {
+        let e = new Episode();
+        e.init();
+        console.log(e.getModel().toString());
+    }
+    main();
+}
+1-SyntaxList: import {Entity} from './Entity'
+
+export class Episode
+{
+    private mModel : Entity;
+
+    public init() : void
+    {
+        this.mModel = new Entity(0,0);
+    }
+
+    public update(dt: number) : void
+    {
+        this.mModel.Update(dt);
+    }
+
+    public getModel() : Entity
+    {
+        return this.mModel;
+    }
+}
+
+
+
+
+namespace Testing
+{
+    function main()
+    {
+        let e = new Episode();
+        e.init();
+        console.log(e.getModel().toString());
+    }
+    main();
+}
+2-ImportDeclaration: import {Entity} from './Entity'
+3-ImportKeyword: import
+3-ImportClause: {Entity}
+4-NamedImports: {Entity}
+5-OpenBraceToken: {
+5-SyntaxList: Entity
+6-ImportSpecifier: Entity
+7-Identifier: Entity
+5-CloseBraceToken: }
+3-FromKeyword: from
+3-StringLiteral: './Entity'
+2-ClassDeclaration: export class Episode
+{
+    private mModel : Entity;
+
+    public init() : void
+    {
+        this.mModel = new Entity(0,0);
+    }
+
+    public update(dt: number) : void
+    {
+        this.mModel.Update(dt);
+    }
+
+    public getModel() : Entity
+    {
+        return this.mModel;
+    }
+}
+3-SyntaxList: export
+4-ExportKeyword: export
+3-ClassKeyword: class
+3-Identifier: Episode
+3-OpenBraceToken: {
+3-SyntaxList: private mModel : Entity;
+
+    public init() : void
+    {
+        this.mModel = new Entity(0,0);
+    }
+
+    public update(dt: number) : void
+    {
+        this.mModel.Update(dt);
+    }
+
+    public getModel() : Entity
+    {
+        return this.mModel;
+    }
+4-PropertyDeclaration: private mModel : Entity;
+5-SyntaxList: private
+6-PrivateKeyword: private
+5-Identifier: mModel
+5-ColonToken: :
+5-TypeReference: Entity
+6-Identifier: Entity
+5-SemicolonToken: ;
+4-MethodDeclaration: public init() : void
+    {
+        this.mModel = new Entity(0,0);
+    }
+5-SyntaxList: public
+6-PublicKeyword: public
+5-Identifier: init
+5-OpenParenToken: (
+5-SyntaxList:
+5-CloseParenToken: )
+5-ColonToken: :
+5-VoidKeyword: void
+5-Block: {
+        this.mModel = new Entity(0,0);
+    }
+6-OpenBraceToken: {
+6-SyntaxList: this.mModel = new Entity(0,0);
+7-ExpressionStatement: this.mModel = new Entity(0,0);
+8-BinaryExpression: this.mModel = new Entity(0,0)
+9-PropertyAccessExpression: this.mModel
+10-ThisKeyword: this
+10-DotToken: .
+10-Identifier: mModel
+9-EqualsToken: =
+9-NewExpression: new Entity(0,0)
+10-NewKeyword: new
+10-Identifier: Entity
+10-OpenParenToken: (
+10-SyntaxList: 0,0
+11-NumericLiteral: 0
+11-CommaToken: ,
+11-NumericLiteral: 0
+10-CloseParenToken: )
+8-SemicolonToken: ;
+6-CloseBraceToken: }
+4-MethodDeclaration: public update(dt: number) : void
+    {
+        this.mModel.Update(dt);
+    }
+5-SyntaxList: public
+6-PublicKeyword: public
+5-Identifier: update
+5-OpenParenToken: (
+5-SyntaxList: dt: number
+6-Parameter: dt: number
+7-Identifier: dt
+7-ColonToken: :
+7-NumberKeyword: number
+5-CloseParenToken: )
+5-ColonToken: :
+5-VoidKeyword: void
+5-Block: {
+        this.mModel.Update(dt);
+    }
+6-OpenBraceToken: {
+6-SyntaxList: this.mModel.Update(dt);
+7-ExpressionStatement: this.mModel.Update(dt);
+8-CallExpression: this.mModel.Update(dt)
+9-PropertyAccessExpression: this.mModel.Update
+10-PropertyAccessExpression: this.mModel
+11-ThisKeyword: this
+11-DotToken: .
+11-Identifier: mModel
+10-DotToken: .
+10-Identifier: Update
+9-OpenParenToken: (
+9-SyntaxList: dt
+10-Identifier: dt
+9-CloseParenToken: )
+8-SemicolonToken: ;
+6-CloseBraceToken: }
+4-MethodDeclaration: public getModel() : Entity
+    {
+        return this.mModel;
+    }
+5-SyntaxList: public
+6-PublicKeyword: public
+5-Identifier: getModel
+5-OpenParenToken: (
+5-SyntaxList:
+5-CloseParenToken: )
+5-ColonToken: :
+5-TypeReference: Entity
+6-Identifier: Entity
+5-Block: {
+        return this.mModel;
+    }
+6-OpenBraceToken: {
+6-SyntaxList: return this.mModel;
+7-ReturnStatement: return this.mModel;
+8-ReturnKeyword: return
+8-PropertyAccessExpression: this.mModel
+9-ThisKeyword: this
+9-DotToken: .
+9-Identifier: mModel
+8-SemicolonToken: ;
+6-CloseBraceToken: }
+3-CloseBraceToken: }
+2-ModuleDeclaration: namespace Testing
+{
+    function main()
+    {
+        let e = new Episode();
+        e.init();
+        console.log(e.getModel().toString());
+    }
+    main();
+}
+3-NamespaceKeyword: namespace
+3-Identifier: Testing
+3-ModuleBlock: {
+    function main()
+    {
+        let e = new Episode();
+        e.init();
+        console.log(e.getModel().toString());
+    }
+    main();
+}
+4-OpenBraceToken: {
+4-SyntaxList: function main()
+    {
+        let e = new Episode();
+        e.init();
+        console.log(e.getModel().toString());
+    }
+    main();
+5-FunctionDeclaration: function main()
+    {
+        let e = new Episode();
+        e.init();
+        console.log(e.getModel().toString());
+    }
+6-FunctionKeyword: function
+6-Identifier: main
+6-OpenParenToken: (
+6-SyntaxList:
+6-CloseParenToken: )
+6-Block: {
+        let e = new Episode();
+        e.init();
+        console.log(e.getModel().toString());
+    }
+7-OpenBraceToken: {
+7-SyntaxList: let e = new Episode();
+        e.init();
+        console.log(e.getModel().toString());
+8-VariableStatement: let e = new Episode();
+9-VariableDeclarationList: let e = new Episode()
+10-LetKeyword: let
+10-SyntaxList: e = new Episode()
+11-VariableDeclaration: e = new Episode()
+12-Identifier: e
+12-EqualsToken: =
+12-NewExpression: new Episode()
+13-NewKeyword: new
+13-Identifier: Episode
+13-OpenParenToken: (
+13-SyntaxList:
+13-CloseParenToken: )
+9-SemicolonToken: ;
+8-ExpressionStatement: e.init();
+9-CallExpression: e.init()
+10-PropertyAccessExpression: e.init
+11-Identifier: e
+11-DotToken: .
+11-Identifier: init
+10-OpenParenToken: (
+10-SyntaxList:
+10-CloseParenToken: )
+9-SemicolonToken: ;
+8-ExpressionStatement: console.log(e.getModel().toString());
+9-CallExpression: console.log(e.getModel().toString())
+10-PropertyAccessExpression: console.log
+11-Identifier: console
+11-DotToken: .
+11-Identifier: log
+10-OpenParenToken: (
+10-SyntaxList: e.getModel().toString()
+11-CallExpression: e.getModel().toString()
+12-PropertyAccessExpression: e.getModel().toString
+13-CallExpression: e.getModel()
+14-PropertyAccessExpression: e.getModel
+15-Identifier: e
+15-DotToken: .
+15-Identifier: getModel
+14-OpenParenToken: (
+14-SyntaxList:
+14-CloseParenToken: )
+13-DotToken: .
+13-Identifier: toString
+12-OpenParenToken: (
+12-SyntaxList:
+12-CloseParenToken: )
+10-CloseParenToken: )
+9-SemicolonToken: ;
+7-CloseBraceToken: }
+5-ExpressionStatement: main();
+6-CallExpression: main()
+7-Identifier: main
+7-OpenParenToken: (
+7-SyntaxList:
+7-CloseParenToken: )
+6-SemicolonToken: ;
+4-CloseBraceToken: }
+1-EndOfFileToken:

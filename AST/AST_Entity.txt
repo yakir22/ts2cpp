@@ -1,0 +1,652 @@
+0-SourceFile: export class Entity
+{
+    public entities : Entity[] = [];
+    public x : number;
+    public y : number;
+
+    constructor(x : number,y : number){
+        //this.entities = []; // TODO :: for now support only variable level array initialization
+        this.x = x;
+        this.y = y;
+    }
+    public AddEntity(entity : Entity) : void{
+        this.entities.push(entity);
+    }
+
+    public Update(dt : number) : void{
+        this.UpdateInternal(dt);
+        for ( let i  = 0 ; i < this.entities.length ; i++ ){
+            this.entities[i].Update(dt);
+        }
+    }
+
+    protected UpdateInternal(dt : number) {
+
+    }
+
+    public toString() : string
+    {
+        let s = "(" + this.x + "," + this.y + (this.entities.length?",":"" );
+        for ( let i  = 0 ; i < this.entities.length ; i++ ){
+            s += this.entities[i].toString();
+        }
+        return s + ")";
+    }
+}
+
+namespace Testing
+{
+    function main()
+    {
+        let e0 = new Entity(10,20);
+        let e1 = new Entity(40,50);
+        e0.AddEntity(e1);
+        console.log(e0.toString());
+    }
+    main();
+}
+
+
+1-SyntaxList: export class Entity
+{
+    public entities : Entity[] = [];
+    public x : number;
+    public y : number;
+
+    constructor(x : number,y : number){
+        //this.entities = []; // TODO :: for now support only variable level array initialization
+        this.x = x;
+        this.y = y;
+    }
+    public AddEntity(entity : Entity) : void{
+        this.entities.push(entity);
+    }
+
+    public Update(dt : number) : void{
+        this.UpdateInternal(dt);
+        for ( let i  = 0 ; i < this.entities.length ; i++ ){
+            this.entities[i].Update(dt);
+        }
+    }
+
+    protected UpdateInternal(dt : number) {
+
+    }
+
+    public toString() : string
+    {
+        let s = "(" + this.x + "," + this.y + (this.entities.length?",":"" );
+        for ( let i  = 0 ; i < this.entities.length ; i++ ){
+            s += this.entities[i].toString();
+        }
+        return s + ")";
+    }
+}
+
+namespace Testing
+{
+    function main()
+    {
+        let e0 = new Entity(10,20);
+        let e1 = new Entity(40,50);
+        e0.AddEntity(e1);
+        console.log(e0.toString());
+    }
+    main();
+}
+2-ClassDeclaration: export class Entity
+{
+    public entities : Entity[] = [];
+    public x : number;
+    public y : number;
+
+    constructor(x : number,y : number){
+        //this.entities = []; // TODO :: for now support only variable level array initialization
+        this.x = x;
+        this.y = y;
+    }
+    public AddEntity(entity : Entity) : void{
+        this.entities.push(entity);
+    }
+
+    public Update(dt : number) : void{
+        this.UpdateInternal(dt);
+        for ( let i  = 0 ; i < this.entities.length ; i++ ){
+            this.entities[i].Update(dt);
+        }
+    }
+
+    protected UpdateInternal(dt : number) {
+
+    }
+
+    public toString() : string
+    {
+        let s = "(" + this.x + "," + this.y + (this.entities.length?",":"" );
+        for ( let i  = 0 ; i < this.entities.length ; i++ ){
+            s += this.entities[i].toString();
+        }
+        return s + ")";
+    }
+}
+3-SyntaxList: export
+4-ExportKeyword: export
+3-ClassKeyword: class
+3-Identifier: Entity
+3-OpenBraceToken: {
+3-SyntaxList: public entities : Entity[] = [];
+    public x : number;
+    public y : number;
+
+    constructor(x : number,y : number){
+        //this.entities = []; // TODO :: for now support only variable level array initialization
+        this.x = x;
+        this.y = y;
+    }
+    public AddEntity(entity : Entity) : void{
+        this.entities.push(entity);
+    }
+
+    public Update(dt : number) : void{
+        this.UpdateInternal(dt);
+        for ( let i  = 0 ; i < this.entities.length ; i++ ){
+            this.entities[i].Update(dt);
+        }
+    }
+
+    protected UpdateInternal(dt : number) {
+
+    }
+
+    public toString() : string
+    {
+        let s = "(" + this.x + "," + this.y + (this.entities.length?",":"" );
+        for ( let i  = 0 ; i < this.entities.length ; i++ ){
+            s += this.entities[i].toString();
+        }
+        return s + ")";
+    }
+4-PropertyDeclaration: public entities : Entity[] = [];
+5-SyntaxList: public
+6-PublicKeyword: public
+5-Identifier: entities
+5-ColonToken: :
+5-ArrayType: Entity[]
+6-TypeReference: Entity
+7-Identifier: Entity
+6-OpenBracketToken: [
+6-CloseBracketToken: ]
+5-EqualsToken: =
+5-ArrayLiteralExpression: []
+6-OpenBracketToken: [
+6-SyntaxList:
+6-CloseBracketToken: ]
+5-SemicolonToken: ;
+4-PropertyDeclaration: public x : number;
+5-SyntaxList: public
+6-PublicKeyword: public
+5-Identifier: x
+5-ColonToken: :
+5-NumberKeyword: number
+5-SemicolonToken: ;
+4-PropertyDeclaration: public y : number;
+5-SyntaxList: public
+6-PublicKeyword: public
+5-Identifier: y
+5-ColonToken: :
+5-NumberKeyword: number
+5-SemicolonToken: ;
+4-Constructor: constructor(x : number,y : number){
+        //this.entities = []; // TODO :: for now support only variable level array initialization
+        this.x = x;
+        this.y = y;
+    }
+5-ConstructorKeyword: constructor
+5-OpenParenToken: (
+5-SyntaxList: x : number,y : number
+6-Parameter: x : number
+7-Identifier: x
+7-ColonToken: :
+7-NumberKeyword: number
+6-CommaToken: ,
+6-Parameter: y : number
+7-Identifier: y
+7-ColonToken: :
+7-NumberKeyword: number
+5-CloseParenToken: )
+5-Block: {
+        //this.entities = []; // TODO :: for now support only variable level array initialization
+        this.x = x;
+        this.y = y;
+    }
+6-OpenBraceToken: {
+6-SyntaxList: this.x = x;
+        this.y = y;
+7-ExpressionStatement: this.x = x;
+8-BinaryExpression: this.x = x
+9-PropertyAccessExpression: this.x
+10-ThisKeyword: this
+10-DotToken: .
+10-Identifier: x
+9-EqualsToken: =
+9-Identifier: x
+8-SemicolonToken: ;
+7-ExpressionStatement: this.y = y;
+8-BinaryExpression: this.y = y
+9-PropertyAccessExpression: this.y
+10-ThisKeyword: this
+10-DotToken: .
+10-Identifier: y
+9-EqualsToken: =
+9-Identifier: y
+8-SemicolonToken: ;
+6-CloseBraceToken: }
+4-MethodDeclaration: public AddEntity(entity : Entity) : void{
+        this.entities.push(entity);
+    }
+5-SyntaxList: public
+6-PublicKeyword: public
+5-Identifier: AddEntity
+5-OpenParenToken: (
+5-SyntaxList: entity : Entity
+6-Parameter: entity : Entity
+7-Identifier: entity
+7-ColonToken: :
+7-TypeReference: Entity
+8-Identifier: Entity
+5-CloseParenToken: )
+5-ColonToken: :
+5-VoidKeyword: void
+5-Block: {
+        this.entities.push(entity);
+    }
+6-OpenBraceToken: {
+6-SyntaxList: this.entities.push(entity);
+7-ExpressionStatement: this.entities.push(entity);
+8-CallExpression: this.entities.push(entity)
+9-PropertyAccessExpression: this.entities.push
+10-PropertyAccessExpression: this.entities
+11-ThisKeyword: this
+11-DotToken: .
+11-Identifier: entities
+10-DotToken: .
+10-Identifier: push
+9-OpenParenToken: (
+9-SyntaxList: entity
+10-Identifier: entity
+9-CloseParenToken: )
+8-SemicolonToken: ;
+6-CloseBraceToken: }
+4-MethodDeclaration: public Update(dt : number) : void{
+        this.UpdateInternal(dt);
+        for ( let i  = 0 ; i < this.entities.length ; i++ ){
+            this.entities[i].Update(dt);
+        }
+    }
+5-SyntaxList: public
+6-PublicKeyword: public
+5-Identifier: Update
+5-OpenParenToken: (
+5-SyntaxList: dt : number
+6-Parameter: dt : number
+7-Identifier: dt
+7-ColonToken: :
+7-NumberKeyword: number
+5-CloseParenToken: )
+5-ColonToken: :
+5-VoidKeyword: void
+5-Block: {
+        this.UpdateInternal(dt);
+        for ( let i  = 0 ; i < this.entities.length ; i++ ){
+            this.entities[i].Update(dt);
+        }
+    }
+6-OpenBraceToken: {
+6-SyntaxList: this.UpdateInternal(dt);
+        for ( let i  = 0 ; i < this.entities.length ; i++ ){
+            this.entities[i].Update(dt);
+        }
+7-ExpressionStatement: this.UpdateInternal(dt);
+8-CallExpression: this.UpdateInternal(dt)
+9-PropertyAccessExpression: this.UpdateInternal
+10-ThisKeyword: this
+10-DotToken: .
+10-Identifier: UpdateInternal
+9-OpenParenToken: (
+9-SyntaxList: dt
+10-Identifier: dt
+9-CloseParenToken: )
+8-SemicolonToken: ;
+7-ForStatement: for ( let i  = 0 ; i < this.entities.length ; i++ ){
+            this.entities[i].Update(dt);
+        }
+8-ForKeyword: for
+8-OpenParenToken: (
+8-VariableDeclarationList: let i  = 0
+9-LetKeyword: let
+9-SyntaxList: i  = 0
+10-VariableDeclaration: i  = 0
+11-Identifier: i
+11-EqualsToken: =
+11-NumericLiteral: 0
+8-SemicolonToken: ;
+8-BinaryExpression: i < this.entities.length
+9-Identifier: i
+9-LessThanToken: <
+9-PropertyAccessExpression: this.entities.length
+10-PropertyAccessExpression: this.entities
+11-ThisKeyword: this
+11-DotToken: .
+11-Identifier: entities
+10-DotToken: .
+10-Identifier: length
+8-SemicolonToken: ;
+8-PostfixUnaryExpression: i++
+9-Identifier: i
+9-PlusPlusToken: ++
+8-CloseParenToken: )
+8-Block: {
+            this.entities[i].Update(dt);
+        }
+9-OpenBraceToken: {
+9-SyntaxList: this.entities[i].Update(dt);
+10-ExpressionStatement: this.entities[i].Update(dt);
+11-CallExpression: this.entities[i].Update(dt)
+12-PropertyAccessExpression: this.entities[i].Update
+13-ElementAccessExpression: this.entities[i]
+14-PropertyAccessExpression: this.entities
+15-ThisKeyword: this
+15-DotToken: .
+15-Identifier: entities
+14-OpenBracketToken: [
+14-Identifier: i
+14-CloseBracketToken: ]
+13-DotToken: .
+13-Identifier: Update
+12-OpenParenToken: (
+12-SyntaxList: dt
+13-Identifier: dt
+12-CloseParenToken: )
+11-SemicolonToken: ;
+9-CloseBraceToken: }
+6-CloseBraceToken: }
+4-MethodDeclaration: protected UpdateInternal(dt : number) {
+
+    }
+5-SyntaxList: protected
+6-ProtectedKeyword: protected
+5-Identifier: UpdateInternal
+5-OpenParenToken: (
+5-SyntaxList: dt : number
+6-Parameter: dt : number
+7-Identifier: dt
+7-ColonToken: :
+7-NumberKeyword: number
+5-CloseParenToken: )
+5-Block: {
+
+    }
+6-OpenBraceToken: {
+6-SyntaxList:
+6-CloseBraceToken: }
+4-MethodDeclaration: public toString() : string
+    {
+        let s = "(" + this.x + "," + this.y + (this.entities.length?",":"" );
+        for ( let i  = 0 ; i < this.entities.length ; i++ ){
+            s += this.entities[i].toString();
+        }
+        return s + ")";
+    }
+5-SyntaxList: public
+6-PublicKeyword: public
+5-Identifier: toString
+5-OpenParenToken: (
+5-SyntaxList:
+5-CloseParenToken: )
+5-ColonToken: :
+5-StringKeyword: string
+5-Block: {
+        let s = "(" + this.x + "," + this.y + (this.entities.length?",":"" );
+        for ( let i  = 0 ; i < this.entities.length ; i++ ){
+            s += this.entities[i].toString();
+        }
+        return s + ")";
+    }
+6-OpenBraceToken: {
+6-SyntaxList: let s = "(" + this.x + "," + this.y + (this.entities.length?",":"" );
+        for ( let i  = 0 ; i < this.entities.length ; i++ ){
+            s += this.entities[i].toString();
+        }
+        return s + ")";
+7-VariableStatement: let s = "(" + this.x + "," + this.y + (this.entities.length?",":"" );
+8-VariableDeclarationList: let s = "(" + this.x + "," + this.y + (this.entities.length?",":"" )
+9-LetKeyword: let
+9-SyntaxList: s = "(" + this.x + "," + this.y + (this.entities.length?",":"" )
+10-VariableDeclaration: s = "(" + this.x + "," + this.y + (this.entities.length?",":"" )
+11-Identifier: s
+11-EqualsToken: =
+11-BinaryExpression: "(" + this.x + "," + this.y + (this.entities.length?",":"" )
+12-BinaryExpression: "(" + this.x + "," + this.y
+13-BinaryExpression: "(" + this.x + ","
+14-BinaryExpression: "(" + this.x
+15-StringLiteral: "("
+15-PlusToken: +
+15-PropertyAccessExpression: this.x
+16-ThisKeyword: this
+16-DotToken: .
+16-Identifier: x
+14-PlusToken: +
+14-StringLiteral: ","
+13-PlusToken: +
+13-PropertyAccessExpression: this.y
+14-ThisKeyword: this
+14-DotToken: .
+14-Identifier: y
+12-PlusToken: +
+12-ParenthesizedExpression: (this.entities.length?",":"" )
+13-OpenParenToken: (
+13-ConditionalExpression: this.entities.length?",":""
+14-PropertyAccessExpression: this.entities.length
+15-PropertyAccessExpression: this.entities
+16-ThisKeyword: this
+16-DotToken: .
+16-Identifier: entities
+15-DotToken: .
+15-Identifier: length
+14-QuestionToken: ?
+14-StringLiteral: ","
+14-ColonToken: :
+14-StringLiteral: ""
+13-CloseParenToken: )
+8-SemicolonToken: ;
+7-ForStatement: for ( let i  = 0 ; i < this.entities.length ; i++ ){
+            s += this.entities[i].toString();
+        }
+8-ForKeyword: for
+8-OpenParenToken: (
+8-VariableDeclarationList: let i  = 0
+9-LetKeyword: let
+9-SyntaxList: i  = 0
+10-VariableDeclaration: i  = 0
+11-Identifier: i
+11-EqualsToken: =
+11-NumericLiteral: 0
+8-SemicolonToken: ;
+8-BinaryExpression: i < this.entities.length
+9-Identifier: i
+9-LessThanToken: <
+9-PropertyAccessExpression: this.entities.length
+10-PropertyAccessExpression: this.entities
+11-ThisKeyword: this
+11-DotToken: .
+11-Identifier: entities
+10-DotToken: .
+10-Identifier: length
+8-SemicolonToken: ;
+8-PostfixUnaryExpression: i++
+9-Identifier: i
+9-PlusPlusToken: ++
+8-CloseParenToken: )
+8-Block: {
+            s += this.entities[i].toString();
+        }
+9-OpenBraceToken: {
+9-SyntaxList: s += this.entities[i].toString();
+10-ExpressionStatement: s += this.entities[i].toString();
+11-BinaryExpression: s += this.entities[i].toString()
+12-Identifier: s
+12-PlusEqualsToken: +=
+12-CallExpression: this.entities[i].toString()
+13-PropertyAccessExpression: this.entities[i].toString
+14-ElementAccessExpression: this.entities[i]
+15-PropertyAccessExpression: this.entities
+16-ThisKeyword: this
+16-DotToken: .
+16-Identifier: entities
+15-OpenBracketToken: [
+15-Identifier: i
+15-CloseBracketToken: ]
+14-DotToken: .
+14-Identifier: toString
+13-OpenParenToken: (
+13-SyntaxList:
+13-CloseParenToken: )
+11-SemicolonToken: ;
+9-CloseBraceToken: }
+7-ReturnStatement: return s + ")";
+8-ReturnKeyword: return
+8-BinaryExpression: s + ")"
+9-Identifier: s
+9-PlusToken: +
+9-StringLiteral: ")"
+8-SemicolonToken: ;
+6-CloseBraceToken: }
+3-CloseBraceToken: }
+2-ModuleDeclaration: namespace Testing
+{
+    function main()
+    {
+        let e0 = new Entity(10,20);
+        let e1 = new Entity(40,50);
+        e0.AddEntity(e1);
+        console.log(e0.toString());
+    }
+    main();
+}
+3-NamespaceKeyword: namespace
+3-Identifier: Testing
+3-ModuleBlock: {
+    function main()
+    {
+        let e0 = new Entity(10,20);
+        let e1 = new Entity(40,50);
+        e0.AddEntity(e1);
+        console.log(e0.toString());
+    }
+    main();
+}
+4-OpenBraceToken: {
+4-SyntaxList: function main()
+    {
+        let e0 = new Entity(10,20);
+        let e1 = new Entity(40,50);
+        e0.AddEntity(e1);
+        console.log(e0.toString());
+    }
+    main();
+5-FunctionDeclaration: function main()
+    {
+        let e0 = new Entity(10,20);
+        let e1 = new Entity(40,50);
+        e0.AddEntity(e1);
+        console.log(e0.toString());
+    }
+6-FunctionKeyword: function
+6-Identifier: main
+6-OpenParenToken: (
+6-SyntaxList:
+6-CloseParenToken: )
+6-Block: {
+        let e0 = new Entity(10,20);
+        let e1 = new Entity(40,50);
+        e0.AddEntity(e1);
+        console.log(e0.toString());
+    }
+7-OpenBraceToken: {
+7-SyntaxList: let e0 = new Entity(10,20);
+        let e1 = new Entity(40,50);
+        e0.AddEntity(e1);
+        console.log(e0.toString());
+8-VariableStatement: let e0 = new Entity(10,20);
+9-VariableDeclarationList: let e0 = new Entity(10,20)
+10-LetKeyword: let
+10-SyntaxList: e0 = new Entity(10,20)
+11-VariableDeclaration: e0 = new Entity(10,20)
+12-Identifier: e0
+12-EqualsToken: =
+12-NewExpression: new Entity(10,20)
+13-NewKeyword: new
+13-Identifier: Entity
+13-OpenParenToken: (
+13-SyntaxList: 10,20
+14-NumericLiteral: 10
+14-CommaToken: ,
+14-NumericLiteral: 20
+13-CloseParenToken: )
+9-SemicolonToken: ;
+8-VariableStatement: let e1 = new Entity(40,50);
+9-VariableDeclarationList: let e1 = new Entity(40,50)
+10-LetKeyword: let
+10-SyntaxList: e1 = new Entity(40,50)
+11-VariableDeclaration: e1 = new Entity(40,50)
+12-Identifier: e1
+12-EqualsToken: =
+12-NewExpression: new Entity(40,50)
+13-NewKeyword: new
+13-Identifier: Entity
+13-OpenParenToken: (
+13-SyntaxList: 40,50
+14-NumericLiteral: 40
+14-CommaToken: ,
+14-NumericLiteral: 50
+13-CloseParenToken: )
+9-SemicolonToken: ;
+8-ExpressionStatement: e0.AddEntity(e1);
+9-CallExpression: e0.AddEntity(e1)
+10-PropertyAccessExpression: e0.AddEntity
+11-Identifier: e0
+11-DotToken: .
+11-Identifier: AddEntity
+10-OpenParenToken: (
+10-SyntaxList: e1
+11-Identifier: e1
+10-CloseParenToken: )
+9-SemicolonToken: ;
+8-ExpressionStatement: console.log(e0.toString());
+9-CallExpression: console.log(e0.toString())
+10-PropertyAccessExpression: console.log
+11-Identifier: console
+11-DotToken: .
+11-Identifier: log
+10-OpenParenToken: (
+10-SyntaxList: e0.toString()
+11-CallExpression: e0.toString()
+12-PropertyAccessExpression: e0.toString
+13-Identifier: e0
+13-DotToken: .
+13-Identifier: toString
+12-OpenParenToken: (
+12-SyntaxList:
+12-CloseParenToken: )
+10-CloseParenToken: )
+9-SemicolonToken: ;
+7-CloseBraceToken: }
+5-ExpressionStatement: main();
+6-CallExpression: main()
+7-Identifier: main
+7-OpenParenToken: (
+7-SyntaxList:
+7-CloseParenToken: )
+6-SemicolonToken: ;
+4-CloseBraceToken: }
+1-EndOfFileToken:

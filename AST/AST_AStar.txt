@@ -1,0 +1,4980 @@
+0-SourceFile: export class GraphNode {
+        private connections : GraphNode[];
+        getConnections() : GraphNode[]{ return this.connections; }
+
+    public x: number;
+    public y: number;
+    public z: number;
+    public weight: number;
+
+        constructor(
+                 x: number,
+                 y: number,
+                 z: number,
+                 weight: number) {
+             this.x =x;
+             this.y =y;
+             this.z =z;
+             this.weight =weight;
+                this.connections = [];
+        }
+
+    connectTo(b : GraphNode) {
+                this.connections.push(b);
+        }
+
+
+        toString() : string {
+                var ret = "{" + this.x + "," + this.y + "," + this.z +
+"," + this.weight+ "}";
+                return ret;
+        }
+
+}
+
+
+export class PathNode {
+
+        f() : number{ return this.g + this.h; }
+
+    public g: number;
+    public h: number;
+    public previous: PathNode;
+    public data: GraphNode;
+        constructor(
+                g: number,
+                h: number,
+                previous: PathNode,
+                data: GraphNode) {
+                        this.g = g;
+                        this.h = h;
+                        this.previous = previous;
+                        this.data = data;
+        }
+}
+
+
+export class Graph {
+        private nodes : GraphNode[];
+        getNode(x: number, y: number) : GraphNode {
+                for (var i = 0; i < this.nodes.length; i++) {
+                        var n = this.nodes[i];
+                        if (n.x == x && n.y == y)
+                                return n;
+                }
+                return null;
+        }
+        getNodes() : GraphNode[] { return this.nodes; }
+
+    constructor() {
+                this.nodes = [];
+        }
+
+        /**
+         * convert a 2d array to a graph
+         * @param data The 2d array containing weights of each tile
+         */
+        fromArray(data : number[][]) {
+                this.nodes = [];
+
+                var width  = data[0].length;
+                var height = data.length;
+
+                // create and add nodes
+                for (var i = 0; i < height; i++) {
+                        for (var j = 0; j < width; j++) {
+
+                                var weight = data[i][j];
+                                var node = new GraphNode(j, i, 0, weight);
+                                this.nodes.push(node);
+                        }
+                }
+
+                // connect the nodes in O(n)
+                for (var i = 0; i < this.nodes.length; i++) {
+                        var n = this.nodes[i];
+
+                        let allowDiagonals = false;
+                        if (allowDiagonals){
+                                // loop in a square adding each node as a connection
+                                for (var x = -1; x <= 1; x++) {
+                                        for (var y = -1; y <= 1; y++) {
+                                                if (x == 0 && y == 0) continue;
+                                                if (n.x+x < 0 || n.x+x
+>= width ||
+                                                        n.y+y < 0 || n.y+y >= height) continue;
+
+                                                var node  = this.nodes[i+width*y+x];
+                                                this.nodes[i].connectTo(node);
+                                        }
+                                }
+                        }
+                        else
+                        {
+                                for (var x = -1; x <= 1; x++) {
+                                        for (var y = -1; y <= 1; y++) {
+                                                if (x == 0 && y == 0) continue;
+                                                if (n.x+x < 0 || n.x+x
+>= width ||
+                                                        n.y+y < 0 || n.y+y >= height ||
+                                                        Math.abs(x) ==
+Math.abs(y) )
+                                                        continue;
+
+                                                var node  = this.nodes[i+width*y+x];
+                                                this.nodes[i].connectTo(node);
+                                        }
+                                }
+                        }
+                }
+        }
+}
+
+
+export class /*Manhatten*/Heuristic /*extends Heuristic*/ {
+        constructor() {
+                //super();
+        }
+
+        getHeuristic (
+                x1:number, y1:number, z1:number,
+                x2:number, y2:number, z2:number) : number {
+                return Math.abs(x2 - x1) + Math.abs(y2 - y1) + Math.abs(z2 - z1);
+        }
+}
+
+export class AStar
+{
+        private graph : Graph;
+        getGraph() : Graph { return this.graph; }
+        getNode(x : number, y : number) : GraphNode { return this.graph.getNode(x, y); }
+
+        private heuristic : Heuristic;
+        setHeuristic(heuristic : Heuristic) { this.heuristic = heuristic; }
+
+        constructor(heuristic: Heuristic) {
+                this.graph = new Graph();
+                this.setHeuristic(heuristic);
+        }
+
+        /**
+         * Find the cheapest path between two nodes
+         * @param a Origin
+         * @param b Destination
+         */
+        path(a: GraphNode, b: GraphNode) : GraphNode[] {
+                var open = new Array<PathNode>();
+                var     closed = new Array<PathNode>();
+
+                var next = new PathNode(
+                        0, this.heuristic.getHeuristic(a.x, a.y, a.z, b.x, b.y, b.z), null, a);
+
+                // find lowest
+                while (next.data != b)
+                {
+                        var lowest: PathNode = null;
+                        var lowestIndex = -1;
+                        for (var i = 0; i < open.length; i++)
+                        {
+                                if (lowest == null || lowest.f() > open[i].f()) {
+                                        lowest = open[i];
+                                        lowestIndex = i;
+                                }
+                        }
+
+                        // add to closed
+                        if (lowest != null) {
+                                // open[open.length-1] = open[lowestIndex];
+                                open.splice(lowestIndex, 1);
+                                closed.push(lowest);
+
+                                next = lowest;
+                        }
+
+                        // for all next connections, add to open if not in closed or open
+                        var connections = next.data.getConnections();
+                        for (var i = 0; i < connections.length; i++) {
+
+                                // list check
+                var add = true;
+                var openIndex = -1;
+                                for (var j = 0; j < open.length; j++)
+                                        if (open[j].data.x == connections[i].x &&
+                                                open[j].data.y == connections[i].y &&
+                                                open[j].data.z == connections[i].z)
+                                                openIndex = j;
+                                for (var j = 0; j < closed.length; j++)                                        if (closed[j].data.x == connections[i].x &&
+                                                closed[j].data.y == connections[i].y &&
+                                                closed[j].data.z == connections[i].z)
+                                                add = false;
+
+                                // calculate score
+                                var node = connections[i];
+                                var g = next.g;
+                                g += Math.sqrt(
+                                                Math.pow(next.data.x -
+node.x, 2) +
+                                                Math.pow(next.data.y -
+node.y, 2) +
+                                                Math.pow(next.data.z -
+node.z, 2)) * node.weight;
+                                var h = this.heuristic.getHeuristic(node.x, node.y, node.z, b.x, b.y, b.z);
+
+                                // if not in open
+                                if (openIndex == -1 && add)
+                                        open.push(new PathNode(g, h, next, node));
+                                // update open if better score
+                                else if (
+                                        openIndex > -1 &&
+                                        g + h < open[openIndex].f() &&
+add) {
+                                        open[openIndex].g = g;
+                                        open[openIndex].h = h;
+                                        open[openIndex].previous = next;
+                                }
+                        }
+                }
+
+                var path = new Array<GraphNode>();
+                while (next != null) {
+                        path.push(next.data);
+                        next = next.previous;
+                }
+                path.reverse();
+
+                return path;
+        }
+
+        /**
+         * Load an array into graph
+         * @param data The 2d array containing weights of each tile
+         */
+        load(data: number[][]) {
+                this.graph.fromArray(data);
+        }
+}
+
+
+
+namespace Testing
+{
+    function main()
+    {
+        var dataForGraph : number[][]= [
+            [0, 0, 0, 0],
+            [0, 5, 5, 0],
+            [0, 5, 5, 0],
+            [0, 0, 0, 0]
+        ];
+
+        var astar = new AStar(new /*Manhatten*/Heuristic());
+        astar.load(dataForGraph);
+
+        var g = astar.getGraph();
+                var path = astar.path(g.getNode(0,0), g.getNode(3,3));
+                for (var i = 0; i < path.length; i++) {
+                        console.log(path[i].toString());
+                }
+    }
+    main();
+}
+
+
+1-SyntaxList: export class GraphNode {
+        private connections : GraphNode[];
+        getConnections() : GraphNode[]{ return this.connections; }
+
+    public x: number;
+    public y: number;
+    public z: number;
+    public weight: number;
+
+        constructor(
+                 x: number,
+                 y: number,
+                 z: number,
+                 weight: number) {
+             this.x =x;
+             this.y =y;
+             this.z =z;
+             this.weight =weight;
+                this.connections = [];
+        }
+
+    connectTo(b : GraphNode) {
+                this.connections.push(b);
+        }
+
+
+        toString() : string {
+                var ret = "{" + this.x + "," + this.y + "," + this.z +
+"," + this.weight+ "}";
+                return ret;
+        }
+
+}
+
+
+export class PathNode {
+
+        f() : number{ return this.g + this.h; }
+
+    public g: number;
+    public h: number;
+    public previous: PathNode;
+    public data: GraphNode;
+        constructor(
+                g: number,
+                h: number,
+                previous: PathNode,
+                data: GraphNode) {
+                        this.g = g;
+                        this.h = h;
+                        this.previous = previous;
+                        this.data = data;
+        }
+}
+
+
+export class Graph {
+        private nodes : GraphNode[];
+        getNode(x: number, y: number) : GraphNode {
+                for (var i = 0; i < this.nodes.length; i++) {
+                        var n = this.nodes[i];
+                        if (n.x == x && n.y == y)
+                                return n;
+                }
+                return null;
+        }
+        getNodes() : GraphNode[] { return this.nodes; }
+
+    constructor() {
+                this.nodes = [];
+        }
+
+        /**
+         * convert a 2d array to a graph
+         * @param data The 2d array containing weights of each tile
+         */
+        fromArray(data : number[][]) {
+                this.nodes = [];
+
+                var width  = data[0].length;
+                var height = data.length;
+
+                // create and add nodes
+                for (var i = 0; i < height; i++) {
+                        for (var j = 0; j < width; j++) {
+
+                                var weight = data[i][j];
+                                var node = new GraphNode(j, i, 0, weight);
+                                this.nodes.push(node);
+                        }
+                }
+
+                // connect the nodes in O(n)
+                for (var i = 0; i < this.nodes.length; i++) {
+                        var n = this.nodes[i];
+
+                        let allowDiagonals = false;
+                        if (allowDiagonals){
+                                // loop in a square adding each node as a connection
+                                for (var x = -1; x <= 1; x++) {
+                                        for (var y = -1; y <= 1; y++) {
+                                                if (x == 0 && y == 0) continue;
+                                                if (n.x+x < 0 || n.x+x
+>= width ||
+                                                        n.y+y < 0 || n.y+y >= height) continue;
+
+                                                var node  = this.nodes[i+width*y+x];
+                                                this.nodes[i].connectTo(node);
+                                        }
+                                }
+                        }
+                        else
+                        {
+                                for (var x = -1; x <= 1; x++) {
+                                        for (var y = -1; y <= 1; y++) {
+                                                if (x == 0 && y == 0) continue;
+                                                if (n.x+x < 0 || n.x+x
+>= width ||
+                                                        n.y+y < 0 || n.y+y >= height ||
+                                                        Math.abs(x) ==
+Math.abs(y) )
+                                                        continue;
+
+                                                var node  = this.nodes[i+width*y+x];
+                                                this.nodes[i].connectTo(node);
+                                        }
+                                }
+                        }
+                }
+        }
+}
+
+
+export class /*Manhatten*/Heuristic /*extends Heuristic*/ {
+        constructor() {
+                //super();
+        }
+
+        getHeuristic (
+                x1:number, y1:number, z1:number,
+                x2:number, y2:number, z2:number) : number {
+                return Math.abs(x2 - x1) + Math.abs(y2 - y1) + Math.abs(z2 - z1);
+        }
+}
+
+export class AStar
+{
+        private graph : Graph;
+        getGraph() : Graph { return this.graph; }
+        getNode(x : number, y : number) : GraphNode { return this.graph.getNode(x, y); }
+
+        private heuristic : Heuristic;
+        setHeuristic(heuristic : Heuristic) { this.heuristic = heuristic; }
+
+        constructor(heuristic: Heuristic) {
+                this.graph = new Graph();
+                this.setHeuristic(heuristic);
+        }
+
+        /**
+         * Find the cheapest path between two nodes
+         * @param a Origin
+         * @param b Destination
+         */
+        path(a: GraphNode, b: GraphNode) : GraphNode[] {
+                var open = new Array<PathNode>();
+                var     closed = new Array<PathNode>();
+
+                var next = new PathNode(
+                        0, this.heuristic.getHeuristic(a.x, a.y, a.z, b.x, b.y, b.z), null, a);
+
+                // find lowest
+                while (next.data != b)
+                {
+                        var lowest: PathNode = null;
+                        var lowestIndex = -1;
+                        for (var i = 0; i < open.length; i++)
+                        {
+                                if (lowest == null || lowest.f() > open[i].f()) {
+                                        lowest = open[i];
+                                        lowestIndex = i;
+                                }
+                        }
+
+                        // add to closed
+                        if (lowest != null) {
+                                // open[open.length-1] = open[lowestIndex];
+                                open.splice(lowestIndex, 1);
+                                closed.push(lowest);
+
+                                next = lowest;
+                        }
+
+                        // for all next connections, add to open if not in closed or open
+                        var connections = next.data.getConnections();
+                        for (var i = 0; i < connections.length; i++) {
+
+                                // list check
+                var add = true;
+                var openIndex = -1;
+                                for (var j = 0; j < open.length; j++)
+                                        if (open[j].data.x == connections[i].x &&
+                                                open[j].data.y == connections[i].y &&
+                                                open[j].data.z == connections[i].z)
+                                                openIndex = j;
+                                for (var j = 0; j < closed.length; j++)                                        if (closed[j].data.x == connections[i].x &&
+                                                closed[j].data.y == connections[i].y &&
+                                                closed[j].data.z == connections[i].z)
+                                                add = false;
+
+                                // calculate score
+                                var node = connections[i];
+                                var g = next.g;
+                                g += Math.sqrt(
+                                                Math.pow(next.data.x -
+node.x, 2) +
+                                                Math.pow(next.data.y -
+node.y, 2) +
+                                                Math.pow(next.data.z -
+node.z, 2)) * node.weight;
+                                var h = this.heuristic.getHeuristic(node.x, node.y, node.z, b.x, b.y, b.z);
+
+                                // if not in open
+                                if (openIndex == -1 && add)
+                                        open.push(new PathNode(g, h, next, node));
+                                // update open if better score
+                                else if (
+                                        openIndex > -1 &&
+                                        g + h < open[openIndex].f() &&
+add) {
+                                        open[openIndex].g = g;
+                                        open[openIndex].h = h;
+                                        open[openIndex].previous = next;
+                                }
+                        }
+                }
+
+                var path = new Array<GraphNode>();
+                while (next != null) {
+                        path.push(next.data);
+                        next = next.previous;
+                }
+                path.reverse();
+
+                return path;
+        }
+
+        /**
+         * Load an array into graph
+         * @param data The 2d array containing weights of each tile
+         */
+        load(data: number[][]) {
+                this.graph.fromArray(data);
+        }
+}
+
+
+
+namespace Testing
+{
+    function main()
+    {
+        var dataForGraph : number[][]= [
+            [0, 0, 0, 0],
+            [0, 5, 5, 0],
+            [0, 5, 5, 0],
+            [0, 0, 0, 0]
+        ];
+
+        var astar = new AStar(new /*Manhatten*/Heuristic());
+        astar.load(dataForGraph);
+
+        var g = astar.getGraph();
+                var path = astar.path(g.getNode(0,0), g.getNode(3,3));
+                for (var i = 0; i < path.length; i++) {
+                        console.log(path[i].toString());
+                }
+    }
+    main();
+}
+2-ClassDeclaration: export class GraphNode {
+        private connections : GraphNode[];
+        getConnections() : GraphNode[]{ return this.connections; }
+
+    public x: number;
+    public y: number;
+    public z: number;
+    public weight: number;
+
+        constructor(
+                 x: number,
+                 y: number,
+                 z: number,
+                 weight: number) {
+             this.x =x;
+             this.y =y;
+             this.z =z;
+             this.weight =weight;
+                this.connections = [];
+        }
+
+    connectTo(b : GraphNode) {
+                this.connections.push(b);
+        }
+
+
+        toString() : string {
+                var ret = "{" + this.x + "," + this.y + "," + this.z +
+"," + this.weight+ "}";
+                return ret;
+        }
+
+}
+3-SyntaxList: export
+4-ExportKeyword: export
+3-ClassKeyword: class
+3-Identifier: GraphNode
+3-OpenBraceToken: {
+3-SyntaxList: private connections : GraphNode[];
+        getConnections() : GraphNode[]{ return this.connections; }
+
+    public x: number;
+    public y: number;
+    public z: number;
+    public weight: number;
+
+        constructor(
+                 x: number,
+                 y: number,
+                 z: number,
+                 weight: number) {
+             this.x =x;
+             this.y =y;
+             this.z =z;
+             this.weight =weight;
+                this.connections = [];
+        }
+
+    connectTo(b : GraphNode) {
+                this.connections.push(b);
+        }
+
+
+        toString() : string {
+                var ret = "{" + this.x + "," + this.y + "," + this.z +
+"," + this.weight+ "}";
+                return ret;
+        }
+4-PropertyDeclaration: private connections : GraphNode[];
+5-SyntaxList: private
+6-PrivateKeyword: private
+5-Identifier: connections
+5-ColonToken: :
+5-ArrayType: GraphNode[]
+6-TypeReference: GraphNode
+7-Identifier: GraphNode
+6-OpenBracketToken: [
+6-CloseBracketToken: ]
+5-SemicolonToken: ;
+4-MethodDeclaration: getConnections() : GraphNode[]{ return this.connections; }
+5-Identifier: getConnections
+5-OpenParenToken: (
+5-SyntaxList:
+5-CloseParenToken: )
+5-ColonToken: :
+5-ArrayType: GraphNode[]
+6-TypeReference: GraphNode
+7-Identifier: GraphNode
+6-OpenBracketToken: [
+6-CloseBracketToken: ]
+5-Block: { return this.connections; }
+6-OpenBraceToken: {
+6-SyntaxList: return this.connections;
+7-ReturnStatement: return this.connections;
+8-ReturnKeyword: return
+8-PropertyAccessExpression: this.connections
+9-ThisKeyword: this
+9-DotToken: .
+9-Identifier: connections
+8-SemicolonToken: ;
+6-CloseBraceToken: }
+4-PropertyDeclaration: public x: number;
+5-SyntaxList: public
+6-PublicKeyword: public
+5-Identifier: x
+5-ColonToken: :
+5-NumberKeyword: number
+5-SemicolonToken: ;
+4-PropertyDeclaration: public y: number;
+5-SyntaxList: public
+6-PublicKeyword: public
+5-Identifier: y
+5-ColonToken: :
+5-NumberKeyword: number
+5-SemicolonToken: ;
+4-PropertyDeclaration: public z: number;
+5-SyntaxList: public
+6-PublicKeyword: public
+5-Identifier: z
+5-ColonToken: :
+5-NumberKeyword: number
+5-SemicolonToken: ;
+4-PropertyDeclaration: public weight: number;
+5-SyntaxList: public
+6-PublicKeyword: public
+5-Identifier: weight
+5-ColonToken: :
+5-NumberKeyword: number
+5-SemicolonToken: ;
+4-Constructor: constructor(
+                 x: number,
+                 y: number,
+                 z: number,
+                 weight: number) {
+             this.x =x;
+             this.y =y;
+             this.z =z;
+             this.weight =weight;
+                this.connections = [];
+        }
+5-ConstructorKeyword: constructor
+5-OpenParenToken: (
+5-SyntaxList: x: number,
+                 y: number,
+                 z: number,
+                 weight: number
+6-Parameter: x: number
+7-Identifier: x
+7-ColonToken: :
+7-NumberKeyword: number
+6-CommaToken: ,
+6-Parameter: y: number
+7-Identifier: y
+7-ColonToken: :
+7-NumberKeyword: number
+6-CommaToken: ,
+6-Parameter: z: number
+7-Identifier: z
+7-ColonToken: :
+7-NumberKeyword: number
+6-CommaToken: ,
+6-Parameter: weight: number
+7-Identifier: weight
+7-ColonToken: :
+7-NumberKeyword: number
+5-CloseParenToken: )
+5-Block: {
+             this.x =x;
+             this.y =y;
+             this.z =z;
+             this.weight =weight;
+                this.connections = [];
+        }
+6-OpenBraceToken: {
+6-SyntaxList: this.x =x;
+             this.y =y;
+             this.z =z;
+             this.weight =weight;
+                this.connections = [];
+7-ExpressionStatement: this.x =x;
+8-BinaryExpression: this.x =x
+9-PropertyAccessExpression: this.x
+10-ThisKeyword: this
+10-DotToken: .
+10-Identifier: x
+9-EqualsToken: =
+9-Identifier: x
+8-SemicolonToken: ;
+7-ExpressionStatement: this.y =y;
+8-BinaryExpression: this.y =y
+9-PropertyAccessExpression: this.y
+10-ThisKeyword: this
+10-DotToken: .
+10-Identifier: y
+9-EqualsToken: =
+9-Identifier: y
+8-SemicolonToken: ;
+7-ExpressionStatement: this.z =z;
+8-BinaryExpression: this.z =z
+9-PropertyAccessExpression: this.z
+10-ThisKeyword: this
+10-DotToken: .
+10-Identifier: z
+9-EqualsToken: =
+9-Identifier: z
+8-SemicolonToken: ;
+7-ExpressionStatement: this.weight =weight;
+8-BinaryExpression: this.weight =weight
+9-PropertyAccessExpression: this.weight
+10-ThisKeyword: this
+10-DotToken: .
+10-Identifier: weight
+9-EqualsToken: =
+9-Identifier: weight
+8-SemicolonToken: ;
+7-ExpressionStatement: this.connections = [];
+8-BinaryExpression: this.connections = []
+9-PropertyAccessExpression: this.connections
+10-ThisKeyword: this
+10-DotToken: .
+10-Identifier: connections
+9-EqualsToken: =
+9-ArrayLiteralExpression: []
+10-OpenBracketToken: [
+10-SyntaxList:
+10-CloseBracketToken: ]
+8-SemicolonToken: ;
+6-CloseBraceToken: }
+4-MethodDeclaration: connectTo(b : GraphNode) {
+                this.connections.push(b);
+        }
+5-Identifier: connectTo
+5-OpenParenToken: (
+5-SyntaxList: b : GraphNode
+6-Parameter: b : GraphNode
+7-Identifier: b
+7-ColonToken: :
+7-TypeReference: GraphNode
+8-Identifier: GraphNode
+5-CloseParenToken: )
+5-Block: {
+                this.connections.push(b);
+        }
+6-OpenBraceToken: {
+6-SyntaxList: this.connections.push(b);
+7-ExpressionStatement: this.connections.push(b);
+8-CallExpression: this.connections.push(b)
+9-PropertyAccessExpression: this.connections.push
+10-PropertyAccessExpression: this.connections
+11-ThisKeyword: this
+11-DotToken: .
+11-Identifier: connections
+10-DotToken: .
+10-Identifier: push
+9-OpenParenToken: (
+9-SyntaxList: b
+10-Identifier: b
+9-CloseParenToken: )
+8-SemicolonToken: ;
+6-CloseBraceToken: }
+4-MethodDeclaration: toString() : string {
+                var ret = "{" + this.x + "," + this.y + "," + this.z +
+"," + this.weight+ "}";
+                return ret;
+        }
+5-Identifier: toString
+5-OpenParenToken: (
+5-SyntaxList:
+5-CloseParenToken: )
+5-ColonToken: :
+5-StringKeyword: string
+5-Block: {
+                var ret = "{" + this.x + "," + this.y + "," + this.z +
+"," + this.weight+ "}";
+                return ret;
+        }
+6-OpenBraceToken: {
+6-SyntaxList: var ret = "{" + this.x + "," + this.y + "," + this.z + "," + this.weight+ "}";
+                return ret;
+7-VariableStatement: var ret = "{" + this.x + "," + this.y + "," + this.z + "," + this.weight+ "}";
+8-VariableDeclarationList: var ret = "{" + this.x + "," + this.y + ","
++ this.z + "," + this.weight+ "}"
+9-VarKeyword: var
+9-SyntaxList: ret = "{" + this.x + "," + this.y + "," + this.z + "," +
+this.weight+ "}"
+10-VariableDeclaration: ret = "{" + this.x + "," + this.y + "," + this.z + "," + this.weight+ "}"
+11-Identifier: ret
+11-EqualsToken: =
+11-BinaryExpression: "{" + this.x + "," + this.y + "," + this.z + "," + this.weight+ "}"
+12-BinaryExpression: "{" + this.x + "," + this.y + "," + this.z + "," + this.weight
+13-BinaryExpression: "{" + this.x + "," + this.y + "," + this.z + ","
+14-BinaryExpression: "{" + this.x + "," + this.y + "," + this.z
+15-BinaryExpression: "{" + this.x + "," + this.y + ","
+16-BinaryExpression: "{" + this.x + "," + this.y
+17-BinaryExpression: "{" + this.x + ","
+18-BinaryExpression: "{" + this.x
+19-StringLiteral: "{"
+19-PlusToken: +
+19-PropertyAccessExpression: this.x
+20-ThisKeyword: this
+20-DotToken: .
+20-Identifier: x
+18-PlusToken: +
+18-StringLiteral: ","
+17-PlusToken: +
+17-PropertyAccessExpression: this.y
+18-ThisKeyword: this
+18-DotToken: .
+18-Identifier: y
+16-PlusToken: +
+16-StringLiteral: ","
+15-PlusToken: +
+15-PropertyAccessExpression: this.z
+16-ThisKeyword: this
+16-DotToken: .
+16-Identifier: z
+14-PlusToken: +
+14-StringLiteral: ","
+13-PlusToken: +
+13-PropertyAccessExpression: this.weight
+14-ThisKeyword: this
+14-DotToken: .
+14-Identifier: weight
+12-PlusToken: +
+12-StringLiteral: "}"
+8-SemicolonToken: ;
+7-ReturnStatement: return ret;
+8-ReturnKeyword: return
+8-Identifier: ret
+8-SemicolonToken: ;
+6-CloseBraceToken: }
+3-CloseBraceToken: }
+2-ClassDeclaration: export class PathNode {
+
+        f() : number{ return this.g + this.h; }
+
+    public g: number;
+    public h: number;
+    public previous: PathNode;
+    public data: GraphNode;
+        constructor(
+                g: number,
+                h: number,
+                previous: PathNode,
+                data: GraphNode) {
+                        this.g = g;
+                        this.h = h;
+                        this.previous = previous;
+                        this.data = data;
+        }
+}
+3-SyntaxList: export
+4-ExportKeyword: export
+3-ClassKeyword: class
+3-Identifier: PathNode
+3-OpenBraceToken: {
+3-SyntaxList: f() : number{ return this.g + this.h; }
+
+    public g: number;
+    public h: number;
+    public previous: PathNode;
+    public data: GraphNode;
+        constructor(
+                g: number,
+                h: number,
+                previous: PathNode,
+                data: GraphNode) {
+                        this.g = g;
+                        this.h = h;
+                        this.previous = previous;
+                        this.data = data;
+        }
+4-MethodDeclaration: f() : number{ return this.g + this.h; }
+5-Identifier: f
+5-OpenParenToken: (
+5-SyntaxList:
+5-CloseParenToken: )
+5-ColonToken: :
+5-NumberKeyword: number
+5-Block: { return this.g + this.h; }
+6-OpenBraceToken: {
+6-SyntaxList: return this.g + this.h;
+7-ReturnStatement: return this.g + this.h;
+8-ReturnKeyword: return
+8-BinaryExpression: this.g + this.h
+9-PropertyAccessExpression: this.g
+10-ThisKeyword: this
+10-DotToken: .
+10-Identifier: g
+9-PlusToken: +
+9-PropertyAccessExpression: this.h
+10-ThisKeyword: this
+10-DotToken: .
+10-Identifier: h
+8-SemicolonToken: ;
+6-CloseBraceToken: }
+4-PropertyDeclaration: public g: number;
+5-SyntaxList: public
+6-PublicKeyword: public
+5-Identifier: g
+5-ColonToken: :
+5-NumberKeyword: number
+5-SemicolonToken: ;
+4-PropertyDeclaration: public h: number;
+5-SyntaxList: public
+6-PublicKeyword: public
+5-Identifier: h
+5-ColonToken: :
+5-NumberKeyword: number
+5-SemicolonToken: ;
+4-PropertyDeclaration: public previous: PathNode;
+5-SyntaxList: public
+6-PublicKeyword: public
+5-Identifier: previous
+5-ColonToken: :
+5-TypeReference: PathNode
+6-Identifier: PathNode
+5-SemicolonToken: ;
+4-PropertyDeclaration: public data: GraphNode;
+5-SyntaxList: public
+6-PublicKeyword: public
+5-Identifier: data
+5-ColonToken: :
+5-TypeReference: GraphNode
+6-Identifier: GraphNode
+5-SemicolonToken: ;
+4-Constructor: constructor(
+                g: number,
+                h: number,
+                previous: PathNode,
+                data: GraphNode) {
+                        this.g = g;
+                        this.h = h;
+                        this.previous = previous;
+                        this.data = data;
+        }
+5-ConstructorKeyword: constructor
+5-OpenParenToken: (
+5-SyntaxList: g: number,
+                h: number,
+                previous: PathNode,
+                data: GraphNode
+6-Parameter: g: number
+7-Identifier: g
+7-ColonToken: :
+7-NumberKeyword: number
+6-CommaToken: ,
+6-Parameter: h: number
+7-Identifier: h
+7-ColonToken: :
+7-NumberKeyword: number
+6-CommaToken: ,
+6-Parameter: previous: PathNode
+7-Identifier: previous
+7-ColonToken: :
+7-TypeReference: PathNode
+8-Identifier: PathNode
+6-CommaToken: ,
+6-Parameter: data: GraphNode
+7-Identifier: data
+7-ColonToken: :
+7-TypeReference: GraphNode
+8-Identifier: GraphNode
+5-CloseParenToken: )
+5-Block: {
+                        this.g = g;
+                        this.h = h;
+                        this.previous = previous;
+                        this.data = data;
+        }
+6-OpenBraceToken: {
+6-SyntaxList: this.g = g;
+                        this.h = h;
+                        this.previous = previous;
+                        this.data = data;
+7-ExpressionStatement: this.g = g;
+8-BinaryExpression: this.g = g
+9-PropertyAccessExpression: this.g
+10-ThisKeyword: this
+10-DotToken: .
+10-Identifier: g
+9-EqualsToken: =
+9-Identifier: g
+8-SemicolonToken: ;
+7-ExpressionStatement: this.h = h;
+8-BinaryExpression: this.h = h
+9-PropertyAccessExpression: this.h
+10-ThisKeyword: this
+10-DotToken: .
+10-Identifier: h
+9-EqualsToken: =
+9-Identifier: h
+8-SemicolonToken: ;
+7-ExpressionStatement: this.previous = previous;
+8-BinaryExpression: this.previous = previous
+9-PropertyAccessExpression: this.previous
+10-ThisKeyword: this
+10-DotToken: .
+10-Identifier: previous
+9-EqualsToken: =
+9-Identifier: previous
+8-SemicolonToken: ;
+7-ExpressionStatement: this.data = data;
+8-BinaryExpression: this.data = data
+9-PropertyAccessExpression: this.data
+10-ThisKeyword: this
+10-DotToken: .
+10-Identifier: data
+9-EqualsToken: =
+9-Identifier: data
+8-SemicolonToken: ;
+6-CloseBraceToken: }
+3-CloseBraceToken: }
+2-ClassDeclaration: export class Graph {
+        private nodes : GraphNode[];
+        getNode(x: number, y: number) : GraphNode {
+                for (var i = 0; i < this.nodes.length; i++) {
+                        var n = this.nodes[i];
+                        if (n.x == x && n.y == y)
+                                return n;
+                }
+                return null;
+        }
+        getNodes() : GraphNode[] { return this.nodes; }
+
+    constructor() {
+                this.nodes = [];
+        }
+
+        /**
+         * convert a 2d array to a graph
+         * @param data The 2d array containing weights of each tile
+         */
+        fromArray(data : number[][]) {
+                this.nodes = [];
+
+                var width  = data[0].length;
+                var height = data.length;
+
+                // create and add nodes
+                for (var i = 0; i < height; i++) {
+                        for (var j = 0; j < width; j++) {
+
+                                var weight = data[i][j];
+                                var node = new GraphNode(j, i, 0, weight);
+                                this.nodes.push(node);
+                        }
+                }
+
+                // connect the nodes in O(n)
+                for (var i = 0; i < this.nodes.length; i++) {
+                        var n = this.nodes[i];
+
+                        let allowDiagonals = false;
+                        if (allowDiagonals){
+                                // loop in a square adding each node as a connection
+                                for (var x = -1; x <= 1; x++) {
+                                        for (var y = -1; y <= 1; y++) {
+                                                if (x == 0 && y == 0) continue;
+                                                if (n.x+x < 0 || n.x+x
+>= width ||
+                                                        n.y+y < 0 || n.y+y >= height) continue;
+
+                                                var node  = this.nodes[i+width*y+x];
+                                                this.nodes[i].connectTo(node);
+                                        }
+                                }
+                        }
+                        else
+                        {
+                                for (var x = -1; x <= 1; x++) {
+                                        for (var y = -1; y <= 1; y++) {
+                                                if (x == 0 && y == 0) continue;
+                                                if (n.x+x < 0 || n.x+x
+>= width ||
+                                                        n.y+y < 0 || n.y+y >= height ||
+                                                        Math.abs(x) ==
+Math.abs(y) )
+                                                        continue;
+
+                                                var node  = this.nodes[i+width*y+x];
+                                                this.nodes[i].connectTo(node);
+                                        }
+                                }
+                        }
+                }
+        }
+}
+3-SyntaxList: export
+4-ExportKeyword: export
+3-ClassKeyword: class
+3-Identifier: Graph
+3-OpenBraceToken: {
+3-SyntaxList: private nodes : GraphNode[];
+        getNode(x: number, y: number) : GraphNode {
+                for (var i = 0; i < this.nodes.length; i++) {
+                        var n = this.nodes[i];
+                        if (n.x == x && n.y == y)
+                                return n;
+                }
+                return null;
+        }
+        getNodes() : GraphNode[] { return this.nodes; }
+
+    constructor() {
+                this.nodes = [];
+        }
+
+        /**
+         * convert a 2d array to a graph
+         * @param data The 2d array containing weights of each tile
+         */
+        fromArray(data : number[][]) {
+                this.nodes = [];
+
+                var width  = data[0].length;
+                var height = data.length;
+
+                // create and add nodes
+                for (var i = 0; i < height; i++) {
+                        for (var j = 0; j < width; j++) {
+
+                                var weight = data[i][j];
+                                var node = new GraphNode(j, i, 0, weight);
+                                this.nodes.push(node);
+                        }
+                }
+
+                // connect the nodes in O(n)
+                for (var i = 0; i < this.nodes.length; i++) {
+                        var n = this.nodes[i];
+
+                        let allowDiagonals = false;
+                        if (allowDiagonals){
+                                // loop in a square adding each node as a connection
+                                for (var x = -1; x <= 1; x++) {
+                                        for (var y = -1; y <= 1; y++) {
+                                                if (x == 0 && y == 0) continue;
+                                                if (n.x+x < 0 || n.x+x
+>= width ||
+                                                        n.y+y < 0 || n.y+y >= height) continue;
+
+                                                var node  = this.nodes[i+width*y+x];
+                                                this.nodes[i].connectTo(node);
+                                        }
+                                }
+                        }
+                        else
+                        {
+                                for (var x = -1; x <= 1; x++) {
+                                        for (var y = -1; y <= 1; y++) {
+                                                if (x == 0 && y == 0) continue;
+                                                if (n.x+x < 0 || n.x+x
+>= width ||
+                                                        n.y+y < 0 || n.y+y >= height ||
+                                                        Math.abs(x) ==
+Math.abs(y) )
+                                                        continue;
+
+                                                var node  = this.nodes[i+width*y+x];
+                                                this.nodes[i].connectTo(node);
+                                        }
+                                }
+                        }
+                }
+        }
+4-PropertyDeclaration: private nodes : GraphNode[];
+5-SyntaxList: private
+6-PrivateKeyword: private
+5-Identifier: nodes
+5-ColonToken: :
+5-ArrayType: GraphNode[]
+6-TypeReference: GraphNode
+7-Identifier: GraphNode
+6-OpenBracketToken: [
+6-CloseBracketToken: ]
+5-SemicolonToken: ;
+4-MethodDeclaration: getNode(x: number, y: number) : GraphNode {
+                for (var i = 0; i < this.nodes.length; i++) {
+                        var n = this.nodes[i];
+                        if (n.x == x && n.y == y)
+                                return n;
+                }
+                return null;
+        }
+5-Identifier: getNode
+5-OpenParenToken: (
+5-SyntaxList: x: number, y: number
+6-Parameter: x: number
+7-Identifier: x
+7-ColonToken: :
+7-NumberKeyword: number
+6-CommaToken: ,
+6-Parameter: y: number
+7-Identifier: y
+7-ColonToken: :
+7-NumberKeyword: number
+5-CloseParenToken: )
+5-ColonToken: :
+5-TypeReference: GraphNode
+6-Identifier: GraphNode
+5-Block: {
+                for (var i = 0; i < this.nodes.length; i++) {
+                        var n = this.nodes[i];
+                        if (n.x == x && n.y == y)
+                                return n;
+                }
+                return null;
+        }
+6-OpenBraceToken: {
+6-SyntaxList: for (var i = 0; i < this.nodes.length; i++) {
+                        var n = this.nodes[i];
+                        if (n.x == x && n.y == y)
+                                return n;
+                }
+                return null;
+7-ForStatement: for (var i = 0; i < this.nodes.length; i++) {
+                        var n = this.nodes[i];
+                        if (n.x == x && n.y == y)
+                                return n;
+                }
+8-ForKeyword: for
+8-OpenParenToken: (
+8-VariableDeclarationList: var i = 0
+9-VarKeyword: var
+9-SyntaxList: i = 0
+10-VariableDeclaration: i = 0
+11-Identifier: i
+11-EqualsToken: =
+11-NumericLiteral: 0
+8-SemicolonToken: ;
+8-BinaryExpression: i < this.nodes.length
+9-Identifier: i
+9-LessThanToken: <
+9-PropertyAccessExpression: this.nodes.length
+10-PropertyAccessExpression: this.nodes
+11-ThisKeyword: this
+11-DotToken: .
+11-Identifier: nodes
+10-DotToken: .
+10-Identifier: length
+8-SemicolonToken: ;
+8-PostfixUnaryExpression: i++
+9-Identifier: i
+9-PlusPlusToken: ++
+8-CloseParenToken: )
+8-Block: {
+                        var n = this.nodes[i];
+                        if (n.x == x && n.y == y)
+                                return n;
+                }
+9-OpenBraceToken: {
+9-SyntaxList: var n = this.nodes[i];
+                        if (n.x == x && n.y == y)
+                                return n;
+10-VariableStatement: var n = this.nodes[i];
+11-VariableDeclarationList: var n = this.nodes[i]
+12-VarKeyword: var
+12-SyntaxList: n = this.nodes[i]
+13-VariableDeclaration: n = this.nodes[i]
+14-Identifier: n
+14-EqualsToken: =
+14-ElementAccessExpression: this.nodes[i]
+15-PropertyAccessExpression: this.nodes
+16-ThisKeyword: this
+16-DotToken: .
+16-Identifier: nodes
+15-OpenBracketToken: [
+15-Identifier: i
+15-CloseBracketToken: ]
+11-SemicolonToken: ;
+10-IfStatement: if (n.x == x && n.y == y)
+                                return n;
+11-IfKeyword: if
+11-OpenParenToken: (
+11-BinaryExpression: n.x == x && n.y == y
+12-BinaryExpression: n.x == x
+13-PropertyAccessExpression: n.x
+14-Identifier: n
+14-DotToken: .
+14-Identifier: x
+13-EqualsEqualsToken: ==
+13-Identifier: x
+12-AmpersandAmpersandToken: &&
+12-BinaryExpression: n.y == y
+13-PropertyAccessExpression: n.y
+14-Identifier: n
+14-DotToken: .
+14-Identifier: y
+13-EqualsEqualsToken: ==
+13-Identifier: y
+11-CloseParenToken: )
+11-ReturnStatement: return n;
+12-ReturnKeyword: return
+12-Identifier: n
+12-SemicolonToken: ;
+9-CloseBraceToken: }
+7-ReturnStatement: return null;
+8-ReturnKeyword: return
+8-NullKeyword: null
+8-SemicolonToken: ;
+6-CloseBraceToken: }
+4-MethodDeclaration: getNodes() : GraphNode[] { return this.nodes; }
+5-Identifier: getNodes
+5-OpenParenToken: (
+5-SyntaxList:
+5-CloseParenToken: )
+5-ColonToken: :
+5-ArrayType: GraphNode[]
+6-TypeReference: GraphNode
+7-Identifier: GraphNode
+6-OpenBracketToken: [
+6-CloseBracketToken: ]
+5-Block: { return this.nodes; }
+6-OpenBraceToken: {
+6-SyntaxList: return this.nodes;
+7-ReturnStatement: return this.nodes;
+8-ReturnKeyword: return
+8-PropertyAccessExpression: this.nodes
+9-ThisKeyword: this
+9-DotToken: .
+9-Identifier: nodes
+8-SemicolonToken: ;
+6-CloseBraceToken: }
+4-Constructor: constructor() {
+                this.nodes = [];
+        }
+5-ConstructorKeyword: constructor
+5-OpenParenToken: (
+5-SyntaxList:
+5-CloseParenToken: )
+5-Block: {
+                this.nodes = [];
+        }
+6-OpenBraceToken: {
+6-SyntaxList: this.nodes = [];
+7-ExpressionStatement: this.nodes = [];
+8-BinaryExpression: this.nodes = []
+9-PropertyAccessExpression: this.nodes
+10-ThisKeyword: this
+10-DotToken: .
+10-Identifier: nodes
+9-EqualsToken: =
+9-ArrayLiteralExpression: []
+10-OpenBracketToken: [
+10-SyntaxList:
+10-CloseBracketToken: ]
+8-SemicolonToken: ;
+6-CloseBraceToken: }
+4-MethodDeclaration: fromArray(data : number[][]) {
+                this.nodes = [];
+
+                var width  = data[0].length;
+                var height = data.length;
+
+                // create and add nodes
+                for (var i = 0; i < height; i++) {
+                        for (var j = 0; j < width; j++) {
+
+                                var weight = data[i][j];
+                                var node = new GraphNode(j, i, 0, weight);
+                                this.nodes.push(node);
+                        }
+                }
+
+                // connect the nodes in O(n)
+                for (var i = 0; i < this.nodes.length; i++) {
+                        var n = this.nodes[i];
+
+                        let allowDiagonals = false;
+                        if (allowDiagonals){
+                                // loop in a square adding each node as a connection
+                                for (var x = -1; x <= 1; x++) {
+                                        for (var y = -1; y <= 1; y++) {
+                                                if (x == 0 && y == 0) continue;
+                                                if (n.x+x < 0 || n.x+x
+>= width ||
+                                                        n.y+y < 0 || n.y+y >= height) continue;
+
+                                                var node  = this.nodes[i+width*y+x];
+                                                this.nodes[i].connectTo(node);
+                                        }
+                                }
+                        }
+                        else
+                        {
+                                for (var x = -1; x <= 1; x++) {
+                                        for (var y = -1; y <= 1; y++) {
+                                                if (x == 0 && y == 0) continue;
+                                                if (n.x+x < 0 || n.x+x
+>= width ||
+                                                        n.y+y < 0 || n.y+y >= height ||
+                                                        Math.abs(x) ==
+Math.abs(y) )
+                                                        continue;
+
+                                                var node  = this.nodes[i+width*y+x];
+                                                this.nodes[i].connectTo(node);
+                                        }
+                                }
+                        }
+                }
+        }
+5-JSDocComment: /**
+         * convert a 2d array to a graph
+         * @param data The 2d array containing weights of each tile
+         */
+6-JSDocParameterTag: @param data
+7-Identifier: data
+5-Identifier: fromArray
+5-OpenParenToken: (
+5-SyntaxList: data : number[][]
+6-Parameter: data : number[][]
+7-Identifier: data
+7-ColonToken: :
+7-ArrayType: number[][]
+8-ArrayType: number[]
+9-NumberKeyword: number
+9-OpenBracketToken: [
+9-CloseBracketToken: ]
+8-OpenBracketToken: [
+8-CloseBracketToken: ]
+5-CloseParenToken: )
+5-Block: {
+                this.nodes = [];
+
+                var width  = data[0].length;
+                var height = data.length;
+
+                // create and add nodes
+                for (var i = 0; i < height; i++) {
+                        for (var j = 0; j < width; j++) {
+
+                                var weight = data[i][j];
+                                var node = new GraphNode(j, i, 0, weight);
+                                this.nodes.push(node);
+                        }
+                }
+
+                // connect the nodes in O(n)
+                for (var i = 0; i < this.nodes.length; i++) {
+                        var n = this.nodes[i];
+
+                        let allowDiagonals = false;
+                        if (allowDiagonals){
+                                // loop in a square adding each node as a connection
+                                for (var x = -1; x <= 1; x++) {
+                                        for (var y = -1; y <= 1; y++) {
+                                                if (x == 0 && y == 0) continue;
+                                                if (n.x+x < 0 || n.x+x
+>= width ||
+                                                        n.y+y < 0 || n.y+y >= height) continue;
+
+                                                var node  = this.nodes[i+width*y+x];
+                                                this.nodes[i].connectTo(node);
+                                        }
+                                }
+                        }
+                        else
+                        {
+                                for (var x = -1; x <= 1; x++) {
+                                        for (var y = -1; y <= 1; y++) {
+                                                if (x == 0 && y == 0) continue;
+                                                if (n.x+x < 0 || n.x+x
+>= width ||
+                                                        n.y+y < 0 || n.y+y >= height ||
+                                                        Math.abs(x) ==
+Math.abs(y) )
+                                                        continue;
+
+                                                var node  = this.nodes[i+width*y+x];
+                                                this.nodes[i].connectTo(node);
+                                        }
+                                }
+                        }
+                }
+        }
+6-OpenBraceToken: {
+6-SyntaxList: this.nodes = [];
+
+                var width  = data[0].length;
+                var height = data.length;
+
+                // create and add nodes
+                for (var i = 0; i < height; i++) {
+                        for (var j = 0; j < width; j++) {
+
+                                var weight = data[i][j];
+                                var node = new GraphNode(j, i, 0, weight);
+                                this.nodes.push(node);
+                        }
+                }
+
+                // connect the nodes in O(n)
+                for (var i = 0; i < this.nodes.length; i++) {
+                        var n = this.nodes[i];
+
+                        let allowDiagonals = false;
+                        if (allowDiagonals){
+                                // loop in a square adding each node as a connection
+                                for (var x = -1; x <= 1; x++) {
+                                        for (var y = -1; y <= 1; y++) {
+                                                if (x == 0 && y == 0) continue;
+                                                if (n.x+x < 0 || n.x+x
+>= width ||
+                                                        n.y+y < 0 || n.y+y >= height) continue;
+
+                                                var node  = this.nodes[i+width*y+x];
+                                                this.nodes[i].connectTo(node);
+                                        }
+                                }
+                        }
+                        else
+                        {
+                                for (var x = -1; x <= 1; x++) {
+                                        for (var y = -1; y <= 1; y++) {
+                                                if (x == 0 && y == 0) continue;
+                                                if (n.x+x < 0 || n.x+x
+>= width ||
+                                                        n.y+y < 0 || n.y+y >= height ||
+                                                        Math.abs(x) ==
+Math.abs(y) )
+                                                        continue;
+
+                                                var node  = this.nodes[i+width*y+x];
+                                                this.nodes[i].connectTo(node);
+                                        }
+                                }
+                        }
+                }
+7-ExpressionStatement: this.nodes = [];
+8-BinaryExpression: this.nodes = []
+9-PropertyAccessExpression: this.nodes
+10-ThisKeyword: this
+10-DotToken: .
+10-Identifier: nodes
+9-EqualsToken: =
+9-ArrayLiteralExpression: []
+10-OpenBracketToken: [
+10-SyntaxList:
+10-CloseBracketToken: ]
+8-SemicolonToken: ;
+7-VariableStatement: var width  = data[0].length;
+8-VariableDeclarationList: var width  = data[0].length
+9-VarKeyword: var
+9-SyntaxList: width  = data[0].length
+10-VariableDeclaration: width  = data[0].length
+11-Identifier: width
+11-EqualsToken: =
+11-PropertyAccessExpression: data[0].length
+12-ElementAccessExpression: data[0]
+13-Identifier: data
+13-OpenBracketToken: [
+13-NumericLiteral: 0
+13-CloseBracketToken: ]
+12-DotToken: .
+12-Identifier: length
+8-SemicolonToken: ;
+7-VariableStatement: var height = data.length;
+8-VariableDeclarationList: var height = data.length
+9-VarKeyword: var
+9-SyntaxList: height = data.length
+10-VariableDeclaration: height = data.length
+11-Identifier: height
+11-EqualsToken: =
+11-PropertyAccessExpression: data.length
+12-Identifier: data
+12-DotToken: .
+12-Identifier: length
+8-SemicolonToken: ;
+7-ForStatement: for (var i = 0; i < height; i++) {
+                        for (var j = 0; j < width; j++) {
+
+                                var weight = data[i][j];
+                                var node = new GraphNode(j, i, 0, weight);
+                                this.nodes.push(node);
+                        }
+                }
+8-ForKeyword: for
+8-OpenParenToken: (
+8-VariableDeclarationList: var i = 0
+9-VarKeyword: var
+9-SyntaxList: i = 0
+10-VariableDeclaration: i = 0
+11-Identifier: i
+11-EqualsToken: =
+11-NumericLiteral: 0
+8-SemicolonToken: ;
+8-BinaryExpression: i < height
+9-Identifier: i
+9-LessThanToken: <
+9-Identifier: height
+8-SemicolonToken: ;
+8-PostfixUnaryExpression: i++
+9-Identifier: i
+9-PlusPlusToken: ++
+8-CloseParenToken: )
+8-Block: {
+                        for (var j = 0; j < width; j++) {
+
+                                var weight = data[i][j];
+                                var node = new GraphNode(j, i, 0, weight);
+                                this.nodes.push(node);
+                        }
+                }
+9-OpenBraceToken: {
+9-SyntaxList: for (var j = 0; j < width; j++) {
+
+                                var weight = data[i][j];
+                                var node = new GraphNode(j, i, 0, weight);
+                                this.nodes.push(node);
+                        }
+10-ForStatement: for (var j = 0; j < width; j++) {
+
+                                var weight = data[i][j];
+                                var node = new GraphNode(j, i, 0, weight);
+                                this.nodes.push(node);
+                        }
+11-ForKeyword: for
+11-OpenParenToken: (
+11-VariableDeclarationList: var j = 0
+12-VarKeyword: var
+12-SyntaxList: j = 0
+13-VariableDeclaration: j = 0
+14-Identifier: j
+14-EqualsToken: =
+14-NumericLiteral: 0
+11-SemicolonToken: ;
+11-BinaryExpression: j < width
+12-Identifier: j
+12-LessThanToken: <
+12-Identifier: width
+11-SemicolonToken: ;
+11-PostfixUnaryExpression: j++
+12-Identifier: j
+12-PlusPlusToken: ++
+11-CloseParenToken: )
+11-Block: {
+                                var weight = data[i][j];
+                                var node = new GraphNode(j, i, 0, weight);
+                                this.nodes.push(node);
+                        }
+12-OpenBraceToken: {
+12-SyntaxList: var weight = data[i][j];
+                                var node = new GraphNode(j, i, 0, weight);
+                                this.nodes.push(node);
+13-VariableStatement: var weight = data[i][j];
+14-VariableDeclarationList: var weight = data[i][j]
+15-VarKeyword: var
+15-SyntaxList: weight = data[i][j]
+16-VariableDeclaration: weight = data[i][j]
+17-Identifier: weight
+17-EqualsToken: =
+17-ElementAccessExpression: data[i][j]
+18-ElementAccessExpression: data[i]
+19-Identifier: data
+19-OpenBracketToken: [
+19-Identifier: i
+19-CloseBracketToken: ]
+18-OpenBracketToken: [
+18-Identifier: j
+18-CloseBracketToken: ]
+14-SemicolonToken: ;
+13-VariableStatement: var node = new GraphNode(j, i, 0, weight);
+14-VariableDeclarationList: var node = new GraphNode(j, i, 0, weight)
+15-VarKeyword: var
+15-SyntaxList: node = new GraphNode(j, i, 0, weight)
+16-VariableDeclaration: node = new GraphNode(j, i, 0, weight)
+17-Identifier: node
+17-EqualsToken: =
+17-NewExpression: new GraphNode(j, i, 0, weight)
+18-NewKeyword: new
+18-Identifier: GraphNode
+18-OpenParenToken: (
+18-SyntaxList: j, i, 0, weight
+19-Identifier: j
+19-CommaToken: ,
+19-Identifier: i
+19-CommaToken: ,
+19-NumericLiteral: 0
+19-CommaToken: ,
+19-Identifier: weight
+18-CloseParenToken: )
+14-SemicolonToken: ;
+13-ExpressionStatement: this.nodes.push(node);
+14-CallExpression: this.nodes.push(node)
+15-PropertyAccessExpression: this.nodes.push
+16-PropertyAccessExpression: this.nodes
+17-ThisKeyword: this
+17-DotToken: .
+17-Identifier: nodes
+16-DotToken: .
+16-Identifier: push
+15-OpenParenToken: (
+15-SyntaxList: node
+16-Identifier: node
+15-CloseParenToken: )
+14-SemicolonToken: ;
+12-CloseBraceToken: }
+9-CloseBraceToken: }
+7-ForStatement: for (var i = 0; i < this.nodes.length; i++) {
+                        var n = this.nodes[i];
+
+                        let allowDiagonals = false;
+                        if (allowDiagonals){
+                                // loop in a square adding each node as a connection
+                                for (var x = -1; x <= 1; x++) {
+                                        for (var y = -1; y <= 1; y++) {
+                                                if (x == 0 && y == 0) continue;
+                                                if (n.x+x < 0 || n.x+x
+>= width ||
+                                                        n.y+y < 0 || n.y+y >= height) continue;
+
+                                                var node  = this.nodes[i+width*y+x];
+                                                this.nodes[i].connectTo(node);
+                                        }
+                                }
+                        }
+                        else
+                        {
+                                for (var x = -1; x <= 1; x++) {
+                                        for (var y = -1; y <= 1; y++) {
+                                                if (x == 0 && y == 0) continue;
+                                                if (n.x+x < 0 || n.x+x
+>= width ||
+                                                        n.y+y < 0 || n.y+y >= height ||
+                                                        Math.abs(x) ==
+Math.abs(y) )
+                                                        continue;
+
+                                                var node  = this.nodes[i+width*y+x];
+                                                this.nodes[i].connectTo(node);
+                                        }
+                                }
+                        }
+                }
+8-ForKeyword: for
+8-OpenParenToken: (
+8-VariableDeclarationList: var i = 0
+9-VarKeyword: var
+9-SyntaxList: i = 0
+10-VariableDeclaration: i = 0
+11-Identifier: i
+11-EqualsToken: =
+11-NumericLiteral: 0
+8-SemicolonToken: ;
+8-BinaryExpression: i < this.nodes.length
+9-Identifier: i
+9-LessThanToken: <
+9-PropertyAccessExpression: this.nodes.length
+10-PropertyAccessExpression: this.nodes
+11-ThisKeyword: this
+11-DotToken: .
+11-Identifier: nodes
+10-DotToken: .
+10-Identifier: length
+8-SemicolonToken: ;
+8-PostfixUnaryExpression: i++
+9-Identifier: i
+9-PlusPlusToken: ++
+8-CloseParenToken: )
+8-Block: {
+                        var n = this.nodes[i];
+
+                        let allowDiagonals = false;
+                        if (allowDiagonals){
+                                // loop in a square adding each node as a connection
+                                for (var x = -1; x <= 1; x++) {
+                                        for (var y = -1; y <= 1; y++) {
+                                                if (x == 0 && y == 0) continue;
+                                                if (n.x+x < 0 || n.x+x
+>= width ||
+                                                        n.y+y < 0 || n.y+y >= height) continue;
+
+                                                var node  = this.nodes[i+width*y+x];
+                                                this.nodes[i].connectTo(node);
+                                        }
+                                }
+                        }
+                        else
+                        {
+                                for (var x = -1; x <= 1; x++) {
+                                        for (var y = -1; y <= 1; y++) {
+                                                if (x == 0 && y == 0) continue;
+                                                if (n.x+x < 0 || n.x+x
+>= width ||
+                                                        n.y+y < 0 || n.y+y >= height ||
+                                                        Math.abs(x) ==
+Math.abs(y) )
+                                                        continue;
+
+                                                var node  = this.nodes[i+width*y+x];
+                                                this.nodes[i].connectTo(node);
+                                        }
+                                }
+                        }
+                }
+9-OpenBraceToken: {
+9-SyntaxList: var n = this.nodes[i];
+
+                        let allowDiagonals = false;
+                        if (allowDiagonals){
+                                // loop in a square adding each node as a connection
+                                for (var x = -1; x <= 1; x++) {
+                                        for (var y = -1; y <= 1; y++) {
+                                                if (x == 0 && y == 0) continue;
+                                                if (n.x+x < 0 || n.x+x
+>= width ||
+                                                        n.y+y < 0 || n.y+y >= height) continue;
+
+                                                var node  = this.nodes[i+width*y+x];
+                                                this.nodes[i].connectTo(node);
+                                        }
+                                }
+                        }
+                        else
+                        {
+                                for (var x = -1; x <= 1; x++) {
+                                        for (var y = -1; y <= 1; y++) {
+                                                if (x == 0 && y == 0) continue;
+                                                if (n.x+x < 0 || n.x+x
+>= width ||
+                                                        n.y+y < 0 || n.y+y >= height ||
+                                                        Math.abs(x) ==
+Math.abs(y) )
+                                                        continue;
+
+                                                var node  = this.nodes[i+width*y+x];
+                                                this.nodes[i].connectTo(node);
+                                        }
+                                }
+                        }
+10-VariableStatement: var n = this.nodes[i];
+11-VariableDeclarationList: var n = this.nodes[i]
+12-VarKeyword: var
+12-SyntaxList: n = this.nodes[i]
+13-VariableDeclaration: n = this.nodes[i]
+14-Identifier: n
+14-EqualsToken: =
+14-ElementAccessExpression: this.nodes[i]
+15-PropertyAccessExpression: this.nodes
+16-ThisKeyword: this
+16-DotToken: .
+16-Identifier: nodes
+15-OpenBracketToken: [
+15-Identifier: i
+15-CloseBracketToken: ]
+11-SemicolonToken: ;
+10-VariableStatement: let allowDiagonals = false;
+11-VariableDeclarationList: let allowDiagonals = false
+12-LetKeyword: let
+12-SyntaxList: allowDiagonals = false
+13-VariableDeclaration: allowDiagonals = false
+14-Identifier: allowDiagonals
+14-EqualsToken: =
+14-FalseKeyword: false
+11-SemicolonToken: ;
+10-IfStatement: if (allowDiagonals){
+                                // loop in a square adding each node as a connection
+                                for (var x = -1; x <= 1; x++) {
+                                        for (var y = -1; y <= 1; y++) {
+                                                if (x == 0 && y == 0) continue;
+                                                if (n.x+x < 0 || n.x+x
+>= width ||
+                                                        n.y+y < 0 || n.y+y >= height) continue;
+
+                                                var node  = this.nodes[i+width*y+x];
+                                                this.nodes[i].connectTo(node);
+                                        }
+                                }
+                        }
+                        else
+                        {
+                                for (var x = -1; x <= 1; x++) {
+                                        for (var y = -1; y <= 1; y++) {
+                                                if (x == 0 && y == 0) continue;
+                                                if (n.x+x < 0 || n.x+x
+>= width ||
+                                                        n.y+y < 0 || n.y+y >= height ||
+                                                        Math.abs(x) ==
+Math.abs(y) )
+                                                        continue;
+
+                                                var node  = this.nodes[i+width*y+x];
+                                                this.nodes[i].connectTo(node);
+                                        }
+                                }
+                        }
+11-IfKeyword: if
+11-OpenParenToken: (
+11-Identifier: allowDiagonals
+11-CloseParenToken: )
+11-Block: {
+                                // loop in a square adding each node as a connection
+                                for (var x = -1; x <= 1; x++) {
+                                        for (var y = -1; y <= 1; y++) {
+                                                if (x == 0 && y == 0) continue;
+                                                if (n.x+x < 0 || n.x+x
+>= width ||
+                                                        n.y+y < 0 || n.y+y >= height) continue;
+
+                                                var node  = this.nodes[i+width*y+x];
+                                                this.nodes[i].connectTo(node);
+                                        }
+                                }
+                        }
+12-OpenBraceToken: {
+12-SyntaxList: for (var x = -1; x <= 1; x++) {
+                                        for (var y = -1; y <= 1; y++) {
+                                                if (x == 0 && y == 0) continue;
+                                                if (n.x+x < 0 || n.x+x
+>= width ||
+                                                        n.y+y < 0 || n.y+y >= height) continue;
+
+                                                var node  = this.nodes[i+width*y+x];
+                                                this.nodes[i].connectTo(node);
+                                        }
+                                }
+13-ForStatement: for (var x = -1; x <= 1; x++) {
+                                        for (var y = -1; y <= 1; y++) {
+                                                if (x == 0 && y == 0) continue;
+                                                if (n.x+x < 0 || n.x+x
+>= width ||
+                                                        n.y+y < 0 || n.y+y >= height) continue;
+
+                                                var node  = this.nodes[i+width*y+x];
+                                                this.nodes[i].connectTo(node);
+                                        }
+                                }
+14-ForKeyword: for
+14-OpenParenToken: (
+14-VariableDeclarationList: var x = -1
+15-VarKeyword: var
+15-SyntaxList: x = -1
+16-VariableDeclaration: x = -1
+17-Identifier: x
+17-EqualsToken: =
+17-PrefixUnaryExpression: -1
+18-MinusToken: -
+18-NumericLiteral: 1
+14-SemicolonToken: ;
+14-BinaryExpression: x <= 1
+15-Identifier: x
+15-LessThanEqualsToken: <=
+15-NumericLiteral: 1
+14-SemicolonToken: ;
+14-PostfixUnaryExpression: x++
+15-Identifier: x
+15-PlusPlusToken: ++
+14-CloseParenToken: )
+14-Block: {
+                                        for (var y = -1; y <= 1; y++) {
+                                                if (x == 0 && y == 0) continue;
+                                                if (n.x+x < 0 || n.x+x
+>= width ||
+                                                        n.y+y < 0 || n.y+y >= height) continue;
+
+                                                var node  = this.nodes[i+width*y+x];
+                                                this.nodes[i].connectTo(node);
+                                        }
+                                }
+15-OpenBraceToken: {
+15-SyntaxList: for (var y = -1; y <= 1; y++) {
+
+                                                if (x == 0 && y == 0) continue;
+                                                if (n.x+x < 0 || n.x+x
+>= width ||
+                                                        n.y+y < 0 || n.y+y >= height) continue;
+
+                                                var node  = this.nodes[i+width*y+x];
+                                                this.nodes[i].connectTo(node);
+                                        }
+16-ForStatement: for (var y = -1; y <= 1; y++) {
+
+                                                if (x == 0 && y == 0) continue;
+                                                if (n.x+x < 0 || n.x+x
+>= width ||
+                                                        n.y+y < 0 || n.y+y >= height) continue;
+
+                                                var node  = this.nodes[i+width*y+x];
+                                                this.nodes[i].connectTo(node);
+                                        }
+17-ForKeyword: for
+17-OpenParenToken: (
+17-VariableDeclarationList: var y = -1
+18-VarKeyword: var
+18-SyntaxList: y = -1
+19-VariableDeclaration: y = -1
+20-Identifier: y
+20-EqualsToken: =
+20-PrefixUnaryExpression: -1
+21-MinusToken: -
+21-NumericLiteral: 1
+17-SemicolonToken: ;
+17-BinaryExpression: y <= 1
+18-Identifier: y
+18-LessThanEqualsToken: <=
+18-NumericLiteral: 1
+17-SemicolonToken: ;
+17-PostfixUnaryExpression: y++
+18-Identifier: y
+18-PlusPlusToken: ++
+17-CloseParenToken: )
+17-Block: {
+
+                                                if (x == 0 && y == 0) continue;
+                                                if (n.x+x < 0 || n.x+x
+>= width ||
+                                                        n.y+y < 0 || n.y+y >= height) continue;
+
+                                                var node  = this.nodes[i+width*y+x];
+                                                this.nodes[i].connectTo(node);
+                                        }
+18-OpenBraceToken: {
+18-SyntaxList: if (x == 0 && y == 0) continue;
+                                                if (n.x+x < 0 || n.x+x
+>= width ||
+                                                        n.y+y < 0 || n.y+y >= height) continue;
+
+                                                var node  = this.nodes[i+width*y+x];
+                                                this.nodes[i].connectTo(node);
+19-IfStatement: if (x == 0 && y == 0) continue;
+20-IfKeyword: if
+20-OpenParenToken: (
+20-BinaryExpression: x == 0 && y == 0
+21-BinaryExpression: x == 0
+22-Identifier: x
+22-EqualsEqualsToken: ==
+22-NumericLiteral: 0
+21-AmpersandAmpersandToken: &&
+21-BinaryExpression: y == 0
+22-Identifier: y
+22-EqualsEqualsToken: ==
+22-NumericLiteral: 0
+20-CloseParenToken: )
+20-ContinueStatement: continue;
+21-ContinueKeyword: continue
+21-SemicolonToken: ;
+19-IfStatement: if (n.x+x < 0 || n.x+x >= width ||
+                                                        n.y+y < 0 || n.y+y >= height) continue;
+20-IfKeyword: if
+20-OpenParenToken: (
+20-BinaryExpression: n.x+x < 0 || n.x+x >= width ||
+                                                        n.y+y < 0 || n.y+y >= height
+21-BinaryExpression: n.x+x < 0 || n.x+x >= width ||
+                                                        n.y+y < 0
+22-BinaryExpression: n.x+x < 0 || n.x+x >= width
+23-BinaryExpression: n.x+x < 0
+24-BinaryExpression: n.x+x
+25-PropertyAccessExpression: n.x
+26-Identifier: n
+26-DotToken: .
+26-Identifier: x
+25-PlusToken: +
+25-Identifier: x
+24-LessThanToken: <
+24-NumericLiteral: 0
+23-BarBarToken: ||
+23-BinaryExpression: n.x+x >= width
+24-BinaryExpression: n.x+x
+25-PropertyAccessExpression: n.x
+26-Identifier: n
+26-DotToken: .
+26-Identifier: x
+25-PlusToken: +
+25-Identifier: x
+24-GreaterThanEqualsToken: >=
+24-Identifier: width
+22-BarBarToken: ||
+22-BinaryExpression: n.y+y < 0
+23-BinaryExpression: n.y+y
+24-PropertyAccessExpression: n.y
+25-Identifier: n
+25-DotToken: .
+25-Identifier: y
+24-PlusToken: +
+24-Identifier: y
+23-LessThanToken: <
+23-NumericLiteral: 0
+21-BarBarToken: ||
+21-BinaryExpression: n.y+y >= height
+22-BinaryExpression: n.y+y
+23-PropertyAccessExpression: n.y
+24-Identifier: n
+24-DotToken: .
+24-Identifier: y
+23-PlusToken: +
+23-Identifier: y
+22-GreaterThanEqualsToken: >=
+22-Identifier: height
+20-CloseParenToken: )
+20-ContinueStatement: continue;
+21-ContinueKeyword: continue
+21-SemicolonToken: ;
+19-VariableStatement: var node  = this.nodes[i+width*y+x];
+20-VariableDeclarationList: var node  = this.nodes[i+width*y+x]
+21-VarKeyword: var
+21-SyntaxList: node  = this.nodes[i+width*y+x]
+22-VariableDeclaration: node  = this.nodes[i+width*y+x]
+23-Identifier: node
+23-EqualsToken: =
+23-ElementAccessExpression: this.nodes[i+width*y+x]
+24-PropertyAccessExpression: this.nodes
+25-ThisKeyword: this
+25-DotToken: .
+25-Identifier: nodes
+24-OpenBracketToken: [
+24-BinaryExpression: i+width*y+x
+25-BinaryExpression: i+width*y
+26-Identifier: i
+26-PlusToken: +
+26-BinaryExpression: width*y
+27-Identifier: width
+27-AsteriskToken: *
+27-Identifier: y
+25-PlusToken: +
+25-Identifier: x
+24-CloseBracketToken: ]
+20-SemicolonToken: ;
+19-ExpressionStatement: this.nodes[i].connectTo(node);
+20-CallExpression: this.nodes[i].connectTo(node)
+21-PropertyAccessExpression: this.nodes[i].connectTo
+22-ElementAccessExpression: this.nodes[i]
+23-PropertyAccessExpression: this.nodes
+24-ThisKeyword: this
+24-DotToken: .
+24-Identifier: nodes
+23-OpenBracketToken: [
+23-Identifier: i
+23-CloseBracketToken: ]
+22-DotToken: .
+22-Identifier: connectTo
+21-OpenParenToken: (
+21-SyntaxList: node
+22-Identifier: node
+21-CloseParenToken: )
+20-SemicolonToken: ;
+18-CloseBraceToken: }
+15-CloseBraceToken: }
+12-CloseBraceToken: }
+11-ElseKeyword: else
+11-Block: {
+                                for (var x = -1; x <= 1; x++) {
+                                        for (var y = -1; y <= 1; y++) {
+                                                if (x == 0 && y == 0) continue;
+                                                if (n.x+x < 0 || n.x+x
+>= width ||
+                                                        n.y+y < 0 || n.y+y >= height ||
+                                                        Math.abs(x) ==
+Math.abs(y) )
+                                                        continue;
+
+                                                var node  = this.nodes[i+width*y+x];
+                                                this.nodes[i].connectTo(node);
+                                        }
+                                }
+                        }
+12-OpenBraceToken: {
+12-SyntaxList: for (var x = -1; x <= 1; x++) {
+                                        for (var y = -1; y <= 1; y++) {
+                                                if (x == 0 && y == 0) continue;
+                                                if (n.x+x < 0 || n.x+x
+>= width ||
+                                                        n.y+y < 0 || n.y+y >= height ||
+                                                        Math.abs(x) ==
+Math.abs(y) )
+                                                        continue;
+
+                                                var node  = this.nodes[i+width*y+x];
+                                                this.nodes[i].connectTo(node);
+                                        }
+                                }
+13-ForStatement: for (var x = -1; x <= 1; x++) {
+                                        for (var y = -1; y <= 1; y++) {
+                                                if (x == 0 && y == 0) continue;
+                                                if (n.x+x < 0 || n.x+x
+>= width ||
+                                                        n.y+y < 0 || n.y+y >= height ||
+                                                        Math.abs(x) ==
+Math.abs(y) )
+                                                        continue;
+
+                                                var node  = this.nodes[i+width*y+x];
+                                                this.nodes[i].connectTo(node);
+                                        }
+                                }
+14-ForKeyword: for
+14-OpenParenToken: (
+14-VariableDeclarationList: var x = -1
+15-VarKeyword: var
+15-SyntaxList: x = -1
+16-VariableDeclaration: x = -1
+17-Identifier: x
+17-EqualsToken: =
+17-PrefixUnaryExpression: -1
+18-MinusToken: -
+18-NumericLiteral: 1
+14-SemicolonToken: ;
+14-BinaryExpression: x <= 1
+15-Identifier: x
+15-LessThanEqualsToken: <=
+15-NumericLiteral: 1
+14-SemicolonToken: ;
+14-PostfixUnaryExpression: x++
+15-Identifier: x
+15-PlusPlusToken: ++
+14-CloseParenToken: )
+14-Block: {
+                                        for (var y = -1; y <= 1; y++) {
+                                                if (x == 0 && y == 0) continue;
+                                                if (n.x+x < 0 || n.x+x
+>= width ||
+                                                        n.y+y < 0 || n.y+y >= height ||
+                                                        Math.abs(x) ==
+Math.abs(y) )
+                                                        continue;
+
+                                                var node  = this.nodes[i+width*y+x];
+                                                this.nodes[i].connectTo(node);
+                                        }
+                                }
+15-OpenBraceToken: {
+15-SyntaxList: for (var y = -1; y <= 1; y++) {
+
+                                                if (x == 0 && y == 0) continue;
+                                                if (n.x+x < 0 || n.x+x
+>= width ||
+                                                        n.y+y < 0 || n.y+y >= height ||
+                                                        Math.abs(x) ==
+Math.abs(y) )
+                                                        continue;
+
+                                                var node  = this.nodes[i+width*y+x];
+                                                this.nodes[i].connectTo(node);
+                                        }
+16-ForStatement: for (var y = -1; y <= 1; y++) {
+
+                                                if (x == 0 && y == 0) continue;
+                                                if (n.x+x < 0 || n.x+x
+>= width ||
+                                                        n.y+y < 0 || n.y+y >= height ||
+                                                        Math.abs(x) ==
+Math.abs(y) )
+                                                        continue;
+
+                                                var node  = this.nodes[i+width*y+x];
+                                                this.nodes[i].connectTo(node);
+                                        }
+17-ForKeyword: for
+17-OpenParenToken: (
+17-VariableDeclarationList: var y = -1
+18-VarKeyword: var
+18-SyntaxList: y = -1
+19-VariableDeclaration: y = -1
+20-Identifier: y
+20-EqualsToken: =
+20-PrefixUnaryExpression: -1
+21-MinusToken: -
+21-NumericLiteral: 1
+17-SemicolonToken: ;
+17-BinaryExpression: y <= 1
+18-Identifier: y
+18-LessThanEqualsToken: <=
+18-NumericLiteral: 1
+17-SemicolonToken: ;
+17-PostfixUnaryExpression: y++
+18-Identifier: y
+18-PlusPlusToken: ++
+17-CloseParenToken: )
+17-Block: {
+
+                                                if (x == 0 && y == 0) continue;
+                                                if (n.x+x < 0 || n.x+x
+>= width ||
+                                                        n.y+y < 0 || n.y+y >= height ||
+                                                        Math.abs(x) ==
+Math.abs(y) )
+                                                        continue;
+
+                                                var node  = this.nodes[i+width*y+x];
+                                                this.nodes[i].connectTo(node);
+                                        }
+18-OpenBraceToken: {
+18-SyntaxList: if (x == 0 && y == 0) continue;
+                                                if (n.x+x < 0 || n.x+x
+>= width ||
+                                                        n.y+y < 0 || n.y+y >= height ||
+                                                        Math.abs(x) ==
+Math.abs(y) )
+                                                        continue;
+
+                                                var node  = this.nodes[i+width*y+x];
+                                                this.nodes[i].connectTo(node);
+19-IfStatement: if (x == 0 && y == 0) continue;
+20-IfKeyword: if
+20-OpenParenToken: (
+20-BinaryExpression: x == 0 && y == 0
+21-BinaryExpression: x == 0
+22-Identifier: x
+22-EqualsEqualsToken: ==
+22-NumericLiteral: 0
+21-AmpersandAmpersandToken: &&
+21-BinaryExpression: y == 0
+22-Identifier: y
+22-EqualsEqualsToken: ==
+22-NumericLiteral: 0
+20-CloseParenToken: )
+20-ContinueStatement: continue;
+21-ContinueKeyword: continue
+21-SemicolonToken: ;
+19-IfStatement: if (n.x+x < 0 || n.x+x >= width ||
+                                                        n.y+y < 0 || n.y+y >= height ||
+                                                        Math.abs(x) ==
+Math.abs(y) )
+                                                        continue;
+20-IfKeyword: if
+20-OpenParenToken: (
+20-BinaryExpression: n.x+x < 0 || n.x+x >= width ||
+                                                        n.y+y < 0 || n.y+y >= height ||
+                                                        Math.abs(x) ==
+Math.abs(y)
+21-BinaryExpression: n.x+x < 0 || n.x+x >= width ||
+                                                        n.y+y < 0 || n.y+y >= height
+22-BinaryExpression: n.x+x < 0 || n.x+x >= width ||
+                                                        n.y+y < 0
+23-BinaryExpression: n.x+x < 0 || n.x+x >= width
+24-BinaryExpression: n.x+x < 0
+25-BinaryExpression: n.x+x
+26-PropertyAccessExpression: n.x
+27-Identifier: n
+27-DotToken: .
+27-Identifier: x
+26-PlusToken: +
+26-Identifier: x
+25-LessThanToken: <
+25-NumericLiteral: 0
+24-BarBarToken: ||
+24-BinaryExpression: n.x+x >= width
+25-BinaryExpression: n.x+x
+26-PropertyAccessExpression: n.x
+27-Identifier: n
+27-DotToken: .
+27-Identifier: x
+26-PlusToken: +
+26-Identifier: x
+25-GreaterThanEqualsToken: >=
+25-Identifier: width
+23-BarBarToken: ||
+23-BinaryExpression: n.y+y < 0
+24-BinaryExpression: n.y+y
+25-PropertyAccessExpression: n.y
+26-Identifier: n
+26-DotToken: .
+26-Identifier: y
+25-PlusToken: +
+25-Identifier: y
+24-LessThanToken: <
+24-NumericLiteral: 0
+22-BarBarToken: ||
+22-BinaryExpression: n.y+y >= height
+23-BinaryExpression: n.y+y
+24-PropertyAccessExpression: n.y
+25-Identifier: n
+25-DotToken: .
+25-Identifier: y
+24-PlusToken: +
+24-Identifier: y
+23-GreaterThanEqualsToken: >=
+23-Identifier: height
+21-BarBarToken: ||
+21-BinaryExpression: Math.abs(x) == Math.abs(y)
+22-CallExpression: Math.abs(x)
+23-PropertyAccessExpression: Math.abs
+24-Identifier: Math
+24-DotToken: .
+24-Identifier: abs
+23-OpenParenToken: (
+23-SyntaxList: x
+24-Identifier: x
+23-CloseParenToken: )
+22-EqualsEqualsToken: ==
+22-CallExpression: Math.abs(y)
+23-PropertyAccessExpression: Math.abs
+24-Identifier: Math
+24-DotToken: .
+24-Identifier: abs
+23-OpenParenToken: (
+23-SyntaxList: y
+24-Identifier: y
+23-CloseParenToken: )
+20-CloseParenToken: )
+20-ContinueStatement: continue;
+21-ContinueKeyword: continue
+21-SemicolonToken: ;
+19-VariableStatement: var node  = this.nodes[i+width*y+x];
+20-VariableDeclarationList: var node  = this.nodes[i+width*y+x]
+21-VarKeyword: var
+21-SyntaxList: node  = this.nodes[i+width*y+x]
+22-VariableDeclaration: node  = this.nodes[i+width*y+x]
+23-Identifier: node
+23-EqualsToken: =
+23-ElementAccessExpression: this.nodes[i+width*y+x]
+24-PropertyAccessExpression: this.nodes
+25-ThisKeyword: this
+25-DotToken: .
+25-Identifier: nodes
+24-OpenBracketToken: [
+24-BinaryExpression: i+width*y+x
+25-BinaryExpression: i+width*y
+26-Identifier: i
+26-PlusToken: +
+26-BinaryExpression: width*y
+27-Identifier: width
+27-AsteriskToken: *
+27-Identifier: y
+25-PlusToken: +
+25-Identifier: x
+24-CloseBracketToken: ]
+20-SemicolonToken: ;
+19-ExpressionStatement: this.nodes[i].connectTo(node);
+20-CallExpression: this.nodes[i].connectTo(node)
+21-PropertyAccessExpression: this.nodes[i].connectTo
+22-ElementAccessExpression: this.nodes[i]
+23-PropertyAccessExpression: this.nodes
+24-ThisKeyword: this
+24-DotToken: .
+24-Identifier: nodes
+23-OpenBracketToken: [
+23-Identifier: i
+23-CloseBracketToken: ]
+22-DotToken: .
+22-Identifier: connectTo
+21-OpenParenToken: (
+21-SyntaxList: node
+22-Identifier: node
+21-CloseParenToken: )
+20-SemicolonToken: ;
+18-CloseBraceToken: }
+15-CloseBraceToken: }
+12-CloseBraceToken: }
+9-CloseBraceToken: }
+6-CloseBraceToken: }
+3-CloseBraceToken: }
+2-ClassDeclaration: export class /*Manhatten*/Heuristic /*extends Heuristic*/ {
+        constructor() {
+                //super();
+        }
+
+        getHeuristic (
+                x1:number, y1:number, z1:number,
+                x2:number, y2:number, z2:number) : number {
+                return Math.abs(x2 - x1) + Math.abs(y2 - y1) + Math.abs(z2 - z1);
+        }
+}
+3-SyntaxList: export
+4-ExportKeyword: export
+3-ClassKeyword: class
+3-Identifier: Heuristic
+3-OpenBraceToken: {
+3-SyntaxList: constructor() {
+                //super();
+        }
+
+        getHeuristic (
+                x1:number, y1:number, z1:number,
+                x2:number, y2:number, z2:number) : number {
+                return Math.abs(x2 - x1) + Math.abs(y2 - y1) + Math.abs(z2 - z1);
+        }
+4-Constructor: constructor() {
+                //super();
+        }
+5-ConstructorKeyword: constructor
+5-OpenParenToken: (
+5-SyntaxList:
+5-CloseParenToken: )
+5-Block: {
+                //super();
+        }
+6-OpenBraceToken: {
+6-SyntaxList:
+6-CloseBraceToken: }
+4-MethodDeclaration: getHeuristic (
+                x1:number, y1:number, z1:number,
+                x2:number, y2:number, z2:number) : number {
+                return Math.abs(x2 - x1) + Math.abs(y2 - y1) + Math.abs(z2 - z1);
+        }
+5-Identifier: getHeuristic
+5-OpenParenToken: (
+5-SyntaxList: x1:number, y1:number, z1:number,
+                x2:number, y2:number, z2:number
+6-Parameter: x1:number
+7-Identifier: x1
+7-ColonToken: :
+7-NumberKeyword: number
+6-CommaToken: ,
+6-Parameter: y1:number
+7-Identifier: y1
+7-ColonToken: :
+7-NumberKeyword: number
+6-CommaToken: ,
+6-Parameter: z1:number
+7-Identifier: z1
+7-ColonToken: :
+7-NumberKeyword: number
+6-CommaToken: ,
+6-Parameter: x2:number
+7-Identifier: x2
+7-ColonToken: :
+7-NumberKeyword: number
+6-CommaToken: ,
+6-Parameter: y2:number
+7-Identifier: y2
+7-ColonToken: :
+7-NumberKeyword: number
+6-CommaToken: ,
+6-Parameter: z2:number
+7-Identifier: z2
+7-ColonToken: :
+7-NumberKeyword: number
+5-CloseParenToken: )
+5-ColonToken: :
+5-NumberKeyword: number
+5-Block: {
+                return Math.abs(x2 - x1) + Math.abs(y2 - y1) + Math.abs(z2 - z1);
+        }
+6-OpenBraceToken: {
+6-SyntaxList: return Math.abs(x2 - x1) + Math.abs(y2 - y1) + Math.abs(z2 - z1);
+7-ReturnStatement: return Math.abs(x2 - x1) + Math.abs(y2 - y1) + Math.abs(z2 - z1);
+8-ReturnKeyword: return
+8-BinaryExpression: Math.abs(x2 - x1) + Math.abs(y2 - y1) + Math.abs(z2 - z1)
+9-BinaryExpression: Math.abs(x2 - x1) + Math.abs(y2 - y1)
+10-CallExpression: Math.abs(x2 - x1)
+11-PropertyAccessExpression: Math.abs
+12-Identifier: Math
+12-DotToken: .
+12-Identifier: abs
+11-OpenParenToken: (
+11-SyntaxList: x2 - x1
+12-BinaryExpression: x2 - x1
+13-Identifier: x2
+13-MinusToken: -
+13-Identifier: x1
+11-CloseParenToken: )
+10-PlusToken: +
+10-CallExpression: Math.abs(y2 - y1)
+11-PropertyAccessExpression: Math.abs
+12-Identifier: Math
+12-DotToken: .
+12-Identifier: abs
+11-OpenParenToken: (
+11-SyntaxList: y2 - y1
+12-BinaryExpression: y2 - y1
+13-Identifier: y2
+13-MinusToken: -
+13-Identifier: y1
+11-CloseParenToken: )
+9-PlusToken: +
+9-CallExpression: Math.abs(z2 - z1)
+10-PropertyAccessExpression: Math.abs
+11-Identifier: Math
+11-DotToken: .
+11-Identifier: abs
+10-OpenParenToken: (
+10-SyntaxList: z2 - z1
+11-BinaryExpression: z2 - z1
+12-Identifier: z2
+12-MinusToken: -
+12-Identifier: z1
+10-CloseParenToken: )
+8-SemicolonToken: ;
+6-CloseBraceToken: }
+3-CloseBraceToken: }
+2-ClassDeclaration: export class AStar
+{
+        private graph : Graph;
+        getGraph() : Graph { return this.graph; }
+        getNode(x : number, y : number) : GraphNode { return this.graph.getNode(x, y); }
+
+        private heuristic : Heuristic;
+        setHeuristic(heuristic : Heuristic) { this.heuristic = heuristic; }
+
+        constructor(heuristic: Heuristic) {
+                this.graph = new Graph();
+                this.setHeuristic(heuristic);
+        }
+
+        /**
+         * Find the cheapest path between two nodes
+         * @param a Origin
+         * @param b Destination
+         */
+        path(a: GraphNode, b: GraphNode) : GraphNode[] {
+                var open = new Array<PathNode>();
+                var     closed = new Array<PathNode>();
+
+                var next = new PathNode(
+                        0, this.heuristic.getHeuristic(a.x, a.y, a.z, b.x, b.y, b.z), null, a);
+
+                // find lowest
+                while (next.data != b)
+                {
+                        var lowest: PathNode = null;
+                        var lowestIndex = -1;
+                        for (var i = 0; i < open.length; i++)
+                        {
+                                if (lowest == null || lowest.f() > open[i].f()) {
+                                        lowest = open[i];
+                                        lowestIndex = i;
+                                }
+                        }
+
+                        // add to closed
+                        if (lowest != null) {
+                                // open[open.length-1] = open[lowestIndex];
+                                open.splice(lowestIndex, 1);
+                                closed.push(lowest);
+
+                                next = lowest;
+                        }
+
+                        // for all next connections, add to open if not in closed or open
+                        var connections = next.data.getConnections();
+                        for (var i = 0; i < connections.length; i++) {
+
+                                // list check
+                var add = true;
+                var openIndex = -1;
+                                for (var j = 0; j < open.length; j++)
+                                        if (open[j].data.x == connections[i].x &&
+                                                open[j].data.y == connections[i].y &&
+                                                open[j].data.z == connections[i].z)
+                                                openIndex = j;
+                                for (var j = 0; j < closed.length; j++)                                        if (closed[j].data.x == connections[i].x &&
+                                                closed[j].data.y == connections[i].y &&
+                                                closed[j].data.z == connections[i].z)
+                                                add = false;
+
+                                // calculate score
+                                var node = connections[i];
+                                var g = next.g;
+                                g += Math.sqrt(
+                                                Math.pow(next.data.x -
+node.x, 2) +
+                                                Math.pow(next.data.y -
+node.y, 2) +
+                                                Math.pow(next.data.z -
+node.z, 2)) * node.weight;
+                                var h = this.heuristic.getHeuristic(node.x, node.y, node.z, b.x, b.y, b.z);
+
+                                // if not in open
+                                if (openIndex == -1 && add)
+                                        open.push(new PathNode(g, h, next, node));
+                                // update open if better score
+                                else if (
+                                        openIndex > -1 &&
+                                        g + h < open[openIndex].f() &&
+add) {
+                                        open[openIndex].g = g;
+                                        open[openIndex].h = h;
+                                        open[openIndex].previous = next;
+                                }
+                        }
+                }
+
+                var path = new Array<GraphNode>();
+                while (next != null) {
+                        path.push(next.data);
+                        next = next.previous;
+                }
+                path.reverse();
+
+                return path;
+        }
+
+        /**
+         * Load an array into graph
+         * @param data The 2d array containing weights of each tile
+         */
+        load(data: number[][]) {
+                this.graph.fromArray(data);
+        }
+}
+3-SyntaxList: export
+4-ExportKeyword: export
+3-ClassKeyword: class
+3-Identifier: AStar
+3-OpenBraceToken: {
+3-SyntaxList: private graph : Graph;
+        getGraph() : Graph { return this.graph; }
+        getNode(x : number, y : number) : GraphNode { return this.graph.getNode(x, y); }
+
+        private heuristic : Heuristic;
+        setHeuristic(heuristic : Heuristic) { this.heuristic = heuristic; }
+
+        constructor(heuristic: Heuristic) {
+                this.graph = new Graph();
+                this.setHeuristic(heuristic);
+        }
+
+        /**
+         * Find the cheapest path between two nodes
+         * @param a Origin
+         * @param b Destination
+         */
+        path(a: GraphNode, b: GraphNode) : GraphNode[] {
+                var open = new Array<PathNode>();
+                var     closed = new Array<PathNode>();
+
+                var next = new PathNode(
+                        0, this.heuristic.getHeuristic(a.x, a.y, a.z, b.x, b.y, b.z), null, a);
+
+                // find lowest
+                while (next.data != b)
+                {
+                        var lowest: PathNode = null;
+                        var lowestIndex = -1;
+                        for (var i = 0; i < open.length; i++)
+                        {
+                                if (lowest == null || lowest.f() > open[i].f()) {
+                                        lowest = open[i];
+                                        lowestIndex = i;
+                                }
+                        }
+
+                        // add to closed
+                        if (lowest != null) {
+                                // open[open.length-1] = open[lowestIndex];
+                                open.splice(lowestIndex, 1);
+                                closed.push(lowest);
+
+                                next = lowest;
+                        }
+
+                        // for all next connections, add to open if not in closed or open
+                        var connections = next.data.getConnections();
+                        for (var i = 0; i < connections.length; i++) {
+
+                                // list check
+                var add = true;
+                var openIndex = -1;
+                                for (var j = 0; j < open.length; j++)
+                                        if (open[j].data.x == connections[i].x &&
+                                                open[j].data.y == connections[i].y &&
+                                                open[j].data.z == connections[i].z)
+                                                openIndex = j;
+                                for (var j = 0; j < closed.length; j++)                                        if (closed[j].data.x == connections[i].x &&
+                                                closed[j].data.y == connections[i].y &&
+                                                closed[j].data.z == connections[i].z)
+                                                add = false;
+
+                                // calculate score
+                                var node = connections[i];
+                                var g = next.g;
+                                g += Math.sqrt(
+                                                Math.pow(next.data.x -
+node.x, 2) +
+                                                Math.pow(next.data.y -
+node.y, 2) +
+                                                Math.pow(next.data.z -
+node.z, 2)) * node.weight;
+                                var h = this.heuristic.getHeuristic(node.x, node.y, node.z, b.x, b.y, b.z);
+
+                                // if not in open
+                                if (openIndex == -1 && add)
+                                        open.push(new PathNode(g, h, next, node));
+                                // update open if better score
+                                else if (
+                                        openIndex > -1 &&
+                                        g + h < open[openIndex].f() &&
+add) {
+                                        open[openIndex].g = g;
+                                        open[openIndex].h = h;
+                                        open[openIndex].previous = next;
+                                }
+                        }
+                }
+
+                var path = new Array<GraphNode>();
+                while (next != null) {
+                        path.push(next.data);
+                        next = next.previous;
+                }
+                path.reverse();
+
+                return path;
+        }
+
+        /**
+         * Load an array into graph
+         * @param data The 2d array containing weights of each tile
+         */
+        load(data: number[][]) {
+                this.graph.fromArray(data);
+        }
+4-PropertyDeclaration: private graph : Graph;
+5-SyntaxList: private
+6-PrivateKeyword: private
+5-Identifier: graph
+5-ColonToken: :
+5-TypeReference: Graph
+6-Identifier: Graph
+5-SemicolonToken: ;
+4-MethodDeclaration: getGraph() : Graph { return this.graph; }
+5-Identifier: getGraph
+5-OpenParenToken: (
+5-SyntaxList:
+5-CloseParenToken: )
+5-ColonToken: :
+5-TypeReference: Graph
+6-Identifier: Graph
+5-Block: { return this.graph; }
+6-OpenBraceToken: {
+6-SyntaxList: return this.graph;
+7-ReturnStatement: return this.graph;
+8-ReturnKeyword: return
+8-PropertyAccessExpression: this.graph
+9-ThisKeyword: this
+9-DotToken: .
+9-Identifier: graph
+8-SemicolonToken: ;
+6-CloseBraceToken: }
+4-MethodDeclaration: getNode(x : number, y : number) : GraphNode { return this.graph.getNode(x, y); }
+5-Identifier: getNode
+5-OpenParenToken: (
+5-SyntaxList: x : number, y : number
+6-Parameter: x : number
+7-Identifier: x
+7-ColonToken: :
+7-NumberKeyword: number
+6-CommaToken: ,
+6-Parameter: y : number
+7-Identifier: y
+7-ColonToken: :
+7-NumberKeyword: number
+5-CloseParenToken: )
+5-ColonToken: :
+5-TypeReference: GraphNode
+6-Identifier: GraphNode
+5-Block: { return this.graph.getNode(x, y); }
+6-OpenBraceToken: {
+6-SyntaxList: return this.graph.getNode(x, y);
+7-ReturnStatement: return this.graph.getNode(x, y);
+8-ReturnKeyword: return
+8-CallExpression: this.graph.getNode(x, y)
+9-PropertyAccessExpression: this.graph.getNode
+10-PropertyAccessExpression: this.graph
+11-ThisKeyword: this
+11-DotToken: .
+11-Identifier: graph
+10-DotToken: .
+10-Identifier: getNode
+9-OpenParenToken: (
+9-SyntaxList: x, y
+10-Identifier: x
+10-CommaToken: ,
+10-Identifier: y
+9-CloseParenToken: )
+8-SemicolonToken: ;
+6-CloseBraceToken: }
+4-PropertyDeclaration: private heuristic : Heuristic;
+5-SyntaxList: private
+6-PrivateKeyword: private
+5-Identifier: heuristic
+5-ColonToken: :
+5-TypeReference: Heuristic
+6-Identifier: Heuristic
+5-SemicolonToken: ;
+4-MethodDeclaration: setHeuristic(heuristic : Heuristic) { this.heuristic = heuristic; }
+5-Identifier: setHeuristic
+5-OpenParenToken: (
+5-SyntaxList: heuristic : Heuristic
+6-Parameter: heuristic : Heuristic
+7-Identifier: heuristic
+7-ColonToken: :
+7-TypeReference: Heuristic
+8-Identifier: Heuristic
+5-CloseParenToken: )
+5-Block: { this.heuristic = heuristic; }
+6-OpenBraceToken: {
+6-SyntaxList: this.heuristic = heuristic;
+7-ExpressionStatement: this.heuristic = heuristic;
+8-BinaryExpression: this.heuristic = heuristic
+9-PropertyAccessExpression: this.heuristic
+10-ThisKeyword: this
+10-DotToken: .
+10-Identifier: heuristic
+9-EqualsToken: =
+9-Identifier: heuristic
+8-SemicolonToken: ;
+6-CloseBraceToken: }
+4-Constructor: constructor(heuristic: Heuristic) {
+                this.graph = new Graph();
+                this.setHeuristic(heuristic);
+        }
+5-ConstructorKeyword: constructor
+5-OpenParenToken: (
+5-SyntaxList: heuristic: Heuristic
+6-Parameter: heuristic: Heuristic
+7-Identifier: heuristic
+7-ColonToken: :
+7-TypeReference: Heuristic
+8-Identifier: Heuristic
+5-CloseParenToken: )
+5-Block: {
+                this.graph = new Graph();
+                this.setHeuristic(heuristic);
+        }
+6-OpenBraceToken: {
+6-SyntaxList: this.graph = new Graph();
+                this.setHeuristic(heuristic);
+7-ExpressionStatement: this.graph = new Graph();
+8-BinaryExpression: this.graph = new Graph()
+9-PropertyAccessExpression: this.graph
+10-ThisKeyword: this
+10-DotToken: .
+10-Identifier: graph
+9-EqualsToken: =
+9-NewExpression: new Graph()
+10-NewKeyword: new
+10-Identifier: Graph
+10-OpenParenToken: (
+10-SyntaxList:
+10-CloseParenToken: )
+8-SemicolonToken: ;
+7-ExpressionStatement: this.setHeuristic(heuristic);
+8-CallExpression: this.setHeuristic(heuristic)
+9-PropertyAccessExpression: this.setHeuristic
+10-ThisKeyword: this
+10-DotToken: .
+10-Identifier: setHeuristic
+9-OpenParenToken: (
+9-SyntaxList: heuristic
+10-Identifier: heuristic
+9-CloseParenToken: )
+8-SemicolonToken: ;
+6-CloseBraceToken: }
+4-MethodDeclaration: path(a: GraphNode, b: GraphNode) : GraphNode[] {
+                var open = new Array<PathNode>();
+                var     closed = new Array<PathNode>();
+
+                var next = new PathNode(
+                        0, this.heuristic.getHeuristic(a.x, a.y, a.z, b.x, b.y, b.z), null, a);
+
+                // find lowest
+                while (next.data != b)
+                {
+                        var lowest: PathNode = null;
+                        var lowestIndex = -1;
+                        for (var i = 0; i < open.length; i++)
+                        {
+                                if (lowest == null || lowest.f() > open[i].f()) {
+                                        lowest = open[i];
+                                        lowestIndex = i;
+                                }
+                        }
+
+                        // add to closed
+                        if (lowest != null) {
+                                // open[open.length-1] = open[lowestIndex];
+                                open.splice(lowestIndex, 1);
+                                closed.push(lowest);
+
+                                next = lowest;
+                        }
+
+                        // for all next connections, add to open if not in closed or open
+                        var connections = next.data.getConnections();
+                        for (var i = 0; i < connections.length; i++) {
+
+                                // list check
+                var add = true;
+                var openIndex = -1;
+                                for (var j = 0; j < open.length; j++)
+                                        if (open[j].data.x == connections[i].x &&
+                                                open[j].data.y == connections[i].y &&
+                                                open[j].data.z == connections[i].z)
+                                                openIndex = j;
+                                for (var j = 0; j < closed.length; j++)                                        if (closed[j].data.x == connections[i].x &&
+                                                closed[j].data.y == connections[i].y &&
+                                                closed[j].data.z == connections[i].z)
+                                                add = false;
+
+                                // calculate score
+                                var node = connections[i];
+                                var g = next.g;
+                                g += Math.sqrt(
+                                                Math.pow(next.data.x -
+node.x, 2) +
+                                                Math.pow(next.data.y -
+node.y, 2) +
+                                                Math.pow(next.data.z -
+node.z, 2)) * node.weight;
+                                var h = this.heuristic.getHeuristic(node.x, node.y, node.z, b.x, b.y, b.z);
+
+                                // if not in open
+                                if (openIndex == -1 && add)
+                                        open.push(new PathNode(g, h, next, node));
+                                // update open if better score
+                                else if (
+                                        openIndex > -1 &&
+                                        g + h < open[openIndex].f() &&
+add) {
+                                        open[openIndex].g = g;
+                                        open[openIndex].h = h;
+                                        open[openIndex].previous = next;
+                                }
+                        }
+                }
+
+                var path = new Array<GraphNode>();
+                while (next != null) {
+                        path.push(next.data);
+                        next = next.previous;
+                }
+                path.reverse();
+
+                return path;
+        }
+5-JSDocComment: /**
+         * Find the cheapest path between two nodes
+         * @param a Origin
+         * @param b Destination
+         */
+6-JSDocParameterTag: @param a
+7-Identifier: a
+6-JSDocParameterTag: @param b
+7-Identifier: b
+5-Identifier: path
+5-OpenParenToken: (
+5-SyntaxList: a: GraphNode, b: GraphNode
+6-Parameter: a: GraphNode
+7-Identifier: a
+7-ColonToken: :
+7-TypeReference: GraphNode
+8-Identifier: GraphNode
+6-CommaToken: ,
+6-Parameter: b: GraphNode
+7-Identifier: b
+7-ColonToken: :
+7-TypeReference: GraphNode
+8-Identifier: GraphNode
+5-CloseParenToken: )
+5-ColonToken: :
+5-ArrayType: GraphNode[]
+6-TypeReference: GraphNode
+7-Identifier: GraphNode
+6-OpenBracketToken: [
+6-CloseBracketToken: ]
+5-Block: {
+                var open = new Array<PathNode>();
+                var     closed = new Array<PathNode>();
+
+                var next = new PathNode(
+                        0, this.heuristic.getHeuristic(a.x, a.y, a.z, b.x, b.y, b.z), null, a);
+
+                // find lowest
+                while (next.data != b)
+                {
+                        var lowest: PathNode = null;
+                        var lowestIndex = -1;
+                        for (var i = 0; i < open.length; i++)
+                        {
+                                if (lowest == null || lowest.f() > open[i].f()) {
+                                        lowest = open[i];
+                                        lowestIndex = i;
+                                }
+                        }
+
+                        // add to closed
+                        if (lowest != null) {
+                                // open[open.length-1] = open[lowestIndex];
+                                open.splice(lowestIndex, 1);
+                                closed.push(lowest);
+
+                                next = lowest;
+                        }
+
+                        // for all next connections, add to open if not in closed or open
+                        var connections = next.data.getConnections();
+                        for (var i = 0; i < connections.length; i++) {
+
+                                // list check
+                var add = true;
+                var openIndex = -1;
+                                for (var j = 0; j < open.length; j++)
+                                        if (open[j].data.x == connections[i].x &&
+                                                open[j].data.y == connections[i].y &&
+                                                open[j].data.z == connections[i].z)
+                                                openIndex = j;
+                                for (var j = 0; j < closed.length; j++)                                        if (closed[j].data.x == connections[i].x &&
+                                                closed[j].data.y == connections[i].y &&
+                                                closed[j].data.z == connections[i].z)
+                                                add = false;
+
+                                // calculate score
+                                var node = connections[i];
+                                var g = next.g;
+                                g += Math.sqrt(
+                                                Math.pow(next.data.x -
+node.x, 2) +
+                                                Math.pow(next.data.y -
+node.y, 2) +
+                                                Math.pow(next.data.z -
+node.z, 2)) * node.weight;
+                                var h = this.heuristic.getHeuristic(node.x, node.y, node.z, b.x, b.y, b.z);
+
+                                // if not in open
+                                if (openIndex == -1 && add)
+                                        open.push(new PathNode(g, h, next, node));
+                                // update open if better score
+                                else if (
+                                        openIndex > -1 &&
+                                        g + h < open[openIndex].f() &&
+add) {
+                                        open[openIndex].g = g;
+                                        open[openIndex].h = h;
+                                        open[openIndex].previous = next;
+                                }
+                        }
+                }
+
+                var path = new Array<GraphNode>();
+                while (next != null) {
+                        path.push(next.data);
+                        next = next.previous;
+                }
+                path.reverse();
+
+                return path;
+        }
+6-OpenBraceToken: {
+6-SyntaxList: var open = new Array<PathNode>();
+                var     closed = new Array<PathNode>();
+
+                var next = new PathNode(
+                        0, this.heuristic.getHeuristic(a.x, a.y, a.z, b.x, b.y, b.z), null, a);
+
+                // find lowest
+                while (next.data != b)
+                {
+                        var lowest: PathNode = null;
+                        var lowestIndex = -1;
+                        for (var i = 0; i < open.length; i++)
+                        {
+                                if (lowest == null || lowest.f() > open[i].f()) {
+                                        lowest = open[i];
+                                        lowestIndex = i;
+                                }
+                        }
+
+                        // add to closed
+                        if (lowest != null) {
+                                // open[open.length-1] = open[lowestIndex];
+                                open.splice(lowestIndex, 1);
+                                closed.push(lowest);
+
+                                next = lowest;
+                        }
+
+                        // for all next connections, add to open if not in closed or open
+                        var connections = next.data.getConnections();
+                        for (var i = 0; i < connections.length; i++) {
+
+                                // list check
+                var add = true;
+                var openIndex = -1;
+                                for (var j = 0; j < open.length; j++)
+                                        if (open[j].data.x == connections[i].x &&
+                                                open[j].data.y == connections[i].y &&
+                                                open[j].data.z == connections[i].z)
+                                                openIndex = j;
+                                for (var j = 0; j < closed.length; j++)                                        if (closed[j].data.x == connections[i].x &&
+                                                closed[j].data.y == connections[i].y &&
+                                                closed[j].data.z == connections[i].z)
+                                                add = false;
+
+                                // calculate score
+                                var node = connections[i];
+                                var g = next.g;
+                                g += Math.sqrt(
+                                                Math.pow(next.data.x -
+node.x, 2) +
+                                                Math.pow(next.data.y -
+node.y, 2) +
+                                                Math.pow(next.data.z -
+node.z, 2)) * node.weight;
+                                var h = this.heuristic.getHeuristic(node.x, node.y, node.z, b.x, b.y, b.z);
+
+                                // if not in open
+                                if (openIndex == -1 && add)
+                                        open.push(new PathNode(g, h, next, node));
+                                // update open if better score
+                                else if (
+                                        openIndex > -1 &&
+                                        g + h < open[openIndex].f() &&
+add) {
+                                        open[openIndex].g = g;
+                                        open[openIndex].h = h;
+                                        open[openIndex].previous = next;
+                                }
+                        }
+                }
+
+                var path = new Array<GraphNode>();
+                while (next != null) {
+                        path.push(next.data);
+                        next = next.previous;
+                }
+                path.reverse();
+
+                return path;
+7-VariableStatement: var open = new Array<PathNode>();
+8-VariableDeclarationList: var open = new Array<PathNode>()
+9-VarKeyword: var
+9-SyntaxList: open = new Array<PathNode>()
+10-VariableDeclaration: open = new Array<PathNode>()
+11-Identifier: open
+11-EqualsToken: =
+11-NewExpression: new Array<PathNode>()
+12-NewKeyword: new
+12-Identifier: Array
+12-LessThanToken: <
+12-SyntaxList: PathNode
+13-TypeReference: PathNode
+14-Identifier: PathNode
+12-GreaterThanToken: >
+12-OpenParenToken: (
+12-SyntaxList:
+12-CloseParenToken: )
+8-SemicolonToken: ;
+7-VariableStatement: var        closed = new Array<PathNode>();
+8-VariableDeclarationList: var  closed = new Array<PathNode>()
+9-VarKeyword: var
+9-SyntaxList: closed = new Array<PathNode>()
+10-VariableDeclaration: closed = new Array<PathNode>()
+11-Identifier: closed
+11-EqualsToken: =
+11-NewExpression: new Array<PathNode>()
+12-NewKeyword: new
+12-Identifier: Array
+12-LessThanToken: <
+12-SyntaxList: PathNode
+13-TypeReference: PathNode
+14-Identifier: PathNode
+12-GreaterThanToken: >
+12-OpenParenToken: (
+12-SyntaxList:
+12-CloseParenToken: )
+8-SemicolonToken: ;
+7-VariableStatement: var next = new PathNode(
+                        0, this.heuristic.getHeuristic(a.x, a.y, a.z, b.x, b.y, b.z), null, a);
+8-VariableDeclarationList: var next = new PathNode(
+                        0, this.heuristic.getHeuristic(a.x, a.y, a.z, b.x, b.y, b.z), null, a)
+9-VarKeyword: var
+9-SyntaxList: next = new PathNode(
+                        0, this.heuristic.getHeuristic(a.x, a.y, a.z, b.x, b.y, b.z), null, a)
+10-VariableDeclaration: next = new PathNode(
+                        0, this.heuristic.getHeuristic(a.x, a.y, a.z, b.x, b.y, b.z), null, a)
+11-Identifier: next
+11-EqualsToken: =
+11-NewExpression: new PathNode(
+                        0, this.heuristic.getHeuristic(a.x, a.y, a.z, b.x, b.y, b.z), null, a)
+12-NewKeyword: new
+12-Identifier: PathNode
+12-OpenParenToken: (
+12-SyntaxList: 0, this.heuristic.getHeuristic(a.x, a.y, a.z, b.x, b.y,
+b.z), null, a
+13-NumericLiteral: 0
+13-CommaToken: ,
+13-CallExpression: this.heuristic.getHeuristic(a.x, a.y, a.z, b.x, b.y, b.z)
+14-PropertyAccessExpression: this.heuristic.getHeuristic
+15-PropertyAccessExpression: this.heuristic
+16-ThisKeyword: this
+16-DotToken: .
+16-Identifier: heuristic
+15-DotToken: .
+15-Identifier: getHeuristic
+14-OpenParenToken: (
+14-SyntaxList: a.x, a.y, a.z, b.x, b.y, b.z
+15-PropertyAccessExpression: a.x
+16-Identifier: a
+16-DotToken: .
+16-Identifier: x
+15-CommaToken: ,
+15-PropertyAccessExpression: a.y
+16-Identifier: a
+16-DotToken: .
+16-Identifier: y
+15-CommaToken: ,
+15-PropertyAccessExpression: a.z
+16-Identifier: a
+16-DotToken: .
+16-Identifier: z
+15-CommaToken: ,
+15-PropertyAccessExpression: b.x
+16-Identifier: b
+16-DotToken: .
+16-Identifier: x
+15-CommaToken: ,
+15-PropertyAccessExpression: b.y
+16-Identifier: b
+16-DotToken: .
+16-Identifier: y
+15-CommaToken: ,
+15-PropertyAccessExpression: b.z
+16-Identifier: b
+16-DotToken: .
+16-Identifier: z
+14-CloseParenToken: )
+13-CommaToken: ,
+13-NullKeyword: null
+13-CommaToken: ,
+13-Identifier: a
+12-CloseParenToken: )
+8-SemicolonToken: ;
+7-WhileStatement: while (next.data != b)
+                {
+                        var lowest: PathNode = null;
+                        var lowestIndex = -1;
+                        for (var i = 0; i < open.length; i++)
+                        {
+                                if (lowest == null || lowest.f() > open[i].f()) {
+                                        lowest = open[i];
+                                        lowestIndex = i;
+                                }
+                        }
+
+                        // add to closed
+                        if (lowest != null) {
+                                // open[open.length-1] = open[lowestIndex];
+                                open.splice(lowestIndex, 1);
+                                closed.push(lowest);
+
+                                next = lowest;
+                        }
+
+                        // for all next connections, add to open if not in closed or open
+                        var connections = next.data.getConnections();
+                        for (var i = 0; i < connections.length; i++) {
+
+                                // list check
+                var add = true;
+                var openIndex = -1;
+                                for (var j = 0; j < open.length; j++)
+                                        if (open[j].data.x == connections[i].x &&
+                                                open[j].data.y == connections[i].y &&
+                                                open[j].data.z == connections[i].z)
+                                                openIndex = j;
+                                for (var j = 0; j < closed.length; j++)                                        if (closed[j].data.x == connections[i].x &&
+                                                closed[j].data.y == connections[i].y &&
+                                                closed[j].data.z == connections[i].z)
+                                                add = false;
+
+                                // calculate score
+                                var node = connections[i];
+                                var g = next.g;
+                                g += Math.sqrt(
+                                                Math.pow(next.data.x -
+node.x, 2) +
+                                                Math.pow(next.data.y -
+node.y, 2) +
+                                                Math.pow(next.data.z -
+node.z, 2)) * node.weight;
+                                var h = this.heuristic.getHeuristic(node.x, node.y, node.z, b.x, b.y, b.z);
+
+                                // if not in open
+                                if (openIndex == -1 && add)
+                                        open.push(new PathNode(g, h, next, node));
+                                // update open if better score
+                                else if (
+                                        openIndex > -1 &&
+                                        g + h < open[openIndex].f() &&
+add) {
+                                        open[openIndex].g = g;
+                                        open[openIndex].h = h;
+                                        open[openIndex].previous = next;
+                                }
+                        }
+                }
+8-WhileKeyword: while
+8-OpenParenToken: (
+8-BinaryExpression: next.data != b
+9-PropertyAccessExpression: next.data
+10-Identifier: next
+10-DotToken: .
+10-Identifier: data
+9-ExclamationEqualsToken: !=
+9-Identifier: b
+8-CloseParenToken: )
+8-Block: {
+                        var lowest: PathNode = null;
+                        var lowestIndex = -1;
+                        for (var i = 0; i < open.length; i++)
+                        {
+                                if (lowest == null || lowest.f() > open[i].f()) {
+                                        lowest = open[i];
+                                        lowestIndex = i;
+                                }
+                        }
+
+                        // add to closed
+                        if (lowest != null) {
+                                // open[open.length-1] = open[lowestIndex];
+                                open.splice(lowestIndex, 1);
+                                closed.push(lowest);
+
+                                next = lowest;
+                        }
+
+                        // for all next connections, add to open if not in closed or open
+                        var connections = next.data.getConnections();
+                        for (var i = 0; i < connections.length; i++) {
+
+                                // list check
+                var add = true;
+                var openIndex = -1;
+                                for (var j = 0; j < open.length; j++)
+                                        if (open[j].data.x == connections[i].x &&
+                                                open[j].data.y == connections[i].y &&
+                                                open[j].data.z == connections[i].z)
+                                                openIndex = j;
+                                for (var j = 0; j < closed.length; j++)                                        if (closed[j].data.x == connections[i].x &&
+                                                closed[j].data.y == connections[i].y &&
+                                                closed[j].data.z == connections[i].z)
+                                                add = false;
+
+                                // calculate score
+                                var node = connections[i];
+                                var g = next.g;
+                                g += Math.sqrt(
+                                                Math.pow(next.data.x -
+node.x, 2) +
+                                                Math.pow(next.data.y -
+node.y, 2) +
+                                                Math.pow(next.data.z -
+node.z, 2)) * node.weight;
+                                var h = this.heuristic.getHeuristic(node.x, node.y, node.z, b.x, b.y, b.z);
+
+                                // if not in open
+                                if (openIndex == -1 && add)
+                                        open.push(new PathNode(g, h, next, node));
+                                // update open if better score
+                                else if (
+                                        openIndex > -1 &&
+                                        g + h < open[openIndex].f() &&
+add) {
+                                        open[openIndex].g = g;
+                                        open[openIndex].h = h;
+                                        open[openIndex].previous = next;
+                                }
+                        }
+                }
+9-OpenBraceToken: {
+9-SyntaxList: var lowest: PathNode = null;
+                        var lowestIndex = -1;
+                        for (var i = 0; i < open.length; i++)
+                        {
+                                if (lowest == null || lowest.f() > open[i].f()) {
+                                        lowest = open[i];
+                                        lowestIndex = i;
+                                }
+                        }
+
+                        // add to closed
+                        if (lowest != null) {
+                                // open[open.length-1] = open[lowestIndex];
+                                open.splice(lowestIndex, 1);
+                                closed.push(lowest);
+
+                                next = lowest;
+                        }
+
+                        // for all next connections, add to open if not in closed or open
+                        var connections = next.data.getConnections();
+                        for (var i = 0; i < connections.length; i++) {
+
+                                // list check
+                var add = true;
+                var openIndex = -1;
+                                for (var j = 0; j < open.length; j++)
+                                        if (open[j].data.x == connections[i].x &&
+                                                open[j].data.y == connections[i].y &&
+                                                open[j].data.z == connections[i].z)
+                                                openIndex = j;
+                                for (var j = 0; j < closed.length; j++)                                        if (closed[j].data.x == connections[i].x &&
+                                                closed[j].data.y == connections[i].y &&
+                                                closed[j].data.z == connections[i].z)
+                                                add = false;
+
+                                // calculate score
+                                var node = connections[i];
+                                var g = next.g;
+                                g += Math.sqrt(
+                                                Math.pow(next.data.x -
+node.x, 2) +
+                                                Math.pow(next.data.y -
+node.y, 2) +
+                                                Math.pow(next.data.z -
+node.z, 2)) * node.weight;
+                                var h = this.heuristic.getHeuristic(node.x, node.y, node.z, b.x, b.y, b.z);
+
+                                // if not in open
+                                if (openIndex == -1 && add)
+                                        open.push(new PathNode(g, h, next, node));
+                                // update open if better score
+                                else if (
+                                        openIndex > -1 &&
+                                        g + h < open[openIndex].f() &&
+add) {
+                                        open[openIndex].g = g;
+                                        open[openIndex].h = h;
+                                        open[openIndex].previous = next;
+                                }
+                        }
+10-VariableStatement: var lowest: PathNode = null;
+11-VariableDeclarationList: var lowest: PathNode = null
+12-VarKeyword: var
+12-SyntaxList: lowest: PathNode = null
+13-VariableDeclaration: lowest: PathNode = null
+14-Identifier: lowest
+14-ColonToken: :
+14-TypeReference: PathNode
+15-Identifier: PathNode
+14-EqualsToken: =
+14-NullKeyword: null
+11-SemicolonToken: ;
+10-VariableStatement: var lowestIndex = -1;
+11-VariableDeclarationList: var lowestIndex = -1
+12-VarKeyword: var
+12-SyntaxList: lowestIndex = -1
+13-VariableDeclaration: lowestIndex = -1
+14-Identifier: lowestIndex
+14-EqualsToken: =
+14-PrefixUnaryExpression: -1
+15-MinusToken: -
+15-NumericLiteral: 1
+11-SemicolonToken: ;
+10-ForStatement: for (var i = 0; i < open.length; i++)
+                        {
+                                if (lowest == null || lowest.f() > open[i].f()) {
+                                        lowest = open[i];
+                                        lowestIndex = i;
+                                }
+                        }
+11-ForKeyword: for
+11-OpenParenToken: (
+11-VariableDeclarationList: var i = 0
+12-VarKeyword: var
+12-SyntaxList: i = 0
+13-VariableDeclaration: i = 0
+14-Identifier: i
+14-EqualsToken: =
+14-NumericLiteral: 0
+11-SemicolonToken: ;
+11-BinaryExpression: i < open.length
+12-Identifier: i
+12-LessThanToken: <
+12-PropertyAccessExpression: open.length
+13-Identifier: open
+13-DotToken: .
+13-Identifier: length
+11-SemicolonToken: ;
+11-PostfixUnaryExpression: i++
+12-Identifier: i
+12-PlusPlusToken: ++
+11-CloseParenToken: )
+11-Block: {
+                                if (lowest == null || lowest.f() > open[i].f()) {
+                                        lowest = open[i];
+                                        lowestIndex = i;
+                                }
+                        }
+12-OpenBraceToken: {
+12-SyntaxList: if (lowest == null || lowest.f() > open[i].f()) {
+                                        lowest = open[i];
+                                        lowestIndex = i;
+                                }
+13-IfStatement: if (lowest == null || lowest.f() > open[i].f()) {
+                                        lowest = open[i];
+                                        lowestIndex = i;
+                                }
+14-IfKeyword: if
+14-OpenParenToken: (
+14-BinaryExpression: lowest == null || lowest.f() > open[i].f()
+15-BinaryExpression: lowest == null
+16-Identifier: lowest
+16-EqualsEqualsToken: ==
+16-NullKeyword: null
+15-BarBarToken: ||
+15-BinaryExpression: lowest.f() > open[i].f()
+16-CallExpression: lowest.f()
+17-PropertyAccessExpression: lowest.f
+18-Identifier: lowest
+18-DotToken: .
+18-Identifier: f
+17-OpenParenToken: (
+17-SyntaxList:
+17-CloseParenToken: )
+16-GreaterThanToken: >
+16-CallExpression: open[i].f()
+17-PropertyAccessExpression: open[i].f
+18-ElementAccessExpression: open[i]
+19-Identifier: open
+19-OpenBracketToken: [
+19-Identifier: i
+19-CloseBracketToken: ]
+18-DotToken: .
+18-Identifier: f
+17-OpenParenToken: (
+17-SyntaxList:
+17-CloseParenToken: )
+14-CloseParenToken: )
+14-Block: {
+                                        lowest = open[i];
+                                        lowestIndex = i;
+                                }
+15-OpenBraceToken: {
+15-SyntaxList: lowest = open[i];
+                                        lowestIndex = i;
+16-ExpressionStatement: lowest = open[i];
+17-BinaryExpression: lowest = open[i]
+18-Identifier: lowest
+18-EqualsToken: =
+18-ElementAccessExpression: open[i]
+19-Identifier: open
+19-OpenBracketToken: [
+19-Identifier: i
+19-CloseBracketToken: ]
+17-SemicolonToken: ;
+16-ExpressionStatement: lowestIndex = i;
+17-BinaryExpression: lowestIndex = i
+18-Identifier: lowestIndex
+18-EqualsToken: =
+18-Identifier: i
+17-SemicolonToken: ;
+15-CloseBraceToken: }
+12-CloseBraceToken: }
+10-IfStatement: if (lowest != null) {
+                                // open[open.length-1] = open[lowestIndex];
+                                open.splice(lowestIndex, 1);
+                                closed.push(lowest);
+
+                                next = lowest;
+                        }
+11-IfKeyword: if
+11-OpenParenToken: (
+11-BinaryExpression: lowest != null
+12-Identifier: lowest
+12-ExclamationEqualsToken: !=
+12-NullKeyword: null
+11-CloseParenToken: )
+11-Block: {
+                                // open[open.length-1] = open[lowestIndex];
+                                open.splice(lowestIndex, 1);
+                                closed.push(lowest);
+
+                                next = lowest;
+                        }
+12-OpenBraceToken: {
+12-SyntaxList: open.splice(lowestIndex, 1);
+                                closed.push(lowest);
+
+                                next = lowest;
+13-ExpressionStatement: open.splice(lowestIndex, 1);
+14-CallExpression: open.splice(lowestIndex, 1)
+15-PropertyAccessExpression: open.splice
+16-Identifier: open
+16-DotToken: .
+16-Identifier: splice
+15-OpenParenToken: (
+15-SyntaxList: lowestIndex, 1
+16-Identifier: lowestIndex
+16-CommaToken: ,
+16-NumericLiteral: 1
+15-CloseParenToken: )
+14-SemicolonToken: ;
+13-ExpressionStatement: closed.push(lowest);
+14-CallExpression: closed.push(lowest)
+15-PropertyAccessExpression: closed.push
+16-Identifier: closed
+16-DotToken: .
+16-Identifier: push
+15-OpenParenToken: (
+15-SyntaxList: lowest
+16-Identifier: lowest
+15-CloseParenToken: )
+14-SemicolonToken: ;
+13-ExpressionStatement: next = lowest;
+14-BinaryExpression: next = lowest
+15-Identifier: next
+15-EqualsToken: =
+15-Identifier: lowest
+14-SemicolonToken: ;
+12-CloseBraceToken: }
+10-VariableStatement: var connections = next.data.getConnections();
+11-VariableDeclarationList: var connections = next.data.getConnections()
+12-VarKeyword: var
+12-SyntaxList: connections = next.data.getConnections()
+13-VariableDeclaration: connections = next.data.getConnections()
+14-Identifier: connections
+14-EqualsToken: =
+14-CallExpression: next.data.getConnections()
+15-PropertyAccessExpression: next.data.getConnections
+16-PropertyAccessExpression: next.data
+17-Identifier: next
+17-DotToken: .
+17-Identifier: data
+16-DotToken: .
+16-Identifier: getConnections
+15-OpenParenToken: (
+15-SyntaxList:
+15-CloseParenToken: )
+11-SemicolonToken: ;
+10-ForStatement: for (var i = 0; i < connections.length; i++) {
+
+                                // list check
+                var add = true;
+                var openIndex = -1;
+                                for (var j = 0; j < open.length; j++)
+                                        if (open[j].data.x == connections[i].x &&
+                                                open[j].data.y == connections[i].y &&
+                                                open[j].data.z == connections[i].z)
+                                                openIndex = j;
+                                for (var j = 0; j < closed.length; j++)                                        if (closed[j].data.x == connections[i].x &&
+                                                closed[j].data.y == connections[i].y &&
+                                                closed[j].data.z == connections[i].z)
+                                                add = false;
+
+                                // calculate score
+                                var node = connections[i];
+                                var g = next.g;
+                                g += Math.sqrt(
+                                                Math.pow(next.data.x -
+node.x, 2) +
+                                                Math.pow(next.data.y -
+node.y, 2) +
+                                                Math.pow(next.data.z -
+node.z, 2)) * node.weight;
+                                var h = this.heuristic.getHeuristic(node.x, node.y, node.z, b.x, b.y, b.z);
+
+                                // if not in open
+                                if (openIndex == -1 && add)
+                                        open.push(new PathNode(g, h, next, node));
+                                // update open if better score
+                                else if (
+                                        openIndex > -1 &&
+                                        g + h < open[openIndex].f() &&
+add) {
+                                        open[openIndex].g = g;
+                                        open[openIndex].h = h;
+                                        open[openIndex].previous = next;
+                                }
+                        }
+11-ForKeyword: for
+11-OpenParenToken: (
+11-VariableDeclarationList: var i = 0
+12-VarKeyword: var
+12-SyntaxList: i = 0
+13-VariableDeclaration: i = 0
+14-Identifier: i
+14-EqualsToken: =
+14-NumericLiteral: 0
+11-SemicolonToken: ;
+11-BinaryExpression: i < connections.length
+12-Identifier: i
+12-LessThanToken: <
+12-PropertyAccessExpression: connections.length
+13-Identifier: connections
+13-DotToken: .
+13-Identifier: length
+11-SemicolonToken: ;
+11-PostfixUnaryExpression: i++
+12-Identifier: i
+12-PlusPlusToken: ++
+11-CloseParenToken: )
+11-Block: {
+
+                                // list check
+                var add = true;
+                var openIndex = -1;
+                                for (var j = 0; j < open.length; j++)
+                                        if (open[j].data.x == connections[i].x &&
+                                                open[j].data.y == connections[i].y &&
+                                                open[j].data.z == connections[i].z)
+                                                openIndex = j;
+                                for (var j = 0; j < closed.length; j++)                                        if (closed[j].data.x == connections[i].x &&
+                                                closed[j].data.y == connections[i].y &&
+                                                closed[j].data.z == connections[i].z)
+                                                add = false;
+
+                                // calculate score
+                                var node = connections[i];
+                                var g = next.g;
+                                g += Math.sqrt(
+                                                Math.pow(next.data.x -
+node.x, 2) +
+                                                Math.pow(next.data.y -
+node.y, 2) +
+                                                Math.pow(next.data.z -
+node.z, 2)) * node.weight;
+                                var h = this.heuristic.getHeuristic(node.x, node.y, node.z, b.x, b.y, b.z);
+
+                                // if not in open
+                                if (openIndex == -1 && add)
+                                        open.push(new PathNode(g, h, next, node));
+                                // update open if better score
+                                else if (
+                                        openIndex > -1 &&
+                                        g + h < open[openIndex].f() &&
+add) {
+                                        open[openIndex].g = g;
+                                        open[openIndex].h = h;
+                                        open[openIndex].previous = next;
+                                }
+                        }
+12-OpenBraceToken: {
+12-SyntaxList: var add = true;
+                var openIndex = -1;
+                                for (var j = 0; j < open.length; j++)
+                                        if (open[j].data.x == connections[i].x &&
+                                                open[j].data.y == connections[i].y &&
+                                                open[j].data.z == connections[i].z)
+                                                openIndex = j;
+                                for (var j = 0; j < closed.length; j++)                                        if (closed[j].data.x == connections[i].x &&
+                                                closed[j].data.y == connections[i].y &&
+                                                closed[j].data.z == connections[i].z)
+                                                add = false;
+
+                                // calculate score
+                                var node = connections[i];
+                                var g = next.g;
+                                g += Math.sqrt(
+                                                Math.pow(next.data.x -
+node.x, 2) +
+                                                Math.pow(next.data.y -
+node.y, 2) +
+                                                Math.pow(next.data.z -
+node.z, 2)) * node.weight;
+                                var h = this.heuristic.getHeuristic(node.x, node.y, node.z, b.x, b.y, b.z);
+
+                                // if not in open
+                                if (openIndex == -1 && add)
+                                        open.push(new PathNode(g, h, next, node));
+                                // update open if better score
+                                else if (
+                                        openIndex > -1 &&
+                                        g + h < open[openIndex].f() &&
+add) {
+                                        open[openIndex].g = g;
+                                        open[openIndex].h = h;
+                                        open[openIndex].previous = next;
+                                }
+13-VariableStatement: var add = true;
+14-VariableDeclarationList: var add = true
+15-VarKeyword: var
+15-SyntaxList: add = true
+16-VariableDeclaration: add = true
+17-Identifier: add
+17-EqualsToken: =
+17-TrueKeyword: true
+14-SemicolonToken: ;
+13-VariableStatement: var openIndex = -1;
+14-VariableDeclarationList: var openIndex = -1
+15-VarKeyword: var
+15-SyntaxList: openIndex = -1
+16-VariableDeclaration: openIndex = -1
+17-Identifier: openIndex
+17-EqualsToken: =
+17-PrefixUnaryExpression: -1
+18-MinusToken: -
+18-NumericLiteral: 1
+14-SemicolonToken: ;
+13-ForStatement: for (var j = 0; j < open.length; j++)
+                                        if (open[j].data.x == connections[i].x &&
+                                                open[j].data.y == connections[i].y &&
+                                                open[j].data.z == connections[i].z)
+                                                openIndex = j;
+14-ForKeyword: for
+14-OpenParenToken: (
+14-VariableDeclarationList: var j = 0
+15-VarKeyword: var
+15-SyntaxList: j = 0
+16-VariableDeclaration: j = 0
+17-Identifier: j
+17-EqualsToken: =
+17-NumericLiteral: 0
+14-SemicolonToken: ;
+14-BinaryExpression: j < open.length
+15-Identifier: j
+15-LessThanToken: <
+15-PropertyAccessExpression: open.length
+16-Identifier: open
+16-DotToken: .
+16-Identifier: length
+14-SemicolonToken: ;
+14-PostfixUnaryExpression: j++
+15-Identifier: j
+15-PlusPlusToken: ++
+14-CloseParenToken: )
+14-IfStatement: if (open[j].data.x == connections[i].x &&
+                                                open[j].data.y == connections[i].y &&
+                                                open[j].data.z == connections[i].z)
+                                                openIndex = j;
+15-IfKeyword: if
+15-OpenParenToken: (
+15-BinaryExpression: open[j].data.x == connections[i].x &&
+                                                open[j].data.y == connections[i].y &&
+                                                open[j].data.z == connections[i].z
+16-BinaryExpression: open[j].data.x == connections[i].x &&
+                                                open[j].data.y == connections[i].y
+17-BinaryExpression: open[j].data.x == connections[i].x
+18-PropertyAccessExpression: open[j].data.x
+19-PropertyAccessExpression: open[j].data
+20-ElementAccessExpression: open[j]
+21-Identifier: open
+21-OpenBracketToken: [
+21-Identifier: j
+21-CloseBracketToken: ]
+20-DotToken: .
+20-Identifier: data
+19-DotToken: .
+19-Identifier: x
+18-EqualsEqualsToken: ==
+18-PropertyAccessExpression: connections[i].x
+19-ElementAccessExpression: connections[i]
+20-Identifier: connections
+20-OpenBracketToken: [
+20-Identifier: i
+20-CloseBracketToken: ]
+19-DotToken: .
+19-Identifier: x
+17-AmpersandAmpersandToken: &&
+17-BinaryExpression: open[j].data.y == connections[i].y
+18-PropertyAccessExpression: open[j].data.y
+19-PropertyAccessExpression: open[j].data
+20-ElementAccessExpression: open[j]
+21-Identifier: open
+21-OpenBracketToken: [
+21-Identifier: j
+21-CloseBracketToken: ]
+20-DotToken: .
+20-Identifier: data
+19-DotToken: .
+19-Identifier: y
+18-EqualsEqualsToken: ==
+18-PropertyAccessExpression: connections[i].y
+19-ElementAccessExpression: connections[i]
+20-Identifier: connections
+20-OpenBracketToken: [
+20-Identifier: i
+20-CloseBracketToken: ]
+19-DotToken: .
+19-Identifier: y
+16-AmpersandAmpersandToken: &&
+16-BinaryExpression: open[j].data.z == connections[i].z
+17-PropertyAccessExpression: open[j].data.z
+18-PropertyAccessExpression: open[j].data
+19-ElementAccessExpression: open[j]
+20-Identifier: open
+20-OpenBracketToken: [
+20-Identifier: j
+20-CloseBracketToken: ]
+19-DotToken: .
+19-Identifier: data
+18-DotToken: .
+18-Identifier: z
+17-EqualsEqualsToken: ==
+17-PropertyAccessExpression: connections[i].z
+18-ElementAccessExpression: connections[i]
+19-Identifier: connections
+19-OpenBracketToken: [
+19-Identifier: i
+19-CloseBracketToken: ]
+18-DotToken: .
+18-Identifier: z
+15-CloseParenToken: )
+15-ExpressionStatement: openIndex = j;
+16-BinaryExpression: openIndex = j
+17-Identifier: openIndex
+17-EqualsToken: =
+17-Identifier: j
+16-SemicolonToken: ;
+13-ForStatement: for (var j = 0; j < closed.length; j++)
+                                        if (closed[j].data.x == connections[i].x &&
+                                                closed[j].data.y == connections[i].y &&
+                                                closed[j].data.z == connections[i].z)
+                                                add = false;
+14-ForKeyword: for
+14-OpenParenToken: (
+14-VariableDeclarationList: var j = 0
+15-VarKeyword: var
+15-SyntaxList: j = 0
+16-VariableDeclaration: j = 0
+17-Identifier: j
+17-EqualsToken: =
+17-NumericLiteral: 0
+14-SemicolonToken: ;
+14-BinaryExpression: j < closed.length
+15-Identifier: j
+15-LessThanToken: <
+15-PropertyAccessExpression: closed.length
+16-Identifier: closed
+16-DotToken: .
+16-Identifier: length
+14-SemicolonToken: ;
+14-PostfixUnaryExpression: j++
+15-Identifier: j
+15-PlusPlusToken: ++
+14-CloseParenToken: )
+14-IfStatement: if (closed[j].data.x == connections[i].x &&
+                                                closed[j].data.y == connections[i].y &&
+                                                closed[j].data.z == connections[i].z)
+                                                add = false;
+15-IfKeyword: if
+15-OpenParenToken: (
+15-BinaryExpression: closed[j].data.x == connections[i].x &&
+                                                closed[j].data.y == connections[i].y &&
+                                                closed[j].data.z == connections[i].z
+16-BinaryExpression: closed[j].data.x == connections[i].x &&
+                                                closed[j].data.y == connections[i].y
+17-BinaryExpression: closed[j].data.x == connections[i].x
+18-PropertyAccessExpression: closed[j].data.x
+19-PropertyAccessExpression: closed[j].data
+20-ElementAccessExpression: closed[j]
+21-Identifier: closed
+21-OpenBracketToken: [
+21-Identifier: j
+21-CloseBracketToken: ]
+20-DotToken: .
+20-Identifier: data
+19-DotToken: .
+19-Identifier: x
+18-EqualsEqualsToken: ==
+18-PropertyAccessExpression: connections[i].x
+19-ElementAccessExpression: connections[i]
+20-Identifier: connections
+20-OpenBracketToken: [
+20-Identifier: i
+20-CloseBracketToken: ]
+19-DotToken: .
+19-Identifier: x
+17-AmpersandAmpersandToken: &&
+17-BinaryExpression: closed[j].data.y == connections[i].y
+18-PropertyAccessExpression: closed[j].data.y
+19-PropertyAccessExpression: closed[j].data
+20-ElementAccessExpression: closed[j]
+21-Identifier: closed
+21-OpenBracketToken: [
+21-Identifier: j
+21-CloseBracketToken: ]
+20-DotToken: .
+20-Identifier: data
+19-DotToken: .
+19-Identifier: y
+18-EqualsEqualsToken: ==
+18-PropertyAccessExpression: connections[i].y
+19-ElementAccessExpression: connections[i]
+20-Identifier: connections
+20-OpenBracketToken: [
+20-Identifier: i
+20-CloseBracketToken: ]
+19-DotToken: .
+19-Identifier: y
+16-AmpersandAmpersandToken: &&
+16-BinaryExpression: closed[j].data.z == connections[i].z
+17-PropertyAccessExpression: closed[j].data.z
+18-PropertyAccessExpression: closed[j].data
+19-ElementAccessExpression: closed[j]
+20-Identifier: closed
+20-OpenBracketToken: [
+20-Identifier: j
+20-CloseBracketToken: ]
+19-DotToken: .
+19-Identifier: data
+18-DotToken: .
+18-Identifier: z
+17-EqualsEqualsToken: ==
+17-PropertyAccessExpression: connections[i].z
+18-ElementAccessExpression: connections[i]
+19-Identifier: connections
+19-OpenBracketToken: [
+19-Identifier: i
+19-CloseBracketToken: ]
+18-DotToken: .
+18-Identifier: z
+15-CloseParenToken: )
+15-ExpressionStatement: add = false;
+16-BinaryExpression: add = false
+17-Identifier: add
+17-EqualsToken: =
+17-FalseKeyword: false
+16-SemicolonToken: ;
+13-VariableStatement: var node = connections[i];
+14-VariableDeclarationList: var node = connections[i]
+15-VarKeyword: var
+15-SyntaxList: node = connections[i]
+16-VariableDeclaration: node = connections[i]
+17-Identifier: node
+17-EqualsToken: =
+17-ElementAccessExpression: connections[i]
+18-Identifier: connections
+18-OpenBracketToken: [
+18-Identifier: i
+18-CloseBracketToken: ]
+14-SemicolonToken: ;
+13-VariableStatement: var g = next.g;
+14-VariableDeclarationList: var g = next.g
+15-VarKeyword: var
+15-SyntaxList: g = next.g
+16-VariableDeclaration: g = next.g
+17-Identifier: g
+17-EqualsToken: =
+17-PropertyAccessExpression: next.g
+18-Identifier: next
+18-DotToken: .
+18-Identifier: g
+14-SemicolonToken: ;
+13-ExpressionStatement: g += Math.sqrt(
+                                                Math.pow(next.data.x -
+node.x, 2) +
+                                                Math.pow(next.data.y -
+node.y, 2) +
+                                                Math.pow(next.data.z -
+node.z, 2)) * node.weight;
+14-BinaryExpression: g += Math.sqrt(
+                                                Math.pow(next.data.x -
+node.x, 2) +
+                                                Math.pow(next.data.y -
+node.y, 2) +
+                                                Math.pow(next.data.z -
+node.z, 2)) * node.weight
+15-Identifier: g
+15-PlusEqualsToken: +=
+15-BinaryExpression: Math.sqrt(
+                                                Math.pow(next.data.x -
+node.x, 2) +
+                                                Math.pow(next.data.y -
+node.y, 2) +
+                                                Math.pow(next.data.z -
+node.z, 2)) * node.weight
+16-CallExpression: Math.sqrt(
+                                                Math.pow(next.data.x -
+node.x, 2) +
+                                                Math.pow(next.data.y -
+node.y, 2) +
+                                                Math.pow(next.data.z -
+node.z, 2))
+17-PropertyAccessExpression: Math.sqrt
+18-Identifier: Math
+18-DotToken: .
+18-Identifier: sqrt
+17-OpenParenToken: (
+17-SyntaxList: Math.pow(next.data.x - node.x, 2) +
+                                                Math.pow(next.data.y -
+node.y, 2) +
+                                                Math.pow(next.data.z -
+node.z, 2)
+18-BinaryExpression: Math.pow(next.data.x - node.x, 2) +
+                                                Math.pow(next.data.y -
+node.y, 2) +
+                                                Math.pow(next.data.z -
+node.z, 2)
+19-BinaryExpression: Math.pow(next.data.x - node.x, 2) +
+                                                Math.pow(next.data.y -
+node.y, 2)
+20-CallExpression: Math.pow(next.data.x - node.x, 2)
+21-PropertyAccessExpression: Math.pow
+22-Identifier: Math
+22-DotToken: .
+22-Identifier: pow
+21-OpenParenToken: (
+21-SyntaxList: next.data.x - node.x, 2
+22-BinaryExpression: next.data.x - node.x
+23-PropertyAccessExpression: next.data.x
+24-PropertyAccessExpression: next.data
+25-Identifier: next
+25-DotToken: .
+25-Identifier: data
+24-DotToken: .
+24-Identifier: x
+23-MinusToken: -
+23-PropertyAccessExpression: node.x
+24-Identifier: node
+24-DotToken: .
+24-Identifier: x
+22-CommaToken: ,
+22-NumericLiteral: 2
+21-CloseParenToken: )
+20-PlusToken: +
+20-CallExpression: Math.pow(next.data.y - node.y, 2)
+21-PropertyAccessExpression: Math.pow
+22-Identifier: Math
+22-DotToken: .
+22-Identifier: pow
+21-OpenParenToken: (
+21-SyntaxList: next.data.y - node.y, 2
+22-BinaryExpression: next.data.y - node.y
+23-PropertyAccessExpression: next.data.y
+24-PropertyAccessExpression: next.data
+25-Identifier: next
+25-DotToken: .
+25-Identifier: data
+24-DotToken: .
+24-Identifier: y
+23-MinusToken: -
+23-PropertyAccessExpression: node.y
+24-Identifier: node
+24-DotToken: .
+24-Identifier: y
+22-CommaToken: ,
+22-NumericLiteral: 2
+21-CloseParenToken: )
+19-PlusToken: +
+19-CallExpression: Math.pow(next.data.z - node.z, 2)
+20-PropertyAccessExpression: Math.pow
+21-Identifier: Math
+21-DotToken: .
+21-Identifier: pow
+20-OpenParenToken: (
+20-SyntaxList: next.data.z - node.z, 2
+21-BinaryExpression: next.data.z - node.z
+22-PropertyAccessExpression: next.data.z
+23-PropertyAccessExpression: next.data
+24-Identifier: next
+24-DotToken: .
+24-Identifier: data
+23-DotToken: .
+23-Identifier: z
+22-MinusToken: -
+22-PropertyAccessExpression: node.z
+23-Identifier: node
+23-DotToken: .
+23-Identifier: z
+21-CommaToken: ,
+21-NumericLiteral: 2
+20-CloseParenToken: )
+17-CloseParenToken: )
+16-AsteriskToken: *
+16-PropertyAccessExpression: node.weight
+17-Identifier: node
+17-DotToken: .
+17-Identifier: weight
+14-SemicolonToken: ;
+13-VariableStatement: var h = this.heuristic.getHeuristic(node.x, node.y, node.z, b.x, b.y, b.z);
+14-VariableDeclarationList: var h = this.heuristic.getHeuristic(node.x, node.y, node.z, b.x, b.y, b.z)
+15-VarKeyword: var
+15-SyntaxList: h = this.heuristic.getHeuristic(node.x, node.y, node.z,
+b.x, b.y, b.z)
+16-VariableDeclaration: h = this.heuristic.getHeuristic(node.x, node.y, node.z, b.x, b.y, b.z)
+17-Identifier: h
+17-EqualsToken: =
+17-CallExpression: this.heuristic.getHeuristic(node.x, node.y, node.z,
+b.x, b.y, b.z)
+18-PropertyAccessExpression: this.heuristic.getHeuristic
+19-PropertyAccessExpression: this.heuristic
+20-ThisKeyword: this
+20-DotToken: .
+20-Identifier: heuristic
+19-DotToken: .
+19-Identifier: getHeuristic
+18-OpenParenToken: (
+18-SyntaxList: node.x, node.y, node.z, b.x, b.y, b.z
+19-PropertyAccessExpression: node.x
+20-Identifier: node
+20-DotToken: .
+20-Identifier: x
+19-CommaToken: ,
+19-PropertyAccessExpression: node.y
+20-Identifier: node
+20-DotToken: .
+20-Identifier: y
+19-CommaToken: ,
+19-PropertyAccessExpression: node.z
+20-Identifier: node
+20-DotToken: .
+20-Identifier: z
+19-CommaToken: ,
+19-PropertyAccessExpression: b.x
+20-Identifier: b
+20-DotToken: .
+20-Identifier: x
+19-CommaToken: ,
+19-PropertyAccessExpression: b.y
+20-Identifier: b
+20-DotToken: .
+20-Identifier: y
+19-CommaToken: ,
+19-PropertyAccessExpression: b.z
+20-Identifier: b
+20-DotToken: .
+20-Identifier: z
+18-CloseParenToken: )
+14-SemicolonToken: ;
+13-IfStatement: if (openIndex == -1 && add)
+                                        open.push(new PathNode(g, h, next, node));
+                                // update open if better score
+                                else if (
+                                        openIndex > -1 &&
+                                        g + h < open[openIndex].f() &&
+add) {
+                                        open[openIndex].g = g;
+                                        open[openIndex].h = h;
+                                        open[openIndex].previous = next;
+                                }
+14-IfKeyword: if
+14-OpenParenToken: (
+14-BinaryExpression: openIndex == -1 && add
+15-BinaryExpression: openIndex == -1
+16-Identifier: openIndex
+16-EqualsEqualsToken: ==
+16-PrefixUnaryExpression: -1
+17-MinusToken: -
+17-NumericLiteral: 1
+15-AmpersandAmpersandToken: &&
+15-Identifier: add
+14-CloseParenToken: )
+14-ExpressionStatement: open.push(new PathNode(g, h, next, node));
+15-CallExpression: open.push(new PathNode(g, h, next, node))
+16-PropertyAccessExpression: open.push
+17-Identifier: open
+17-DotToken: .
+17-Identifier: push
+16-OpenParenToken: (
+16-SyntaxList: new PathNode(g, h, next, node)
+17-NewExpression: new PathNode(g, h, next, node)
+18-NewKeyword: new
+18-Identifier: PathNode
+18-OpenParenToken: (
+18-SyntaxList: g, h, next, node
+19-Identifier: g
+19-CommaToken: ,
+19-Identifier: h
+19-CommaToken: ,
+19-Identifier: next
+19-CommaToken: ,
+19-Identifier: node
+18-CloseParenToken: )
+16-CloseParenToken: )
+15-SemicolonToken: ;
+14-ElseKeyword: else
+14-IfStatement: if (
+                                        openIndex > -1 &&
+                                        g + h < open[openIndex].f() &&
+add) {
+                                        open[openIndex].g = g;
+                                        open[openIndex].h = h;
+                                        open[openIndex].previous = next;
+                                }
+15-IfKeyword: if
+15-OpenParenToken: (
+15-BinaryExpression: openIndex > -1 &&
+                                        g + h < open[openIndex].f() &&
+add
+16-BinaryExpression: openIndex > -1 &&
+                                        g + h < open[openIndex].f()
+17-BinaryExpression: openIndex > -1
+18-Identifier: openIndex
+18-GreaterThanToken: >
+18-PrefixUnaryExpression: -1
+19-MinusToken: -
+19-NumericLiteral: 1
+17-AmpersandAmpersandToken: &&
+17-BinaryExpression: g + h < open[openIndex].f()
+18-BinaryExpression: g + h
+19-Identifier: g
+19-PlusToken: +
+19-Identifier: h
+18-LessThanToken: <
+18-CallExpression: open[openIndex].f()
+19-PropertyAccessExpression: open[openIndex].f
+20-ElementAccessExpression: open[openIndex]
+21-Identifier: open
+21-OpenBracketToken: [
+21-Identifier: openIndex
+21-CloseBracketToken: ]
+20-DotToken: .
+20-Identifier: f
+19-OpenParenToken: (
+19-SyntaxList:
+19-CloseParenToken: )
+16-AmpersandAmpersandToken: &&
+16-Identifier: add
+15-CloseParenToken: )
+15-Block: {
+                                        open[openIndex].g = g;
+                                        open[openIndex].h = h;
+                                        open[openIndex].previous = next;
+                                }
+16-OpenBraceToken: {
+16-SyntaxList: open[openIndex].g = g;
+                                        open[openIndex].h = h;
+                                        open[openIndex].previous = next;
+17-ExpressionStatement: open[openIndex].g = g;
+18-BinaryExpression: open[openIndex].g = g
+19-PropertyAccessExpression: open[openIndex].g
+20-ElementAccessExpression: open[openIndex]
+21-Identifier: open
+21-OpenBracketToken: [
+21-Identifier: openIndex
+21-CloseBracketToken: ]
+20-DotToken: .
+20-Identifier: g
+19-EqualsToken: =
+19-Identifier: g
+18-SemicolonToken: ;
+17-ExpressionStatement: open[openIndex].h = h;
+18-BinaryExpression: open[openIndex].h = h
+19-PropertyAccessExpression: open[openIndex].h
+20-ElementAccessExpression: open[openIndex]
+21-Identifier: open
+21-OpenBracketToken: [
+21-Identifier: openIndex
+21-CloseBracketToken: ]
+20-DotToken: .
+20-Identifier: h
+19-EqualsToken: =
+19-Identifier: h
+18-SemicolonToken: ;
+17-ExpressionStatement: open[openIndex].previous = next;
+18-BinaryExpression: open[openIndex].previous = next
+19-PropertyAccessExpression: open[openIndex].previous
+20-ElementAccessExpression: open[openIndex]
+21-Identifier: open
+21-OpenBracketToken: [
+21-Identifier: openIndex
+21-CloseBracketToken: ]
+20-DotToken: .
+20-Identifier: previous
+19-EqualsToken: =
+19-Identifier: next
+18-SemicolonToken: ;
+16-CloseBraceToken: }
+12-CloseBraceToken: }
+9-CloseBraceToken: }
+7-VariableStatement: var path = new Array<GraphNode>();
+8-VariableDeclarationList: var path = new Array<GraphNode>()
+9-VarKeyword: var
+9-SyntaxList: path = new Array<GraphNode>()
+10-VariableDeclaration: path = new Array<GraphNode>()
+11-Identifier: path
+11-EqualsToken: =
+11-NewExpression: new Array<GraphNode>()
+12-NewKeyword: new
+12-Identifier: Array
+12-LessThanToken: <
+12-SyntaxList: GraphNode
+13-TypeReference: GraphNode
+14-Identifier: GraphNode
+12-GreaterThanToken: >
+12-OpenParenToken: (
+12-SyntaxList:
+12-CloseParenToken: )
+8-SemicolonToken: ;
+7-WhileStatement: while (next != null) {
+                        path.push(next.data);
+                        next = next.previous;
+                }
+8-WhileKeyword: while
+8-OpenParenToken: (
+8-BinaryExpression: next != null
+9-Identifier: next
+9-ExclamationEqualsToken: !=
+9-NullKeyword: null
+8-CloseParenToken: )
+8-Block: {
+                        path.push(next.data);
+                        next = next.previous;
+                }
+9-OpenBraceToken: {
+9-SyntaxList: path.push(next.data);
+                        next = next.previous;
+10-ExpressionStatement: path.push(next.data);
+11-CallExpression: path.push(next.data)
+12-PropertyAccessExpression: path.push
+13-Identifier: path
+13-DotToken: .
+13-Identifier: push
+12-OpenParenToken: (
+12-SyntaxList: next.data
+13-PropertyAccessExpression: next.data
+14-Identifier: next
+14-DotToken: .
+14-Identifier: data
+12-CloseParenToken: )
+11-SemicolonToken: ;
+10-ExpressionStatement: next = next.previous;
+11-BinaryExpression: next = next.previous
+12-Identifier: next
+12-EqualsToken: =
+12-PropertyAccessExpression: next.previous
+13-Identifier: next
+13-DotToken: .
+13-Identifier: previous
+11-SemicolonToken: ;
+9-CloseBraceToken: }
+7-ExpressionStatement: path.reverse();
+8-CallExpression: path.reverse()
+9-PropertyAccessExpression: path.reverse
+10-Identifier: path
+10-DotToken: .
+10-Identifier: reverse
+9-OpenParenToken: (
+9-SyntaxList:
+9-CloseParenToken: )
+8-SemicolonToken: ;
+7-ReturnStatement: return path;
+8-ReturnKeyword: return
+8-Identifier: path
+8-SemicolonToken: ;
+6-CloseBraceToken: }
+4-MethodDeclaration: load(data: number[][]) {
+                this.graph.fromArray(data);
+        }
+5-JSDocComment: /**
+         * Load an array into graph
+         * @param data The 2d array containing weights of each tile
+         */
+6-JSDocParameterTag: @param data
+7-Identifier: data
+5-Identifier: load
+5-OpenParenToken: (
+5-SyntaxList: data: number[][]
+6-Parameter: data: number[][]
+7-Identifier: data
+7-ColonToken: :
+7-ArrayType: number[][]
+8-ArrayType: number[]
+9-NumberKeyword: number
+9-OpenBracketToken: [
+9-CloseBracketToken: ]
+8-OpenBracketToken: [
+8-CloseBracketToken: ]
+5-CloseParenToken: )
+5-Block: {
+                this.graph.fromArray(data);
+        }
+6-OpenBraceToken: {
+6-SyntaxList: this.graph.fromArray(data);
+7-ExpressionStatement: this.graph.fromArray(data);
+8-CallExpression: this.graph.fromArray(data)
+9-PropertyAccessExpression: this.graph.fromArray
+10-PropertyAccessExpression: this.graph
+11-ThisKeyword: this
+11-DotToken: .
+11-Identifier: graph
+10-DotToken: .
+10-Identifier: fromArray
+9-OpenParenToken: (
+9-SyntaxList: data
+10-Identifier: data
+9-CloseParenToken: )
+8-SemicolonToken: ;
+6-CloseBraceToken: }
+3-CloseBraceToken: }
+2-ModuleDeclaration: namespace Testing
+{
+    function main()
+    {
+        var dataForGraph : number[][]= [
+            [0, 0, 0, 0],
+            [0, 5, 5, 0],
+            [0, 5, 5, 0],
+            [0, 0, 0, 0]
+        ];
+
+        var astar = new AStar(new /*Manhatten*/Heuristic());
+        astar.load(dataForGraph);
+
+        var g = astar.getGraph();
+                var path = astar.path(g.getNode(0,0), g.getNode(3,3));
+                for (var i = 0; i < path.length; i++) {
+                        console.log(path[i].toString());
+                }
+    }
+    main();
+}
+3-NamespaceKeyword: namespace
+3-Identifier: Testing
+3-ModuleBlock: {
+    function main()
+    {
+        var dataForGraph : number[][]= [
+            [0, 0, 0, 0],
+            [0, 5, 5, 0],
+            [0, 5, 5, 0],
+            [0, 0, 0, 0]
+        ];
+
+        var astar = new AStar(new /*Manhatten*/Heuristic());
+        astar.load(dataForGraph);
+
+        var g = astar.getGraph();
+                var path = astar.path(g.getNode(0,0), g.getNode(3,3));
+                for (var i = 0; i < path.length; i++) {
+                        console.log(path[i].toString());
+                }
+    }
+    main();
+}
+4-OpenBraceToken: {
+4-SyntaxList: function main()
+    {
+        var dataForGraph : number[][]= [
+            [0, 0, 0, 0],
+            [0, 5, 5, 0],
+            [0, 5, 5, 0],
+            [0, 0, 0, 0]
+        ];
+
+        var astar = new AStar(new /*Manhatten*/Heuristic());
+        astar.load(dataForGraph);
+
+        var g = astar.getGraph();
+                var path = astar.path(g.getNode(0,0), g.getNode(3,3));
+                for (var i = 0; i < path.length; i++) {
+                        console.log(path[i].toString());
+                }
+    }
+    main();
+5-FunctionDeclaration: function main()
+    {
+        var dataForGraph : number[][]= [
+            [0, 0, 0, 0],
+            [0, 5, 5, 0],
+            [0, 5, 5, 0],
+            [0, 0, 0, 0]
+        ];
+
+        var astar = new AStar(new /*Manhatten*/Heuristic());
+        astar.load(dataForGraph);
+
+        var g = astar.getGraph();
+                var path = astar.path(g.getNode(0,0), g.getNode(3,3));
+                for (var i = 0; i < path.length; i++) {
+                        console.log(path[i].toString());
+                }
+    }
+6-FunctionKeyword: function
+6-Identifier: main
+6-OpenParenToken: (
+6-SyntaxList:
+6-CloseParenToken: )
+6-Block: {
+        var dataForGraph : number[][]= [
+            [0, 0, 0, 0],
+            [0, 5, 5, 0],
+            [0, 5, 5, 0],
+            [0, 0, 0, 0]
+        ];
+
+        var astar = new AStar(new /*Manhatten*/Heuristic());
+        astar.load(dataForGraph);
+
+        var g = astar.getGraph();
+                var path = astar.path(g.getNode(0,0), g.getNode(3,3));
+                for (var i = 0; i < path.length; i++) {
+                        console.log(path[i].toString());
+                }
+    }
+7-OpenBraceToken: {
+7-SyntaxList: var dataForGraph : number[][]= [
+            [0, 0, 0, 0],
+            [0, 5, 5, 0],
+            [0, 5, 5, 0],
+            [0, 0, 0, 0]
+        ];
+
+        var astar = new AStar(new /*Manhatten*/Heuristic());
+        astar.load(dataForGraph);
+
+        var g = astar.getGraph();
+                var path = astar.path(g.getNode(0,0), g.getNode(3,3));
+                for (var i = 0; i < path.length; i++) {
+                        console.log(path[i].toString());
+                }
+8-VariableStatement: var dataForGraph : number[][]= [
+            [0, 0, 0, 0],
+            [0, 5, 5, 0],
+            [0, 5, 5, 0],
+            [0, 0, 0, 0]
+        ];
+9-VariableDeclarationList: var dataForGraph : number[][]= [
+            [0, 0, 0, 0],
+            [0, 5, 5, 0],
+            [0, 5, 5, 0],
+            [0, 0, 0, 0]
+        ]
+10-VarKeyword: var
+10-SyntaxList: dataForGraph : number[][]= [
+            [0, 0, 0, 0],
+            [0, 5, 5, 0],
+            [0, 5, 5, 0],
+            [0, 0, 0, 0]
+        ]
+11-VariableDeclaration: dataForGraph : number[][]= [
+            [0, 0, 0, 0],
+            [0, 5, 5, 0],
+            [0, 5, 5, 0],
+            [0, 0, 0, 0]
+        ]
+12-Identifier: dataForGraph
+12-ColonToken: :
+12-ArrayType: number[][]
+13-ArrayType: number[]
+14-NumberKeyword: number
+14-OpenBracketToken: [
+14-CloseBracketToken: ]
+13-OpenBracketToken: [
+13-CloseBracketToken: ]
+12-EqualsToken: =
+12-ArrayLiteralExpression: [
+            [0, 0, 0, 0],
+            [0, 5, 5, 0],
+            [0, 5, 5, 0],
+            [0, 0, 0, 0]
+        ]
+13-OpenBracketToken: [
+13-SyntaxList: [0, 0, 0, 0],
+            [0, 5, 5, 0],
+            [0, 5, 5, 0],
+            [0, 0, 0, 0]
+14-ArrayLiteralExpression: [0, 0, 0, 0]
+15-OpenBracketToken: [
+15-SyntaxList: 0, 0, 0, 0
+16-NumericLiteral: 0
+16-CommaToken: ,
+16-NumericLiteral: 0
+16-CommaToken: ,
+16-NumericLiteral: 0
+16-CommaToken: ,
+16-NumericLiteral: 0
+15-CloseBracketToken: ]
+14-CommaToken: ,
+14-ArrayLiteralExpression: [0, 5, 5, 0]
+15-OpenBracketToken: [
+15-SyntaxList: 0, 5, 5, 0
+16-NumericLiteral: 0
+16-CommaToken: ,
+16-NumericLiteral: 5
+16-CommaToken: ,
+16-NumericLiteral: 5
+16-CommaToken: ,
+16-NumericLiteral: 0
+15-CloseBracketToken: ]
+14-CommaToken: ,
+14-ArrayLiteralExpression: [0, 5, 5, 0]
+15-OpenBracketToken: [
+15-SyntaxList: 0, 5, 5, 0
+16-NumericLiteral: 0
+16-CommaToken: ,
+16-NumericLiteral: 5
+16-CommaToken: ,
+16-NumericLiteral: 5
+16-CommaToken: ,
+16-NumericLiteral: 0
+15-CloseBracketToken: ]
+14-CommaToken: ,
+14-ArrayLiteralExpression: [0, 0, 0, 0]
+15-OpenBracketToken: [
+15-SyntaxList: 0, 0, 0, 0
+16-NumericLiteral: 0
+16-CommaToken: ,
+16-NumericLiteral: 0
+16-CommaToken: ,
+16-NumericLiteral: 0
+16-CommaToken: ,
+16-NumericLiteral: 0
+15-CloseBracketToken: ]
+13-CloseBracketToken: ]
+9-SemicolonToken: ;
+8-VariableStatement: var astar = new AStar(new /*Manhatten*/Heuristic());
+9-VariableDeclarationList: var astar = new AStar(new /*Manhatten*/Heuristic())
+10-VarKeyword: var
+10-SyntaxList: astar = new AStar(new /*Manhatten*/Heuristic())
+11-VariableDeclaration: astar = new AStar(new /*Manhatten*/Heuristic())12-Identifier: astar
+12-EqualsToken: =
+12-NewExpression: new AStar(new /*Manhatten*/Heuristic())
+13-NewKeyword: new
+13-Identifier: AStar
+13-OpenParenToken: (
+13-SyntaxList: new /*Manhatten*/Heuristic()
+14-NewExpression: new /*Manhatten*/Heuristic()
+15-NewKeyword: new
+15-Identifier: Heuristic
+15-OpenParenToken: (
+15-SyntaxList:
+15-CloseParenToken: )
+13-CloseParenToken: )
+9-SemicolonToken: ;
+8-ExpressionStatement: astar.load(dataForGraph);
+9-CallExpression: astar.load(dataForGraph)
+10-PropertyAccessExpression: astar.load
+11-Identifier: astar
+11-DotToken: .
+11-Identifier: load
+10-OpenParenToken: (
+10-SyntaxList: dataForGraph
+11-Identifier: dataForGraph
+10-CloseParenToken: )
+9-SemicolonToken: ;
+8-VariableStatement: var g = astar.getGraph();
+9-VariableDeclarationList: var g = astar.getGraph()
+10-VarKeyword: var
+10-SyntaxList: g = astar.getGraph()
+11-VariableDeclaration: g = astar.getGraph()
+12-Identifier: g
+12-EqualsToken: =
+12-CallExpression: astar.getGraph()
+13-PropertyAccessExpression: astar.getGraph
+14-Identifier: astar
+14-DotToken: .
+14-Identifier: getGraph
+13-OpenParenToken: (
+13-SyntaxList:
+13-CloseParenToken: )
+9-SemicolonToken: ;
+8-VariableStatement: var path = astar.path(g.getNode(0,0), g.getNode(3,3));
+9-VariableDeclarationList: var path = astar.path(g.getNode(0,0), g.getNode(3,3))
+10-VarKeyword: var
+10-SyntaxList: path = astar.path(g.getNode(0,0), g.getNode(3,3))
+11-VariableDeclaration: path = astar.path(g.getNode(0,0), g.getNode(3,3))
+12-Identifier: path
+12-EqualsToken: =
+12-CallExpression: astar.path(g.getNode(0,0), g.getNode(3,3))
+13-PropertyAccessExpression: astar.path
+14-Identifier: astar
+14-DotToken: .
+14-Identifier: path
+13-OpenParenToken: (
+13-SyntaxList: g.getNode(0,0), g.getNode(3,3)
+14-CallExpression: g.getNode(0,0)
+15-PropertyAccessExpression: g.getNode
+16-Identifier: g
+16-DotToken: .
+16-Identifier: getNode
+15-OpenParenToken: (
+15-SyntaxList: 0,0
+16-NumericLiteral: 0
+16-CommaToken: ,
+16-NumericLiteral: 0
+15-CloseParenToken: )
+14-CommaToken: ,
+14-CallExpression: g.getNode(3,3)
+15-PropertyAccessExpression: g.getNode
+16-Identifier: g
+16-DotToken: .
+16-Identifier: getNode
+15-OpenParenToken: (
+15-SyntaxList: 3,3
+16-NumericLiteral: 3
+16-CommaToken: ,
+16-NumericLiteral: 3
+15-CloseParenToken: )
+13-CloseParenToken: )
+9-SemicolonToken: ;
+8-ForStatement: for (var i = 0; i < path.length; i++) {
+                        console.log(path[i].toString());
+                }
+9-ForKeyword: for
+9-OpenParenToken: (
+9-VariableDeclarationList: var i = 0
+10-VarKeyword: var
+10-SyntaxList: i = 0
+11-VariableDeclaration: i = 0
+12-Identifier: i
+12-EqualsToken: =
+12-NumericLiteral: 0
+9-SemicolonToken: ;
+9-BinaryExpression: i < path.length
+10-Identifier: i
+10-LessThanToken: <
+10-PropertyAccessExpression: path.length
+11-Identifier: path
+11-DotToken: .
+11-Identifier: length
+9-SemicolonToken: ;
+9-PostfixUnaryExpression: i++
+10-Identifier: i
+10-PlusPlusToken: ++
+9-CloseParenToken: )
+9-Block: {
+                        console.log(path[i].toString());
+                }
+10-OpenBraceToken: {
+10-SyntaxList: console.log(path[i].toString());
+11-ExpressionStatement: console.log(path[i].toString());
+12-CallExpression: console.log(path[i].toString())
+13-PropertyAccessExpression: console.log
+14-Identifier: console
+14-DotToken: .
+14-Identifier: log
+13-OpenParenToken: (
+13-SyntaxList: path[i].toString()
+14-CallExpression: path[i].toString()
+15-PropertyAccessExpression: path[i].toString
+16-ElementAccessExpression: path[i]
+17-Identifier: path
+17-OpenBracketToken: [
+17-Identifier: i
+17-CloseBracketToken: ]
+16-DotToken: .
+16-Identifier: toString
+15-OpenParenToken: (
+15-SyntaxList:
+15-CloseParenToken: )
+13-CloseParenToken: )
+12-SemicolonToken: ;
+10-CloseBraceToken: }
+7-CloseBraceToken: }
+5-ExpressionStatement: main();
+6-CallExpression: main()
+7-Identifier: main
+7-OpenParenToken: (
+7-SyntaxList:
+7-CloseParenToken: )
+6-SemicolonToken: ;
+4-CloseBraceToken: }
+1-EndOfFileToken:
