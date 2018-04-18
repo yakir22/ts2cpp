@@ -84,7 +84,7 @@ export class T2CParser{
 			switch (child.kind) {
 				case ts.SyntaxKind.StringLiteral:
 					// TODO :: handle import path properly
-					this.mCurrentFile.imports.push(child.getText().replace(/\'/g,"").replace("./",this.mCurrentDirectory + "/") + ".ts");
+					this.mCurrentFile.imports.push(child.getText().replace(/\'/g,"").replace(/\"/g,"").replace("./",this.mCurrentDirectory + "/") + ".ts");
 					break;
 			}	
 		}	
@@ -126,9 +126,14 @@ export class T2CParser{
 					this.mCurrentClass.variables.push(v);
 					break;
 				case ts.SyntaxKind.Constructor:
-					case ts.SyntaxKind.MethodDeclaration:
-						this.parseFunction(child);
-						break;
+				case ts.SyntaxKind.MethodDeclaration:
+					this.parseFunction(child);
+					break;
+
+				case ts.SyntaxKind.Decorator:
+					this.mCurrentClass.decorators.push(child.getText());
+					break;
+
 				}
 		}
 	}
@@ -283,6 +288,19 @@ export class T2CParser{
 	}
 
 
+	
+	private parseFunctionSyntaxList(node: ts.Node){
+		for ( let i = 0 ; i < node.getChildren().length ; i++ ){
+			let child = node.getChildAt(i);
+			if (child.kind == ts.SyntaxKind.Decorator) {
+				this.mCurrentFunction.decorators.push(child.getText());
+			}
+			else{
+				this.mCurrentFunction.access = child.getText(); // TODO :: check if always true??
+			}
+		}
+	}
+
 	private parseFunction(node: ts.Node){
 		this.mCurrentFunction = new T2CFunction();
 		let inSignatureParams = false;
@@ -309,7 +327,7 @@ export class T2CParser{
 						this.parseFunctionParameters(child);
 					}
 					else {
-						this.mCurrentFunction.access = child.getText(); // TODO :: check if always true??
+						this.parseFunctionSyntaxList(child);
 					}
 					break;
 				case ts.SyntaxKind.Block:

@@ -22,7 +22,7 @@ export class T2CNamespace{
 
     private startStringClean(file : T2CFile){
         if ( this.name == "Testing" ) 
-            return "namespace " + file.name.replace("/","_") + "_" + this.name; 
+            return "namespace " + file.name.replace(/\//g,"_") + "_" + this.name; 
         return "namespace " + this.name;
     }
     

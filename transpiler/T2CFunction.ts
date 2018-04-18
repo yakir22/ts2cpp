@@ -7,6 +7,7 @@ export class T2CFunction{
 	public access 		: string = "";
 	public parameters 	: T2CVariable[] = [];
 	public body 		: ts.Node = null;
+	public decorators 	: string[] = [];
 
 	public getCppAccess() {
 		if ( this.access.length == 0  )
@@ -17,14 +18,4 @@ export class T2CFunction{
 	public hasBody() : boolean {
 		return this.body != null;
 	}
-	
-    public canAutoExport() : boolean{
-        if (! this.returns.isSimple() ) return false;
-        for ( let i = 0 ; i < this.parameters.length ; i++ ){
-            if ( !this.parameters[i].isSimple() )
-                return false;
-        } 
-        return true;
-    }
-
 }

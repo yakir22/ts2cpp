@@ -262,7 +262,7 @@ export class T2CCodeBuilder{
 	}
 
 	private appendIncludesCpp(file : T2CFile){
-        this.append("#include \"" + file.hName + "\"");
+        this.append("#include \"" + file.hName.substr(file.name.lastIndexOf("/") + 1) + "\"");
         this.newLine();
 
         file.imports.forEach(impt => {

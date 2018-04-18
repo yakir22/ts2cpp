@@ -14,6 +14,15 @@ export class T2CVariable{
 		return T2CVariable.getCppType(this.type,this.size)
 	}
 
+	public toCppArrayItemType(): string{
+		if ( this.size == 0 )
+			throw "bad call";
+		this.size--;
+		let ret =  T2CVariable.getCppType(this.type,this.size)
+		this.size++;
+		return ret;
+	}
+
 	static getCppType(type : string,size : number) : string{
 		let typeString  = "";
 		if (type == "!~")				typeString = ""; // constructor
