@@ -20,9 +20,12 @@ export class T2CNamespace{
         console.log("functions : " + this.functions.length);
     }
 
+    public nameClean(file : T2CFile) {
+        return file.name.replace(/\//g,"_") + "_" + this.name;
+    } 
     private startStringClean(file : T2CFile){
         if ( this.name == "Testing" ) 
-            return "namespace " + file.name.replace(/\//g,"_") + "_" + this.name; 
+            return "namespace " + this.nameClean(file); 
         return "namespace " + this.name;
     }
     
