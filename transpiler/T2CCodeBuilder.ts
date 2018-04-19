@@ -19,11 +19,20 @@ export class T2CCodeBuilder{
 	private mCodeBufferArray 	: string[] = [];
 	private mOutDir 			: string;
 	
-	protected appendCustomCodeH(cls : T2CClass){
-	}
+	protected appendCustomCodeH(cls : T2CClass){}
 
-	protected appendCustomCodeCpp(cls : T2CClass){
-	}
+	protected appendCustomCodeStartFunctionCpp(func : T2CFunction, cls : T2CClass){}
+	protected appendCustomCodeEndFunctionCpp(func : T2CFunction,cls : T2CClass){}
+	protected appendCustumCodeAfterFunctionCpp(func : T2CFunction,cls : T2CClass){}
+	protected appendCustumCodeAfterFunctionH(func : T2CFunction,cls : T2CClass){}
+	protected appendCustomCodeStartClassCpp(cls : T2CClass){}
+	protected appendCustomCodeEndClassCpp(cls : T2CClass){}
+	protected appendCustomCodeStartOfFileH(file: T2CFile){}
+	protected appendCustomCodeEndOfFileH(file: T2CFile){}
+	protected appendCustomCodeStartOfFileCpp(file: T2CFile){}
+	protected appendCustomCodeEndOfFileCpp(file: T2CFile){}
+
+
 
 	static createCode(root : T2CRoot,outDir : string = "./",customBuilder : T2CCodeBuilder = null){
 		let builder = customBuilder;
@@ -61,6 +70,7 @@ export class T2CCodeBuilder{
 		this.clearCodeBuffer();
         this.appendIncludesH(file);
         file.namespaces.forEach(ns => {
+			this.appendCustomCodeStartOfFileH(file);
             this.append(ns.startString(file));
             this.newLine();
             ns.classes.forEach(cls => {
@@ -70,7 +80,8 @@ export class T2CCodeBuilder{
                 this.appendGlobalFunctionCppH(func);
             });
             this.append(ns.endString(file));
-            this.newLine();
+			this.newLine();
+			this.appendCustomCodeEndOfFileH(file);
         });
 		this.flushCodeBuffer(file.hName);
 	}
@@ -139,6 +150,7 @@ export class T2CCodeBuilder{
 
 		cls.functions.forEach(func => {
 			this.appendClassFunctionH(func);
+			this.appendCustumCodeAfterFunctionH(func,cls);
         });
         
         this.appendCustomCodeH(cls);
@@ -164,15 +176,17 @@ export class T2CCodeBuilder{
 		this.append(func.getCppAccess() + ": ");
 		if (func.returns.type != "!~")
 			this.append("virtual ");
-		this.appendFunctionSignature(func);
+		this.appendFunctionSignature(func,false);
 		this.append(";\n");
 	}
 
-	private appendFunctionSignature(func : T2CFunction,memberOfClass : string = ""){
+	private appendFunctionSignature(func : T2CFunction,inImplementation : boolean,memberOfClass : string = ""){
 		this.append(func.returns.toCppType() + " " + (memberOfClass.length == 0?"":(memberOfClass +"::" ))+ func.name + "(");
 		let count = 0;
 		func.parameters.forEach(param => {
 			this.append(param.toCppType() + " " + param.name);
+			if ( param.hasValue() && !inImplementation)
+				this.append(" = " + param.value);
 			if (count++ < func.parameters.length - 1)
 				this.append(",");
 		});
@@ -245,7 +259,8 @@ export class T2CCodeBuilder{
 	private createCppFile(file : T2CFile ){
 
 		this.clearCodeBuffer();
-        this.appendIncludesCpp(file);
+		this.appendCustomCodeStartOfFileCpp(file);
+		this.appendIncludesCpp(file);
         file.namespaces.forEach(ns => {
             this.append(ns.startString(file));
             this.newLine();
@@ -258,6 +273,7 @@ export class T2CCodeBuilder{
             this.append(ns.endString(file));
             this.newLine();
         });
+		this.appendCustomCodeEndOfFileCpp(file);
 		this.flushCodeBuffer(file.cppName);
 	}
 
@@ -266,6 +282,8 @@ export class T2CCodeBuilder{
         this.newLine();
 
         file.imports.forEach(impt => {
+			if ( impt.indexOf("BindingDecorators") >= 0 )
+				return;
             this.append("#include \"" + impt + ".h\"");
             this.newLine();
         });
@@ -274,14 +292,16 @@ export class T2CCodeBuilder{
 	}
 
 	private appendClassCpp(cls : T2CClass){
+        this.appendCustomCodeStartClassCpp(cls);
 		cls.functions.forEach(func => {
-			this.appendFunctionSignature(func, cls.name);
+			this.appendFunctionSignature(func,true, cls.name);
 			this.newLine();
 			this.appendFunctionBody(func,cls);
+			this.appendCustumCodeAfterFunctionCpp(func,cls);
 		});
         this.newLine();
         
-        this.appendCustomCodeCpp(cls);
+        this.appendCustomCodeEndClassCpp(cls);
 	}
 
 	protected newLine(count = 1){
@@ -290,7 +310,7 @@ export class T2CCodeBuilder{
 	}
 
 	private appendGlobalFunctionCpp(func){
-        this.appendFunctionSignature(func);
+        this.appendFunctionSignature(func,true);
         this.newLine();
         this.appendFunctionBody(func,null);
 	}
@@ -362,6 +382,7 @@ export class T2CCodeBuilder{
 	private appendFunctionBody(func : T2CFunction,cls : T2CClass){
 		let tokens = this.buildTokenList(func.body);
 		let token = this.getNextToken(tokens);
+		let bracesCount = -1;
 		let prevToken = token;
 		let inNewStatement = false;
 		let inInitialisationList = 0;
@@ -381,6 +402,7 @@ export class T2CCodeBuilder{
 					this.append(token.getText());
 				}
 				this.append("{");
+				this.appendCustomCodeStartFunctionCpp(func,cls);
 			}
 		}
 
@@ -522,6 +544,28 @@ export class T2CCodeBuilder{
 					}
 					break;
 				}
+
+				case ts.SyntaxKind.OpenBraceToken:
+				{
+					this.append(token.getText());
+					bracesCount++;
+					if ( bracesCount == 0 )
+					{
+						this.appendCustomCodeStartFunctionCpp(func,cls);
+					}
+					break;
+				}
+				case ts.SyntaxKind.CloseBraceToken:
+				{
+					bracesCount--;
+					if ( bracesCount == -1 )
+					{
+						this.appendCustomCodeEndFunctionCpp(func,cls);
+					}
+					this.append(token.getText());
+					break;
+				}
+
 				case ts.SyntaxKind.OpenBracketToken:
 					if (inInitialisationList > 0 || prevToken.kind == ts.SyntaxKind.EqualsToken ||
 						prevToken.kind == ts.SyntaxKind.OpenParenToken || prevToken.kind == ts.SyntaxKind.CommaToken )

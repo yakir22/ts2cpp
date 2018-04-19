@@ -16,7 +16,7 @@ export class T2CVariable{
 
 	public toCppArrayItemType(): string{
 		if ( this.size == 0 )
-			throw "bad call";
+			throw "bad usage";
 		this.size--;
 		let ret =  T2CVariable.getCppType(this.type,this.size)
 		this.size++;
@@ -54,7 +54,7 @@ export class T2CVariable{
         return false;
 	}
 	
-    public haveValue() : boolean {
+    public hasValue() : boolean {
         return this.value != "";
     }
 

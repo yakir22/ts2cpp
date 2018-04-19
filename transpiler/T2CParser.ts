@@ -250,6 +250,7 @@ export class T2CParser{
 				case ts.SyntaxKind.StringLiteral:
 				case ts.SyntaxKind.TrueKeyword:
 				case ts.SyntaxKind.FalseKeyword:
+				case ts.SyntaxKind.NullKeyword:
 					ret.value = child.getText();
 					break;					
 				case ts.SyntaxKind.ArrayType:
@@ -313,8 +314,6 @@ export class T2CParser{
 					break;
 				case ts.SyntaxKind.Identifier:
 					this.mCurrentFunction.name = child.getText();
-					if ( "fromArray" == this.mCurrentFunction.name )
-					this.mCurrentFunction.name = "fromArray";
 					break;
 				case ts.SyntaxKind.OpenParenToken:
 					inSignatureParams = true;
