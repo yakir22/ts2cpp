@@ -2,3 +2,4 @@ node_modules/
 out/
 templates/vcxproj/.vs/
 templates/vcxproj/TemplateProject.sln
+templates/vcxproj/Debug/
