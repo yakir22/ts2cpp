@@ -26,12 +26,14 @@ export class T2CCodeBuilder{
 	protected appendCustumCodeAfterFunctionCpp(func : T2CFunction,cls : T2CClass){}
 	protected appendCustumCodeAfterFunctionH(func : T2CFunction,cls : T2CClass){}
 	protected appendCustomCodeStartClassCpp(cls : T2CClass){}
+	protected appendCustomCodeStartClassH(cls : T2CClass){}
+	protected appendCustomCodeAfterClassH(cls : T2CClass){}
 	protected appendCustomCodeEndClassCpp(cls : T2CClass){}
 	protected appendCustomCodeStartOfFileH(file: T2CFile){}
 	protected appendCustomCodeEndOfFileH(file: T2CFile){}
 	protected appendCustomCodeStartOfFileCpp(file: T2CFile){}
 	protected appendCustomCodeEndOfFileCpp(file: T2CFile){}
-
+	protected appendCustomIncludesH(file: T2CFile,first : boolean){}
 
 
 	static createCode(root : T2CRoot,outDir : string = "./",customBuilder : T2CCodeBuilder = null){
@@ -59,7 +61,7 @@ export class T2CCodeBuilder{
         this.append("#pragma once");
         this.newLine();
         this.mRoot.forwardDeclarations.forEach(fd => {
-            this.append("typedef std::shared_ptr<class " + fd + "> " + fd + "Ref;");                
+            this.append("typedef boost::intrusive_ptr<class " + fd + "> " + fd + "Ref;");                
             this.newLine();
         });
         this.flushCodeBuffer("forwardDeclarations.h");
@@ -89,10 +91,11 @@ export class T2CCodeBuilder{
 		this.mCodeBufferArray = [];
 	}
 	private appendIncludesH(file : T2CFile ){
-		this.append("#pragma once\n");
-		this.append("#include \"js2cpp_engine.h\"\n");
-		this.append("#include \"forwardDeclarations.h\"\n");
-	
+		this.appendX("#pragma once");
+		this.appendCustomIncludesH(file,true);
+		this.appendX("#include \"js2cpp_engine.h\"");
+		this.appendX("#include \"forwardDeclarations.h\"");
+		this.appendCustomIncludesH(file,false);
 		// TODO :: 
 		/*for (auto dep : file->dependencies)
 		{
@@ -143,20 +146,27 @@ export class T2CCodeBuilder{
 		this.append("{");
         this.newLine();
 
+		this.appendCustomCodeStartClassH(cls);
 		// TODO :: sort by modifier
 		cls.variables.forEach(v => {
 			this.appendClassVariable(v);
 		});
 
+
+		cls.hasConstructor();
 		cls.functions.forEach(func => {
 			this.appendClassFunctionH(func);
 			this.appendCustumCodeAfterFunctionH(func,cls);
         });
-        
+		
+
+		
+
         this.appendCustomCodeH(cls);
 
-        this.append("};");
+		this.append("};");
         this.newLine();
+		this.appendCustomCodeAfterClassH(cls);
         this.newLine();
 	}
 
@@ -378,13 +388,56 @@ export class T2CCodeBuilder{
 	}
 
 
+	protected appendNewStatement(tokens : ts.Node[]) {
+		this.append("");
+		let token = this.getNextToken(tokens,ts.SyntaxKind.Identifier);
+		this.assert ( token != null );
+		if ( token.getText() == "Array" )
+		{
+			this.popLast();
+			this.append("JSArray");
+		}
+		else
+		{
+			this.append(token.getText() + "Ref( new " + token.getText());
+		}
+
+		token = this.getNextToken(tokens,ts.SyntaxKind.OpenParenToken);
+		let count = 1;
+		while ( token != null && count > 0)
+		{
+			if ( token.kind == ts.SyntaxKind.NewKeyword )
+			{
+				this.appendNewStatement(tokens);
+			}
+			else if ( token.kind == ts.SyntaxKind.DotToken )
+			{
+				this.append("->");
+			}
+			else 
+			{
+				this.append(token.getText());
+			}
+
+			token = this.getNextToken(tokens);
+			if ( token.kind == ts.SyntaxKind.OpenParenToken )
+				count++;
+			else if ( token.kind == ts.SyntaxKind.CloseParenToken )
+				count--
+		}
+		this.assert ( token != null );
+		this.append(token.getText());
+		this.append(")");
+		
+	}
+
 
 	private appendFunctionBody(func : T2CFunction,cls : T2CClass){
 		let tokens = this.buildTokenList(func.body);
 		let token = this.getNextToken(tokens);
 		let bracesCount = -1;
 		let prevToken = token;
-		let inNewStatement = false;
+		//let inNewStatement = false;
 		let inInitialisationList = 0;
 		if ( cls != null )
 		{
@@ -411,24 +464,26 @@ export class T2CCodeBuilder{
 			switch(token.kind)
 			{
 				case ts.SyntaxKind.NewKeyword:
-					this.append("std::make_shared<");
-					inNewStatement = true;
+					this.appendNewStatement(tokens);
+					//this.append("std::make_shared<");
+//					inNewStatement = true;
 					break;
 				case ts.SyntaxKind.Identifier:
-					if ( inNewStatement )
+/*					if ( inNewStatement )
 					{
 						if ( token.getText() == "Array"){
-							this.popLast();
-							this.append("JSArray");
-							inNewStatement = false;
+							// TODO :: 
+							throw "not implemented!";
+							//this.popLast();
+							//this.append("JSArray");
+							//inNewStatement = false;
 						}
 						else 
 						{
-							this.append(token.getText() + ">");
-							inNewStatement = false;
+							this.append(token.getText() + "Ref( new " + token.getText());
 						}
 					}
-					else 
+					else */
 					{
 						let id = token.getText();
 						this.append(token.getText());
@@ -441,8 +496,8 @@ export class T2CCodeBuilder{
 				case ts.SyntaxKind.LetKeyword:
 				{
 					let v = new T2CVariable();
-					let token = this.getNextToken(tokens,ts.SyntaxKind.LetKeyword , ts.SyntaxKind.VarKeyword);
-					this.assert(token!=null);
+					//let token = this.getNextToken(tokens,ts.SyntaxKind.LetKeyword , ts.SyntaxKind.VarKeyword);
+					//this.assert(token!=null);
 					
 					token = this.getNextToken(tokens,ts.SyntaxKind.Identifier);
 					this.assert(token!=null);

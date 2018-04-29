@@ -49,7 +49,8 @@ export class T2CVariable{
 	public isSimple() : boolean{
         if (this.type == "number") return true;
         if (this.type == "boolean")    return true;
-        if (this.type == "string")    return true;
+		if (this.type == "string")    return true;
+		if (this.type == "any")    return true;
         if (this.type == "void" || this.type == "")    return true;
         return false;
 	}

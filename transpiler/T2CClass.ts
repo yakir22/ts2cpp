@@ -10,7 +10,14 @@ export class T2CClass{
 	public classes   	: T2CClass[] = [];
 	public decorators   : string[] = [];
 
-	
+	public hasConstructor() : boolean{
+		for ( let i = 0 ; i < this.functions.length ; i++ )
+		{
+			if ( this.functions[i].name == this.name )
+				return true;
+		}
+		return false;		
+	}
 
 	public getConstructor() : T2CFunction{
 		for ( let i = 0 ; i < this.functions.length ; i++ )

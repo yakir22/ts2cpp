@@ -15,6 +15,10 @@ export class T2CFunction{
 		return this.access;
 	}
 
+	public isConstructor() : boolean{
+		return this.name == "constructor";
+	}
+
 	public hasBody() : boolean {
 		return this.body != null;
 	}
