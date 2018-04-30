@@ -1,0 +1,377 @@
+0-SourceFile: class Animal {
+    name: string;
+    constructor(theName: string) { this.name = theName; }
+    public move(distanceInMeters: number = 0) {
+        console.log(this.name + "moved" + distanceInMeters + "m");
+    }
+}
+
+class Snake extends Animal {
+    constructor(name: string) { super(name); }
+    public move(distanceInMeters = 5) {
+        console.log("Slithering...");
+        super.move(distanceInMeters);
+    }
+}
+
+class Horse extends Animal {
+    constructor(name: string) { super(name); }
+    public move(distanceInMeters = 45) {
+        console.log("Galloping...");
+        super.move(distanceInMeters);
+    }
+}
+
+let sam : Animal = new Snake("Sammy the Python");
+let tom: Animal = new Horse("Tommy the Palomino");
+
+sam.move();
+tom.move(34);
+1-SyntaxList: class Animal {
+    name: string;
+    constructor(theName: string) { this.name = theName; }
+    public move(distanceInMeters: number = 0) {
+        console.log(this.name + "moved" + distanceInMeters + "m");
+    }
+}
+
+class Snake extends Animal {
+    constructor(name: string) { super(name); }
+    public move(distanceInMeters = 5) {
+        console.log("Slithering...");
+        super.move(distanceInMeters);
+    }
+}
+
+class Horse extends Animal {
+    constructor(name: string) { super(name); }
+    public move(distanceInMeters = 45) {
+        console.log("Galloping...");
+        super.move(distanceInMeters);
+    }
+}
+
+let sam : Animal = new Snake("Sammy the Python");
+let tom: Animal = new Horse("Tommy the Palomino");
+
+sam.move();
+tom.move(34);
+2-ClassDeclaration: class Animal {
+    name: string;
+    constructor(theName: string) { this.name = theName; }
+    public move(distanceInMeters: number = 0) {
+        console.log(this.name + "moved" + distanceInMeters + "m");
+    }
+}
+3-ClassKeyword: class
+3-Identifier: Animal
+3-OpenBraceToken: {
+3-SyntaxList: name: string;
+    constructor(theName: string) { this.name = theName; }
+    public move(distanceInMeters: number = 0) {
+        console.log(this.name + "moved" + distanceInMeters + "m");
+    }
+4-PropertyDeclaration: name: string;
+5-Identifier: name
+5-ColonToken: :
+5-StringKeyword: string
+5-SemicolonToken: ;
+4-Constructor: constructor(theName: string) { this.name = theName; }
+5-ConstructorKeyword: constructor
+5-OpenParenToken: (
+5-SyntaxList: theName: string
+6-Parameter: theName: string
+7-Identifier: theName
+7-ColonToken: :
+7-StringKeyword: string
+5-CloseParenToken: )
+5-Block: { this.name = theName; }
+6-OpenBraceToken: {
+6-SyntaxList: this.name = theName;
+7-ExpressionStatement: this.name = theName;
+8-BinaryExpression: this.name = theName
+9-PropertyAccessExpression: this.name
+10-ThisKeyword: this
+10-DotToken: .
+10-Identifier: name
+9-EqualsToken: =
+9-Identifier: theName
+8-SemicolonToken: ;
+6-CloseBraceToken: }
+4-MethodDeclaration: public move(distanceInMeters: number = 0) {
+        console.log(this.name + "moved" + distanceInMeters + "m");
+    }
+5-SyntaxList: public
+6-PublicKeyword: public
+5-Identifier: move
+5-OpenParenToken: (
+5-SyntaxList: distanceInMeters: number = 0
+6-Parameter: distanceInMeters: number = 0
+7-Identifier: distanceInMeters
+7-ColonToken: :
+7-NumberKeyword: number
+7-EqualsToken: =
+7-NumericLiteral: 0
+5-CloseParenToken: )
+5-Block: {
+        console.log(this.name + "moved" + distanceInMeters + "m");
+    }
+6-OpenBraceToken: {
+6-SyntaxList: console.log(this.name + "moved" + distanceInMeters + "m");
+7-ExpressionStatement: console.log(this.name + "moved" + distanceInMeters + "m");
+8-CallExpression: console.log(this.name + "moved" + distanceInMeters + "m")
+9-PropertyAccessExpression: console.log
+10-Identifier: console
+10-DotToken: .
+10-Identifier: log
+9-OpenParenToken: (
+9-SyntaxList: this.name + "moved" + distanceInMeters + "m"
+10-BinaryExpression: this.name + "moved" + distanceInMeters + "m"
+11-BinaryExpression: this.name + "moved" + distanceInMeters
+12-BinaryExpression: this.name + "moved"
+13-PropertyAccessExpression: this.name
+14-ThisKeyword: this
+14-DotToken: .
+14-Identifier: name
+13-PlusToken: +
+13-StringLiteral: "moved"
+12-PlusToken: +
+12-Identifier: distanceInMeters
+11-PlusToken: +
+11-StringLiteral: "m"
+9-CloseParenToken: )
+8-SemicolonToken: ;
+6-CloseBraceToken: }
+3-CloseBraceToken: }
+2-ClassDeclaration: class Snake extends Animal {
+    constructor(name: string) { super(name); }
+    public move(distanceInMeters = 5) {
+        console.log("Slithering...");
+        super.move(distanceInMeters);
+    }
+}
+3-ClassKeyword: class
+3-Identifier: Snake
+3-SyntaxList: extends Animal
+4-HeritageClause: extends Animal
+5-ExtendsKeyword: extends
+5-SyntaxList: Animal
+6-ExpressionWithTypeArguments: Animal
+7-Identifier: Animal
+3-OpenBraceToken: {
+3-SyntaxList: constructor(name: string) { super(name); }
+    public move(distanceInMeters = 5) {
+        console.log("Slithering...");
+        super.move(distanceInMeters);
+    }
+4-Constructor: constructor(name: string) { super(name); }
+5-ConstructorKeyword: constructor
+5-OpenParenToken: (
+5-SyntaxList: name: string
+6-Parameter: name: string
+7-Identifier: name
+7-ColonToken: :
+7-StringKeyword: string
+5-CloseParenToken: )
+5-Block: { super(name); }
+6-OpenBraceToken: {
+6-SyntaxList: super(name);
+7-ExpressionStatement: super(name);
+8-CallExpression: super(name)
+9-SuperKeyword: super
+9-OpenParenToken: (
+9-SyntaxList: name
+10-Identifier: name
+9-CloseParenToken: )
+8-SemicolonToken: ;
+6-CloseBraceToken: }
+4-MethodDeclaration: public move(distanceInMeters = 5) {
+        console.log("Slithering...");
+        super.move(distanceInMeters);
+    }
+5-SyntaxList: public
+6-PublicKeyword: public
+5-Identifier: move
+5-OpenParenToken: (
+5-SyntaxList: distanceInMeters = 5
+6-Parameter: distanceInMeters = 5
+7-Identifier: distanceInMeters
+7-EqualsToken: =
+7-NumericLiteral: 5
+5-CloseParenToken: )
+5-Block: {
+        console.log("Slithering...");
+        super.move(distanceInMeters);
+    }
+6-OpenBraceToken: {
+6-SyntaxList: console.log("Slithering...");
+        super.move(distanceInMeters);
+7-ExpressionStatement: console.log("Slithering...");
+8-CallExpression: console.log("Slithering...")
+9-PropertyAccessExpression: console.log
+10-Identifier: console
+10-DotToken: .
+10-Identifier: log
+9-OpenParenToken: (
+9-SyntaxList: "Slithering..."
+10-StringLiteral: "Slithering..."
+9-CloseParenToken: )
+8-SemicolonToken: ;
+7-ExpressionStatement: super.move(distanceInMeters);
+8-CallExpression: super.move(distanceInMeters)
+9-PropertyAccessExpression: super.move
+10-SuperKeyword: super
+10-DotToken: .
+10-Identifier: move
+9-OpenParenToken: (
+9-SyntaxList: distanceInMeters
+10-Identifier: distanceInMeters
+9-CloseParenToken: )
+8-SemicolonToken: ;
+6-CloseBraceToken: }
+3-CloseBraceToken: }
+2-ClassDeclaration: class Horse extends Animal {
+    constructor(name: string) { super(name); }
+    public move(distanceInMeters = 45) {
+        console.log("Galloping...");
+        super.move(distanceInMeters);
+    }
+}
+3-ClassKeyword: class
+3-Identifier: Horse
+3-SyntaxList: extends Animal
+4-HeritageClause: extends Animal
+5-ExtendsKeyword: extends
+5-SyntaxList: Animal
+6-ExpressionWithTypeArguments: Animal
+7-Identifier: Animal
+3-OpenBraceToken: {
+3-SyntaxList: constructor(name: string) { super(name); }
+    public move(distanceInMeters = 45) {
+        console.log("Galloping...");
+        super.move(distanceInMeters);
+    }
+4-Constructor: constructor(name: string) { super(name); }
+5-ConstructorKeyword: constructor
+5-OpenParenToken: (
+5-SyntaxList: name: string
+6-Parameter: name: string
+7-Identifier: name
+7-ColonToken: :
+7-StringKeyword: string
+5-CloseParenToken: )
+5-Block: { super(name); }
+6-OpenBraceToken: {
+6-SyntaxList: super(name);
+7-ExpressionStatement: super(name);
+8-CallExpression: super(name)
+9-SuperKeyword: super
+9-OpenParenToken: (
+9-SyntaxList: name
+10-Identifier: name
+9-CloseParenToken: )
+8-SemicolonToken: ;
+6-CloseBraceToken: }
+4-MethodDeclaration: public move(distanceInMeters = 45) {
+        console.log("Galloping...");
+        super.move(distanceInMeters);
+    }
+5-SyntaxList: public
+6-PublicKeyword: public
+5-Identifier: move
+5-OpenParenToken: (
+5-SyntaxList: distanceInMeters = 45
+6-Parameter: distanceInMeters = 45
+7-Identifier: distanceInMeters
+7-EqualsToken: =
+7-NumericLiteral: 45
+5-CloseParenToken: )
+5-Block: {
+        console.log("Galloping...");
+        super.move(distanceInMeters);
+    }
+6-OpenBraceToken: {
+6-SyntaxList: console.log("Galloping...");
+        super.move(distanceInMeters);
+7-ExpressionStatement: console.log("Galloping...");
+8-CallExpression: console.log("Galloping...")
+9-PropertyAccessExpression: console.log
+10-Identifier: console
+10-DotToken: .
+10-Identifier: log
+9-OpenParenToken: (
+9-SyntaxList: "Galloping..."
+10-StringLiteral: "Galloping..."
+9-CloseParenToken: )
+8-SemicolonToken: ;
+7-ExpressionStatement: super.move(distanceInMeters);
+8-CallExpression: super.move(distanceInMeters)
+9-PropertyAccessExpression: super.move
+10-SuperKeyword: super
+10-DotToken: .
+10-Identifier: move
+9-OpenParenToken: (
+9-SyntaxList: distanceInMeters
+10-Identifier: distanceInMeters
+9-CloseParenToken: )
+8-SemicolonToken: ;
+6-CloseBraceToken: }
+3-CloseBraceToken: }
+2-VariableStatement: let sam : Animal = new Snake("Sammy the Python");
+3-VariableDeclarationList: let sam : Animal = new Snake("Sammy the Python")
+4-LetKeyword: let
+4-SyntaxList: sam : Animal = new Snake("Sammy the Python")
+5-VariableDeclaration: sam : Animal = new Snake("Sammy the Python")
+6-Identifier: sam
+6-ColonToken: :
+6-TypeReference: Animal
+7-Identifier: Animal
+6-EqualsToken: =
+6-NewExpression: new Snake("Sammy the Python")
+7-NewKeyword: new
+7-Identifier: Snake
+7-OpenParenToken: (
+7-SyntaxList: "Sammy the Python"
+8-StringLiteral: "Sammy the Python"
+7-CloseParenToken: )
+3-SemicolonToken: ;
+2-VariableStatement: let tom: Animal = new Horse("Tommy the Palomino");
+3-VariableDeclarationList: let tom: Animal = new Horse("Tommy the Palomino")
+4-LetKeyword: let
+4-SyntaxList: tom: Animal = new Horse("Tommy the Palomino")
+5-VariableDeclaration: tom: Animal = new Horse("Tommy the Palomino")
+6-Identifier: tom
+6-ColonToken: :
+6-TypeReference: Animal
+7-Identifier: Animal
+6-EqualsToken: =
+6-NewExpression: new Horse("Tommy the Palomino")
+7-NewKeyword: new
+7-Identifier: Horse
+7-OpenParenToken: (
+7-SyntaxList: "Tommy the Palomino"
+8-StringLiteral: "Tommy the Palomino"
+7-CloseParenToken: )
+3-SemicolonToken: ;
+2-ExpressionStatement: sam.move();
+3-CallExpression: sam.move()
+4-PropertyAccessExpression: sam.move
+5-Identifier: sam
+5-DotToken: .
+5-Identifier: move
+4-OpenParenToken: (
+4-SyntaxList:
+4-CloseParenToken: )
+3-SemicolonToken: ;
+2-ExpressionStatement: tom.move(34);
+3-CallExpression: tom.move(34)
+4-PropertyAccessExpression: tom.move
+5-Identifier: tom
+5-DotToken: .
+5-Identifier: move
+4-OpenParenToken: (
+4-SyntaxList: 34
+5-NumericLiteral: 34
+4-CloseParenToken: )
+3-SemicolonToken: ;
+1-EndOfFileToken:

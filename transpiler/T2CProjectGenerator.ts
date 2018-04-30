@@ -54,7 +54,7 @@ export class T2CProjectGenerator
         root.getFiles().forEach(file =>{
             if ( file.name.indexOf("BindingDecorators") != -1 )
                 return;
-            projectFiles += "<ClCompile Include=\"" + file.cppName + "\" />\n";
+            projectFiles += "<ClCompile Include=\"" + file.bareName + ".cpp\" />\n";
             if ( file.bareName == name ){
                 file.namespaces.forEach(ns =>{
                     ns.functions.forEach(func => {

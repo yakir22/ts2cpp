@@ -156,7 +156,10 @@ public:
 	{
 		mInternalArray = std::make_shared<std::vector<T> >();
 	}
-
+	~JSArray() 
+	{
+		mInternalArray = nullptr;
+	}
 /*
 	JSArray(JSArray<T> & other)
 	{ 

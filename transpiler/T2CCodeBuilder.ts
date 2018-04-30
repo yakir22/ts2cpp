@@ -15,7 +15,7 @@ import {T2CRoot} from "./T2CRoot"
 import {T2CKindHelper} from "./T2CKindHelper"
 
 export class T2CCodeBuilder{
-	private mRoot 				: T2CRoot;
+	protected mRoot 				: T2CRoot;
 	private mCodeBufferArray 	: string[] = [];
 	private mOutDir 			: string;
 	
@@ -56,15 +56,15 @@ export class T2CCodeBuilder{
 
     }
     
-    private craeteForwardDeclarationFile(){
+    protected craeteForwardDeclarationFile(){
         this.clearCodeBuffer();
         this.append("#pragma once");
         this.newLine();
         this.mRoot.forwardDeclarations.forEach(fd => {
-            this.append("typedef boost::intrusive_ptr<class " + fd + "> " + fd + "Ref;");                
+            this.append("typedef std::shared_ptr<class " + fd + "> " + fd + "Ref;");                
             this.newLine();
         });
-        this.flushCodeBuffer("forwardDeclarations.h");
+        this.flushCodeBuffer(this.mRoot.rootDirectory + "forwardDeclarations.h");
     }
 
 
@@ -76,7 +76,7 @@ export class T2CCodeBuilder{
             this.append(ns.startString(file));
             this.newLine();
             ns.classes.forEach(cls => {
-                this.appendClassCppH(cls);
+                this.appendClassH(cls);
             });
             ns.functions.forEach(func => {
                 this.appendGlobalFunctionCppH(func);
@@ -93,7 +93,7 @@ export class T2CCodeBuilder{
 	private appendIncludesH(file : T2CFile ){
 		this.appendX("#pragma once");
 		this.appendCustomIncludesH(file,true);
-		this.appendX("#include \"js2cpp_engine.h\"");
+		this.appendX("#include \"ts2cpp_envelope.h\"");
 		this.appendX("#include \"forwardDeclarations.h\"");
 		this.appendCustomIncludesH(file,false);
 		// TODO :: 
@@ -123,7 +123,7 @@ export class T2CCodeBuilder{
         return ret;
     }
 
-	private appendClassCppH(cls : T2CClass){
+	private appendClassH(cls : T2CClass){
         this.mRoot.forwardDeclarations.push(cls.name);
         this.newLine();
 		this.append("class " + cls.name);
@@ -131,6 +131,7 @@ export class T2CCodeBuilder{
 
 		if ( cls.extends.length > 0 || cls.implements.length > 0 ) {
 			let first = true;
+			this.assert(cls.extends.length == 1);
 			cls.extends.forEach(base => {
 				this.append(first ? ":" : ",");
 				this.append("public " + base);
@@ -145,6 +146,11 @@ export class T2CCodeBuilder{
         this.newLine();
 		this.append("{");
         this.newLine();
+
+		if ( cls.extends.length > 0 )
+		{
+			this.appendX("private: typedef " + cls.extends[0] + " super;");
+		}
 
 		this.appendCustomCodeStartClassH(cls);
 		// TODO :: sort by modifier
@@ -232,20 +238,28 @@ export class T2CCodeBuilder{
             return true;
         return false;
     }
-	private flushCodeBuffer(filename : string ){
+	protected flushCodeBuffer(filename : string ){
         let buf = "";
         for ( let i = 0; i < this.mCodeBufferArray.length - 1 ; i++)
         {
             let token = this.mCodeBufferArray[i];
-            let next = this.mCodeBufferArray[i + 1];
-            if ( next.indexOf(".clear") == 0 || this.NS(token,next,"->") ||
+			let next = this.mCodeBufferArray[i + 1];
+			try {
+				if ( token == "super" && next == "->" ){
+					buf+="super::";
+					i++;
+				}
+				else if ( next.indexOf(".clear") == 0 || this.NS(token,next,"->") ||
                 //this.NS(token,next,"this") ||
-                this.IN(token,next,".(){}[]=<>;")) {
-                    buf += token;
-            }
-            else {
-                buf += token + " ";
-            }
+                	this.IN(token,next,".(){}[]=<>;")) {
+                    	buf += token;
+            	}
+ 	            else {
+    	            buf += token + " ";
+        	    }
+			} catch (error) {
+				console.log(error);				
+			}
         }
 		buf += this.mCodeBufferArray[this.mCodeBufferArray.length -1];
 		

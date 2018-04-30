@@ -113,11 +113,22 @@ export class T2CParser{
 			}
 		}
 	}
-
+	private parseClasHeritage(node: ts.Node) {
+		for ( let i = 0 ; i < node.getChildCount() ; i++ ){
+			let child = node.getChildAt(i);
+			if ( child.kind == ts.SyntaxKind.SyntaxList )
+			{
+				this.mCurrentClass.extends.push(child.getText());
+			}
+		}
+	}
 	private parseClassSyntaxList(node: ts.Node) {
 		for ( let i = 0 ; i < node.getChildCount() ; i++ ){
 			let child = node.getChildAt(i);
 			switch (child.kind) {
+				case ts.SyntaxKind.HeritageClause:
+					this.parseClasHeritage(child);
+					break;
 				case ts.SyntaxKind.ClassDeclaration : 
 					this.parseClass(child); // TODO :: handle subclasses 
 					break;
@@ -129,7 +140,6 @@ export class T2CParser{
 				case ts.SyntaxKind.MethodDeclaration:
 					this.parseFunction(child);
 					break;
-
 				case ts.SyntaxKind.Decorator:
 					this.mCurrentClass.decorators.push(child.getText());
 					break;

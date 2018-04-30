@@ -5,6 +5,7 @@ import {T2CExeBuilder} from "./T2CExeBuilder"
 
 export class T2CRoot{
 
+	public rootDirectory : string;
     private mFiles : T2CFile[] = [];
 	public forwardDeclarations : string[] = [] 
 	private mCustomBuilder : T2CCodeBuilder = null;
@@ -14,6 +15,7 @@ export class T2CRoot{
 
 	public processFile(filename : string){
 		let file = this.getFile(filename);
+		this.rootDirectory = filename.substring(0,filename.lastIndexOf("/") + 1);
 		this.processFileInternal(file);
 	}
 
