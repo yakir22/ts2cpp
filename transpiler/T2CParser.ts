@@ -180,6 +180,7 @@ export class T2CParser{
 	
 	private parseFunctionBody(node: ts.Node){
 		this.mCurrentFunction.body = node; // conversion will happen when creating the c++ files
+		this.mCurrentFunction.detectReturnTypeIfNeeded();
 	}
 
 	static parseArrayType(node: ts.Node,v : T2CVariable){
@@ -239,8 +240,10 @@ export class T2CParser{
 
 	static parseParameter(node: ts.Node) : T2CVariable{
 		let ret = new T2CVariable();
+		ret.node = node;
 		for ( let i = 0 ; i < node.getChildren().length ; i++ ){
 			let child = node.getChildAt(i);
+			let tt = child.getText();
 			switch (child.kind) {
 				case ts.SyntaxKind.SyntaxList:
 					ret.access = child.getText();
@@ -261,8 +264,11 @@ export class T2CParser{
 				case ts.SyntaxKind.TrueKeyword:
 				case ts.SyntaxKind.FalseKeyword:
 				case ts.SyntaxKind.NullKeyword:
+				case ts.SyntaxKind.NewExpression:
+					ret.valueNode = child;
 					ret.value = child.getText();
-					break;					
+					ret.valueKind = child.kind;
+					break;	
 				case ts.SyntaxKind.ArrayType:
 					T2CParser.parseArrayType(child,ret);
 					break;
@@ -278,6 +284,7 @@ export class T2CParser{
 			switch (child.kind) {
 				case ts.SyntaxKind.Parameter:
 					let v = T2CParser.parseParameter(child);
+					v.detectTypeIfNeeded();
 					this.mCurrentFunction.parameters.push(v);
 					break;
 			}

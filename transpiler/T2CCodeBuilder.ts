@@ -5,6 +5,7 @@ import * as shell from "shelljs";
 import * as fs from "fs"
 import * as path from "path"
 
+import {T2CUtils} from "./T2CUtils"
 import {T2CClass} from "./T2CClass"
 import {T2CNamespace} from "./T2CNamespace"
 import {T2CFile} from "./T2CFile"
@@ -131,7 +132,7 @@ export class T2CCodeBuilder{
 
 		if ( cls.extends.length > 0 || cls.implements.length > 0 ) {
 			let first = true;
-			this.assert(cls.extends.length == 1);
+			T2CUtils.assert(cls.extends.length == 1);
 			cls.extends.forEach(base => {
 				this.append(first ? ":" : ",");
 				this.append("public " + base);
@@ -343,69 +344,16 @@ export class T2CCodeBuilder{
 		this.mIgnoreNext = true;
 	}
 
-	static ArrayIdentifier = 10000;
-	static LengthIdentifier = 10001;
-
-	private buildTokenList(node : ts.Node) : ts.Node[]{
-		let ret : ts.Node[] = [];
-		function tokenize(node : ts.Node){
-			if ( node.kind >= ts.SyntaxKind.OpenBraceToken && node.kind <= ts.SyntaxKind.GlobalKeyword ){
-				if ( node.kind == ts.SyntaxKind.Identifier && node.getText() == "Array" )
-					node.kind = T2CCodeBuilder.ArrayIdentifier;
-				else if ( node.kind == ts.SyntaxKind.Identifier && node.getText() == "length" )
-					node.kind = T2CCodeBuilder.LengthIdentifier;
-				ret.push(node);
-				//console.log(J2CKindHelper.getNodeText(node));
-			}
-			if ( node.kind == ts.SyntaxKind.NumericLiteral || 
-				node.kind == ts.SyntaxKind.StringLiteral )
-			{
-				ret.push(node);
-				//console.log(J2CKindHelper.getNodeText(node));
-			}
-			for ( let i = 0 ; i < node.getChildCount() ; i++ )
-			{
-				let child = node.getChildAt(i);
-				tokenize(child);
-			}
-		}
-		tokenize(node);
-		return ret;
-	}
-
-
-	protected  getNextToken(tokens : ts.Node[], ...valids: ts.SyntaxKind[]) : ts.Node 
-	{
-		if ( tokens.length == 0 )
-			return null;
 	
-		if ( valids.length == 0 )
-		{
-			let ret = tokens[0];
-			tokens.splice(0,1);
-			return ret;
-		}
-		for (var i = 0; i <  valids.length; i++) 
-		{
-			if ( tokens[0].kind == valids[i] )
-			{
-				let ret = tokens[0];
-				tokens.splice(0,1);
-				return ret;
-			}	
-		}
-	}
-	
-	private assert(exp : boolean){
-		if ( exp == false)
-			exp = false;
-	}
+
+
+
 
 
 	protected appendNewStatement(tokens : ts.Node[]) {
 		this.append("");
-		let token = this.getNextToken(tokens,ts.SyntaxKind.Identifier);
-		this.assert ( token != null );
+		let token = T2CUtils.getNextToken(tokens,ts.SyntaxKind.Identifier);
+		T2CUtils.assert ( token != null );
 		if ( token.getText() == "Array" )
 		{
 			this.popLast();
@@ -416,7 +364,7 @@ export class T2CCodeBuilder{
 			this.append(token.getText() + "Ref( new " + token.getText());
 		}
 
-		token = this.getNextToken(tokens,ts.SyntaxKind.OpenParenToken);
+		token = T2CUtils.getNextToken(tokens,ts.SyntaxKind.OpenParenToken);
 		let count = 1;
 		while ( token != null && count > 0)
 		{
@@ -433,13 +381,13 @@ export class T2CCodeBuilder{
 				this.append(token.getText());
 			}
 
-			token = this.getNextToken(tokens);
+			token = T2CUtils.getNextToken(tokens);
 			if ( token.kind == ts.SyntaxKind.OpenParenToken )
 				count++;
 			else if ( token.kind == ts.SyntaxKind.CloseParenToken )
 				count--
 		}
-		this.assert ( token != null );
+		T2CUtils.assert ( token != null );
 		this.append(token.getText());
 		this.append(")");
 		
@@ -447,8 +395,8 @@ export class T2CCodeBuilder{
 
 
 	private appendFunctionBody(func : T2CFunction,cls : T2CClass){
-		let tokens = this.buildTokenList(func.body);
-		let token = this.getNextToken(tokens);
+		let tokens = T2CUtils.buildTokenList(func.body);
+		let token = T2CUtils.getNextToken(tokens);
 		let bracesCount = -1;
 		let prevToken = token;
 		//let inNewStatement = false;
@@ -456,14 +404,14 @@ export class T2CCodeBuilder{
 		if ( cls != null )
 		{
 			// handle calling constructor super before body function
-			let maybeSuper = this.getNextToken(tokens,ts.SyntaxKind.SuperKeyword);
+			let maybeSuper = T2CUtils.getNextToken(tokens,ts.SyntaxKind.SuperKeyword);
 			if (maybeSuper != null && func.name == cls.name)
 			{
 				this.append(": ");
 				this.append(cls.extends[0]);
 				while ( true )
 				{
-					token = this.getNextToken(tokens);
+					token = T2CUtils.getNextToken(tokens);
 					if (token.kind == ts.SyntaxKind.SemicolonToken)
 						break;
 					this.append(token.getText());
@@ -513,29 +461,29 @@ export class T2CCodeBuilder{
 					//let token = this.getNextToken(tokens,ts.SyntaxKind.LetKeyword , ts.SyntaxKind.VarKeyword);
 					//this.assert(token!=null);
 					
-					token = this.getNextToken(tokens,ts.SyntaxKind.Identifier);
-					this.assert(token!=null);
+					token = T2CUtils.getNextToken(tokens,ts.SyntaxKind.Identifier);
+					T2CUtils.assert(token!=null);
 					v.name = token.getText();
 			
-					token = this.getNextToken(tokens,ts.SyntaxKind.ColonToken);
+					token = T2CUtils.getNextToken(tokens,ts.SyntaxKind.ColonToken);
 					if ( token == null )
 					{
 						v.type = "auto";
 					}
 					else 
 					{
-						token = this.getNextToken(tokens,ts.SyntaxKind.TypeReference,ts.SyntaxKind.StringKeyword,
+						token = T2CUtils.getNextToken(tokens,ts.SyntaxKind.TypeReference,ts.SyntaxKind.StringKeyword,
 							ts.SyntaxKind.NumberKeyword,ts.SyntaxKind.BooleanKeyword,ts.SyntaxKind.ObjectKeyword,
 							ts.SyntaxKind.AnyKeyword,ts.SyntaxKind.Identifier);
-						this.assert(token!=null);
+						T2CUtils.assert(token!=null);
 						v.type = token.getText();
-						token = this.getNextToken(tokens,ts.SyntaxKind.OpenBracketToken);
+						token = T2CUtils.getNextToken(tokens,ts.SyntaxKind.OpenBracketToken);
 						while ( token != null )
 						{
-							token = this.getNextToken(tokens,ts.SyntaxKind.CloseBracketToken);
-							this.assert(token!=null);
+							token = T2CUtils.getNextToken(tokens,ts.SyntaxKind.CloseBracketToken);
+							T2CUtils.assert(token!=null);
 							v.size++;		
-							token = this.getNextToken(tokens,ts.SyntaxKind.OpenBracketToken);
+							token = T2CUtils.getNextToken(tokens,ts.SyntaxKind.OpenBracketToken);
 						}
 					}
 					this.append(v.toCppType());
@@ -549,10 +497,10 @@ export class T2CCodeBuilder{
 				}
 				case ts.SyntaxKind.EqualsToken:
 				{
-					let token2 = this.getNextToken(tokens,ts.SyntaxKind.NewKeyword);
+					let token2 = T2CUtils.getNextToken(tokens,ts.SyntaxKind.NewKeyword);
 					if ( token2 != null )
 					{
-						let token3 = this.getNextToken(tokens,T2CCodeBuilder.ArrayIdentifier);
+						let token3 = T2CUtils.getNextToken(tokens,T2CUtils.ArrayIdentifier);
 						if ( token3 == null )
 						{
 							tokens.unshift(token2);		
@@ -564,13 +512,13 @@ export class T2CCodeBuilder{
 							break;
 						}
 					}
-					token2 = this.getNextToken(tokens, T2CCodeBuilder.ArrayIdentifier,
+					token2 = T2CUtils.getNextToken(tokens, T2CUtils.ArrayIdentifier,
 						ts.SyntaxKind.OpenBracketToken);
 					if (token2 != null)
 					{
 						if ( token2.kind == ts.SyntaxKind.OpenBracketToken )
 						{						
-							let token3  = this.getNextToken(tokens,ts.SyntaxKind.CloseBracketToken);;
+							let token3  = T2CUtils.getNextToken(tokens,ts.SyntaxKind.CloseBracketToken);;
 							if ( token3 != null )
 							{
 								this.append(".clear()");
@@ -591,21 +539,21 @@ export class T2CCodeBuilder{
 					}
 					break;
 				}
-				case T2CCodeBuilder.ArrayIdentifier:
+				case T2CUtils.ArrayIdentifier:
 				{
-					let token2 = this.getNextToken(tokens, ts.SyntaxKind.LessThanToken);
+					let token2 = T2CUtils.getNextToken(tokens, ts.SyntaxKind.LessThanToken);
 					if (token2 != null)
 					{
 						let v = new T2CVariable();
-						token2 = this.getNextToken(tokens);
+						token2 = T2CUtils.getNextToken(tokens);
 						v.type  = token2.getText();
 						v.size = 1;// TODO :: handle 2 dimmensions array
 						this.append(v.toCppType()); 
-						token2 = this.getNextToken(tokens, ts.SyntaxKind.GreaterThanToken);
+						token2 = T2CUtils.getNextToken(tokens, ts.SyntaxKind.GreaterThanToken);
 					}
 					break;
 				}
-				case T2CCodeBuilder.LengthIdentifier:
+				case T2CUtils.LengthIdentifier:
 				{
 					if ( prevToken.kind == ts.SyntaxKind.DotToken )
 					{
@@ -664,7 +612,7 @@ export class T2CCodeBuilder{
 				}
 			}
 			prevToken = token;
-			token = this.getNextToken(tokens);
+			token = T2CUtils.getNextToken(tokens);
 		}
 		this.newLine(2);
 	}

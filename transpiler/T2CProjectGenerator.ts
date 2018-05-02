@@ -69,7 +69,16 @@ export class T2CProjectGenerator
 
         projectData = projectData.replace(replacePattern,projectFiles);
 
-        fs.writeFileSync(basePath + "/" + name + ".vcxproj",projectData);
+        let oldProjectFileContent = "";
+        try {
+            oldProjectFileContent = fs.readFileSync(basePath + "/" + name + ".vcxproj","utf8");
+        } catch (error) {
+            
+        }
+        if ( projectData != oldProjectFileContent )
+        {
+            fs.writeFileSync(basePath + "/" + name + ".vcxproj",projectData);
+        }
 
         let mainFileData  = fs.readFileSync(templateProjectBase + "Main.cpp","utf8");
 
