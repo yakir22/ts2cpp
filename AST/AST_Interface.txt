@@ -1,0 +1,409 @@
+
+0-SourceFile: interface IPoint {
+    x: number;
+    y: number;
+    print();
+}
+
+
+
+class UsePoint{
+    public useIt(p : IPoint){
+        console.log("useIt:" + p.x + "," + p.y);
+    }
+}
+
+
+class ImplementsPoint implements IPoint {
+    public x: number;
+    public y: number;
+    constructor(x = 0,y = 0)
+    {
+        this.x = x;
+        this.y = y;
+    }
+
+    public print(){
+        console.log("print:" + this.x + "," + this.y);
+    }
+}
+
+
+
+namespace Testing
+{
+    function main()
+    {
+        let p = new ImplementsPoint(10,10);
+        let u = new UsePoint();
+        u.useIt(p);
+        p.print();
+    }
+}
+1-SyntaxList: interface IPoint {
+    x: number;
+    y: number;
+    print();
+}
+
+
+
+class UsePoint{
+    public useIt(p : IPoint){
+        console.log("useIt:" + p.x + "," + p.y);
+    }
+}
+
+
+class ImplementsPoint implements IPoint {
+    public x: number;
+    public y: number;
+    constructor(x = 0,y = 0)
+    {
+        this.x = x;
+        this.y = y;
+    }
+
+    public print(){
+        console.log("print:" + this.x + "," + this.y);
+    }
+}
+
+
+
+namespace Testing
+{
+    function main()
+    {
+        let p = new ImplementsPoint(10,10);
+        let u = new UsePoint();
+        u.useIt(p);
+        p.print();
+    }
+}
+2-InterfaceDeclaration: interface IPoint {
+    x: number;
+    y: number;
+    print();
+}
+3-InterfaceKeyword: interface
+3-Identifier: IPoint
+3-OpenBraceToken: {
+3-SyntaxList: x: number;
+    y: number;
+    print();
+4-PropertySignature: x: number;
+5-Identifier: x
+5-ColonToken: :
+5-NumberKeyword: number
+5-SemicolonToken: ;
+4-PropertySignature: y: number;
+5-Identifier: y
+5-ColonToken: :
+5-NumberKeyword: number
+5-SemicolonToken: ;
+4-MethodSignature: print();
+5-Identifier: print
+5-OpenParenToken: (
+5-SyntaxList:
+5-CloseParenToken: )
+5-SemicolonToken: ;
+3-CloseBraceToken: }
+2-ClassDeclaration: class UsePoint{
+    public useIt(p : IPoint){
+        console.log("useIt:" + p.x + "," + p.y);
+    }
+}
+3-ClassKeyword: class
+3-Identifier: UsePoint
+3-OpenBraceToken: {
+3-SyntaxList: public useIt(p : IPoint){
+        console.log("useIt:" + p.x + "," + p.y);
+    }
+4-MethodDeclaration: public useIt(p : IPoint){
+        console.log("useIt:" + p.x + "," + p.y);
+    }
+5-SyntaxList: public
+6-PublicKeyword: public
+5-Identifier: useIt
+5-OpenParenToken: (
+5-SyntaxList: p : IPoint
+6-Parameter: p : IPoint
+7-Identifier: p
+7-ColonToken: :
+7-TypeReference: IPoint
+8-Identifier: IPoint
+5-CloseParenToken: )
+5-Block: {
+        console.log("useIt:" + p.x + "," + p.y);
+    }
+6-OpenBraceToken: {
+6-SyntaxList: console.log("useIt:" + p.x + "," + p.y);
+7-ExpressionStatement: console.log("useIt:" + p.x + "," + p.y);
+8-CallExpression: console.log("useIt:" + p.x + "," + p.y)
+9-PropertyAccessExpression: console.log
+10-Identifier: console
+10-DotToken: .
+10-Identifier: log
+9-OpenParenToken: (
+9-SyntaxList: "useIt:" + p.x + "," + p.y
+10-BinaryExpression: "useIt:" + p.x + "," + p.y
+11-BinaryExpression: "useIt:" + p.x + ","
+12-BinaryExpression: "useIt:" + p.x
+13-StringLiteral: "useIt:"
+13-PlusToken: +
+13-PropertyAccessExpression: p.x
+14-Identifier: p
+14-DotToken: .
+14-Identifier: x
+12-PlusToken: +
+12-StringLiteral: ","
+11-PlusToken: +
+11-PropertyAccessExpression: p.y
+12-Identifier: p
+12-DotToken: .
+12-Identifier: y
+9-CloseParenToken: )
+8-SemicolonToken: ;
+6-CloseBraceToken: }
+3-CloseBraceToken: }
+2-ClassDeclaration: class ImplementsPoint implements IPoint {
+    public x: number;
+    public y: number;
+    constructor(x = 0,y = 0)
+    {
+        this.x = x;
+        this.y = y;
+    }
+
+    public print(){
+        console.log("print:" + this.x + "," + this.y);
+    }
+}
+3-ClassKeyword: class
+3-Identifier: ImplementsPoint
+3-SyntaxList: implements IPoint
+4-HeritageClause: implements IPoint
+5-ImplementsKeyword: implements
+5-SyntaxList: IPoint
+6-ExpressionWithTypeArguments: IPoint
+7-Identifier: IPoint
+3-OpenBraceToken: {
+3-SyntaxList: public x: number;
+    public y: number;
+    constructor(x = 0,y = 0)
+    {
+        this.x = x;
+        this.y = y;
+    }
+
+    public print(){
+        console.log("print:" + this.x + "," + this.y);
+    }
+4-PropertyDeclaration: public x: number;
+5-SyntaxList: public
+6-PublicKeyword: public
+5-Identifier: x
+5-ColonToken: :
+5-NumberKeyword: number
+5-SemicolonToken: ;
+4-PropertyDeclaration: public y: number;
+5-SyntaxList: public
+6-PublicKeyword: public
+5-Identifier: y
+5-ColonToken: :
+5-NumberKeyword: number
+5-SemicolonToken: ;
+4-Constructor: constructor(x = 0,y = 0)
+    {
+        this.x = x;
+        this.y = y;
+    }
+5-ConstructorKeyword: constructor
+5-OpenParenToken: (
+5-SyntaxList: x = 0,y = 0
+6-Parameter: x = 0
+7-Identifier: x
+7-EqualsToken: =
+7-NumericLiteral: 0
+6-CommaToken: ,
+6-Parameter: y = 0
+7-Identifier: y
+7-EqualsToken: =
+7-NumericLiteral: 0
+5-CloseParenToken: )
+5-Block: {
+        this.x = x;
+        this.y = y;
+    }
+6-OpenBraceToken: {
+6-SyntaxList: this.x = x;
+        this.y = y;
+7-ExpressionStatement: this.x = x;
+8-BinaryExpression: this.x = x
+9-PropertyAccessExpression: this.x
+10-ThisKeyword: this
+10-DotToken: .
+10-Identifier: x
+9-EqualsToken: =
+9-Identifier: x
+8-SemicolonToken: ;
+7-ExpressionStatement: this.y = y;
+8-BinaryExpression: this.y = y
+9-PropertyAccessExpression: this.y
+10-ThisKeyword: this
+10-DotToken: .
+10-Identifier: y
+9-EqualsToken: =
+9-Identifier: y
+8-SemicolonToken: ;
+6-CloseBraceToken: }
+4-MethodDeclaration: public print(){
+        console.log("print:" + this.x + "," + this.y);
+    }
+5-SyntaxList: public
+6-PublicKeyword: public
+5-Identifier: print
+5-OpenParenToken: (
+5-SyntaxList:
+5-CloseParenToken: )
+5-Block: {
+        console.log("print:" + this.x + "," + this.y);
+    }
+6-OpenBraceToken: {
+6-SyntaxList: console.log("print:" + this.x + "," + this.y);
+7-ExpressionStatement: console.log("print:" + this.x + "," + this.y);
+8-CallExpression: console.log("print:" + this.x + "," + this.y)
+9-PropertyAccessExpression: console.log
+10-Identifier: console
+10-DotToken: .
+10-Identifier: log
+9-OpenParenToken: (
+9-SyntaxList: "print:" + this.x + "," + this.y
+10-BinaryExpression: "print:" + this.x + "," + this.y
+11-BinaryExpression: "print:" + this.x + ","
+12-BinaryExpression: "print:" + this.x
+13-StringLiteral: "print:"
+13-PlusToken: +
+13-PropertyAccessExpression: this.x
+14-ThisKeyword: this
+14-DotToken: .
+14-Identifier: x
+12-PlusToken: +
+12-StringLiteral: ","
+11-PlusToken: +
+11-PropertyAccessExpression: this.y
+12-ThisKeyword: this
+12-DotToken: .
+12-Identifier: y
+9-CloseParenToken: )
+8-SemicolonToken: ;
+6-CloseBraceToken: }
+3-CloseBraceToken: }
+2-ModuleDeclaration: namespace Testing
+{
+    function main()
+    {
+        let p = new ImplementsPoint(10,10);
+        let u = new UsePoint();
+        u.useIt(p);
+        p.print();
+    }
+}
+3-NamespaceKeyword: namespace
+3-Identifier: Testing
+3-ModuleBlock: {
+    function main()
+    {
+        let p = new ImplementsPoint(10,10);
+        let u = new UsePoint();
+        u.useIt(p);
+        p.print();
+    }
+}
+4-OpenBraceToken: {
+4-SyntaxList: function main()
+    {
+        let p = new ImplementsPoint(10,10);
+        let u = new UsePoint();
+        u.useIt(p);
+        p.print();
+    }
+5-FunctionDeclaration: function main()
+    {
+        let p = new ImplementsPoint(10,10);
+        let u = new UsePoint();
+        u.useIt(p);
+        p.print();
+    }
+6-FunctionKeyword: function
+6-Identifier: main
+6-OpenParenToken: (
+6-SyntaxList:
+6-CloseParenToken: )
+6-Block: {
+        let p = new ImplementsPoint(10,10);
+        let u = new UsePoint();
+        u.useIt(p);
+        p.print();
+    }
+7-OpenBraceToken: {
+7-SyntaxList: let p = new ImplementsPoint(10,10);
+        let u = new UsePoint();
+        u.useIt(p);
+        p.print();
+8-VariableStatement: let p = new ImplementsPoint(10,10);
+9-VariableDeclarationList: let p = new ImplementsPoint(10,10)
+10-LetKeyword: let
+10-SyntaxList: p = new ImplementsPoint(10,10)
+11-VariableDeclaration: p = new ImplementsPoint(10,10)
+12-Identifier: p
+12-EqualsToken: =
+12-NewExpression: new ImplementsPoint(10,10)
+13-NewKeyword: new
+13-Identifier: ImplementsPoint
+13-OpenParenToken: (
+13-SyntaxList: 10,10
+14-NumericLiteral: 10
+14-CommaToken: ,
+14-NumericLiteral: 10
+13-CloseParenToken: )
+9-SemicolonToken: ;
+8-VariableStatement: let u = new UsePoint();
+9-VariableDeclarationList: let u = new UsePoint()
+10-LetKeyword: let
+10-SyntaxList: u = new UsePoint()
+11-VariableDeclaration: u = new UsePoint()
+12-Identifier: u
+12-EqualsToken: =
+12-NewExpression: new UsePoint()
+13-NewKeyword: new
+13-Identifier: UsePoint
+13-OpenParenToken: (
+13-SyntaxList:
+13-CloseParenToken: )
+9-SemicolonToken: ;
+8-ExpressionStatement: u.useIt(p);
+9-CallExpression: u.useIt(p)
+10-PropertyAccessExpression: u.useIt
+11-Identifier: u
+11-DotToken: .
+11-Identifier: useIt
+10-OpenParenToken: (
+10-SyntaxList: p
+11-Identifier: p
+10-CloseParenToken: )
+9-SemicolonToken: ;
+8-ExpressionStatement: p.print();
+9-CallExpression: p.print()
+10-PropertyAccessExpression: p.print
+11-Identifier: p
+11-DotToken: .
+11-Identifier: print
+10-OpenParenToken: (
+10-SyntaxList:
+10-CloseParenToken: )
+9-SemicolonToken: ;
+7-CloseBraceToken: }
+4-CloseBraceToken: }
+1-EndOfFileToken:

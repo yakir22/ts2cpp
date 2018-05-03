@@ -5,7 +5,7 @@ import {T2CFile} from "./T2CFile";
 
 export class T2CNamespace{
 	public name 		: string = "";
-	public interfaces 	: T2CFunction[] = [];
+	public interfaces 	: T2CClass[] = [];
 	public classes 		: T2CClass[] = [];
 	public variables 	: T2CVariable[] = [];
 	public functions 	: T2CFunction[] = [];

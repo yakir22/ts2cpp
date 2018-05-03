@@ -10,7 +10,7 @@ export class T2CVariable{
 	public valueKind: ts.SyntaxKind = ts.SyntaxKind.Unknown;
 	public valueNode: ts.Node = null;
 	public node		: ts.Node = null;
-
+	public interfaceVar : boolean = false;
 
 	public detectTypeIfNeeded() 
 	{

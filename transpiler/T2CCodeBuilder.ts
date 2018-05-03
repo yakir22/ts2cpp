@@ -76,7 +76,10 @@ export class T2CCodeBuilder{
 			this.appendCustomCodeStartOfFileH(file);
             this.append(ns.startString(file));
             this.newLine();
-            ns.classes.forEach(cls => {
+            ns.interfaces.forEach(cls => {
+                this.appendClassH(cls,true);
+            });
+			ns.classes.forEach(cls => {
                 this.appendClassH(cls);
             });
             ns.functions.forEach(func => {
@@ -124,7 +127,7 @@ export class T2CCodeBuilder{
         return ret;
     }
 
-	private appendClassH(cls : T2CClass){
+	private appendClassH(cls : T2CClass,isInterface : boolean){
         this.mRoot.forwardDeclarations.push(cls.name);
         this.newLine();
 		this.append("class " + cls.name);
@@ -132,7 +135,7 @@ export class T2CCodeBuilder{
 
 		if ( cls.extends.length > 0 || cls.implements.length > 0 ) {
 			let first = true;
-			T2CUtils.assert(cls.extends.length == 1);
+			T2CUtils.assert(cls.extends.length <= 1);
 			cls.extends.forEach(base => {
 				this.append(first ? ":" : ",");
 				this.append("public " + base);
@@ -154,15 +157,16 @@ export class T2CCodeBuilder{
 		}
 
 		this.appendCustomCodeStartClassH(cls);
+		this.markInterfaceVariables(cls);
+		
 		// TODO :: sort by modifier
 		cls.variables.forEach(v => {
-			this.appendClassVariable(v);
+			if ( ! v.interfaceVar)
+				this.appendClassVariable(v);
 		});
 
-
-		cls.hasConstructor();
 		cls.functions.forEach(func => {
-			this.appendClassFunctionH(func);
+			this.appendClassFunctionH(func,isInterface);
 			this.appendCustumCodeAfterFunctionH(func,cls);
         });
 		
@@ -177,9 +181,30 @@ export class T2CCodeBuilder{
         this.newLine();
 	}
 
-
-
-
+	protected markInterfaceVariables(cls : T2CClass)
+	{
+		cls.implements.forEach(clsIface =>{
+			this.mRoot.getFiles().forEach(file => {
+				file.namespaces.forEach(nspace => {
+					nspace.interfaces.forEach(iface =>{
+						if ( clsIface == iface.name )
+						{
+							iface.variables.forEach(ifaceVar =>{
+								cls.variables.forEach(clsVar =>{
+									if ( clsVar.name == ifaceVar.name )
+									{
+										T2CUtils.assert(clsVar.type == ifaceVar.type);
+										T2CUtils.assert(clsVar.access == "public");
+										clsVar.interfaceVar = true;
+									}
+								})
+							});	
+						}
+					});	
+				});
+			});
+		});
+	}
     protected  appendX(...strings: string[]) {
         for (var i = 0; i <  strings.length; i++) {
           this.append(strings[i]);
@@ -188,13 +213,15 @@ export class T2CCodeBuilder{
     };
 
 
-	private appendClassFunctionH(func : T2CFunction){
+	private appendClassFunctionH(func : T2CFunction,isInterface : boolean){
 		// TODO :: maybe inline some short functions
 		this.append(func.getCppAccess() + ": ");
 		if (func.returns.type != "!~")
 			this.append("virtual ");
 		this.appendFunctionSignature(func,false);
-		this.append(";\n");
+		if ( isInterface )
+			this.append(" = 0");
+		this.appendX(";");
 	}
 
 	private appendFunctionSignature(func : T2CFunction,inImplementation : boolean,memberOfClass : string = ""){
@@ -210,7 +237,7 @@ export class T2CCodeBuilder{
 		this.append(")");
 	}
 
-	private appendClassVariable(v : T2CVariable){
+	private appendClassVariable( v : T2CVariable){
 		//auto type = ToCppType(var,false);
 		this.append(v.access + ": ");
 		this.append(v.toCppType() + " ");
@@ -289,7 +316,12 @@ export class T2CCodeBuilder{
         file.namespaces.forEach(ns => {
             this.append(ns.startString(file));
             this.newLine();
-            ns.classes.forEach(cls => {
+
+            ns.interfaces.forEach(cls => {
+                this.appendClassCpp(cls);
+            });
+
+			ns.classes.forEach(cls => {
                 this.appendClassCpp(cls);
             });
             ns.functions.forEach(func => {
@@ -319,10 +351,13 @@ export class T2CCodeBuilder{
 	private appendClassCpp(cls : T2CClass){
         this.appendCustomCodeStartClassCpp(cls);
 		cls.functions.forEach(func => {
-			this.appendFunctionSignature(func,true, cls.name);
-			this.newLine();
-			this.appendFunctionBody(func,cls);
-			this.appendCustumCodeAfterFunctionCpp(func,cls);
+			if ( func.hasBody() )
+			{
+				this.appendFunctionSignature(func,true, cls.name);
+				this.newLine();
+				this.appendFunctionBody(func,cls);
+				this.appendCustumCodeAfterFunctionCpp(func,cls);
+			}
 		});
         this.newLine();
         
