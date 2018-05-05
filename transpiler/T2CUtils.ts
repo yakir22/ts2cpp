@@ -53,7 +53,14 @@ export class T2CUtils
 		tokenize(node);
 		return ret;
     }
-    
+	
+	
+	static peekNextToken(tokens : ts.Node[]) : ts.Node 
+	{
+		if ( tokens.length == 0 )
+			return null;
+		return tokens[0];
+	}
 	static getNextToken(tokens : ts.Node[], ...valids: ts.SyntaxKind[]) : ts.Node 
 	{
 		if ( tokens.length == 0 )

@@ -3,6 +3,7 @@ import {T2CParser} 		from "./T2CParser"
 import {T2CCodeBuilder} from "./T2CCodeBuilder"
 import {T2CExeBuilder} 	from "./T2CExeBuilder"
 import {T2CVariable} 	from "./T2CVariable";
+import { T2CClass } from "./T2CClass";
 
 export class T2CRoot{
 
@@ -13,6 +14,27 @@ export class T2CRoot{
 
 	constructor(customBuilder : T2CCodeBuilder = null){
 		this.mCustomBuilder = customBuilder;
+	}
+
+
+	// TODO :: if two namespaces has the same class in them this will return the last one it find
+	// need to refine search by namespace usage
+	public getClassByName(name : string) : T2CClass
+	{
+		let ret = null;
+		this.mFiles.forEach(f => {
+			f.namespaces.forEach(ns =>{
+				ns.classes.forEach(cls => {
+					if ( cls.name == name )
+						ret = cls;
+				});
+				ns.interfaces.forEach(i => {
+					if ( i.name == name )
+						ret = i;
+				});
+			});
+		});
+		return ret;
 	}
 
 	public isInterface(v : T2CVariable)

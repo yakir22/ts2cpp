@@ -16,7 +16,7 @@ import {T2CRoot} from "./T2CRoot"
 import {T2CKindHelper} from "./T2CKindHelper"
 
 export class T2CCodeBuilder{
-	protected mRoot 				: T2CRoot;
+	protected mRoot 			: T2CRoot;
 	private mCodeBufferArray 	: string[] = [];
 	private mOutDir 			: string;
 	
@@ -217,13 +217,23 @@ export class T2CCodeBuilder{
 
 	private appendClassFunctionH(func : T2CFunction,isInterface : boolean){
 		// TODO :: maybe inline some short functions
-		this.append(func.getCppAccess() + ": ");
-		if (func.returns.type != "!~")
-			this.append("virtual ");
-		this.appendFunctionSignature(func,false);
-		if ( isInterface )
-			this.append(" = 0");
-		this.appendX(";");
+
+		if ( func.getCppAccess() == "static")
+		{
+			this.append("static ");
+			this.appendFunctionSignature(func,false);
+			this.appendX(";");
+		}
+		else
+		{
+			this.append(func.getCppAccess() + ": ");
+			if (func.returns.type != "!~")
+				this.append("virtual ");
+			this.appendFunctionSignature(func,false);
+			if ( isInterface )
+				this.append(" = 0");
+			this.appendX(";");
+		}
 	}
 
 	private appendFunctionSignature(func : T2CFunction,inImplementation : boolean,memberOfClass : string = ""){
@@ -402,6 +412,8 @@ export class T2CCodeBuilder{
 		}
 
 		token = T2CUtils.getNextToken(tokens,ts.SyntaxKind.OpenParenToken);
+		let prevToken = token;
+		let nextToken = T2CUtils.peekNextToken(tokens);
 		let count = 1;
 		while ( token != null && count > 0)
 		{
@@ -411,14 +423,24 @@ export class T2CCodeBuilder{
 			}
 			else if ( token.kind == ts.SyntaxKind.DotToken )
 			{
-				this.append("->");
+				T2CUtils.assert(prevToken != null && nextToken != null);
+				let cls = this.mRoot.getClassByName(prevToken.getText());
+				if ( cls != null && cls.isStaticFunction(nextToken.getText()))
+				{
+					this.append("::");
+				}
+				else
+				{
+					this.append("->");
+				}
 			}
 			else 
 			{
 				this.append(token.getText());
 			}
-
+			prevToken = token
 			token = T2CUtils.getNextToken(tokens);
+			nextToken = T2CUtils.peekNextToken(tokens);
 			if ( token.kind == ts.SyntaxKind.OpenParenToken )
 				count++;
 			else if ( token.kind == ts.SyntaxKind.CloseParenToken )
@@ -434,8 +456,9 @@ export class T2CCodeBuilder{
 	private appendFunctionBody(func : T2CFunction,cls : T2CClass){
 		let tokens = T2CUtils.buildTokenList(func.body);
 		let token = T2CUtils.getNextToken(tokens);
-		let bracesCount = -1;
+		let nextToken = T2CUtils.peekNextToken(tokens);
 		let prevToken = token;
+		let bracesCount = -1;
 		//let inNewStatement = false;
 		let inInitialisationList = 0;
 		if ( cls != null )
@@ -529,7 +552,16 @@ export class T2CCodeBuilder{
 				}
 				case ts.SyntaxKind.DotToken:
 				{
-					this.append("->");
+					T2CUtils.assert(prevToken != null && nextToken != null);
+					let cls = this.mRoot.getClassByName(prevToken.getText());
+					if ( cls != null && cls.isStaticFunction(nextToken.getText()))
+					{
+						this.append("::");
+					}
+					else
+					{
+						this.append("->");
+					}
 					break;
 				}
 				case ts.SyntaxKind.EqualsToken:
@@ -650,6 +682,7 @@ export class T2CCodeBuilder{
 			}
 			prevToken = token;
 			token = T2CUtils.getNextToken(tokens);
+			nextToken = T2CUtils.peekNextToken(tokens);
 		}
 		this.newLine(2);
 	}

@@ -10,7 +10,20 @@ export class T2CClass{
 	public classes   	: T2CClass[] = [];
 	public decorators   : string[] = [];
 	public isInterface  : boolean = false;
-	
+
+
+	isStaticFunction(name : string ) : boolean
+	{
+		let ret = false;
+		this.functions.forEach(func => {
+			if ( func.access == "static" )
+			{
+				ret = true;
+			}
+		});
+		return ret;
+	}
+
 	public hasConstructor() : boolean{
 		for ( let i = 0 ; i < this.functions.length ; i++ )
 		{
