@@ -311,13 +311,15 @@ export class T2CCodeBuilder{
 		fs.writeFileSync(dest,buf); // don't try catch it. want it to fail on error for now
 
 		try {
+			let exe = "AStyle" + (T2CUtils.isWindows()?".exe":"");
 			// TODO :: better path for AStyle binary
-			let astylePath = __dirname + "/../externals/AStyle.exe"; 
-			astylePath = path.normalize(astylePath).replace("\\out","");
+			let astylePath = __dirname + "/../externals/" + exe; 
+			astylePath = path.normalize(astylePath).replace("\\out","").replace("/out","");
 			// need to call twice for better results ( there should be a way to do it in one command but didn't want to spend too much time on it)
 			child.execSync(astylePath + " " + dest);
 			child.execSync(astylePath + " " + "--style=allman --indent=tab --attach-namespaces --attach-classes --attach-inlines --attach-extern-c --indent-modifiers --indent-switches --indent-cases --indent-namespaces --indent-preproc-block --indent-preproc-define --indent-preproc-cond --indent-col1-comments --max-instatement-indent=100 --break-blocks=all --pad-oper --pad-header --fill-empty-lines --align-pointer=name --align-reference=name --break-closing-brackets --add-brackets --add-one-line-brackets --add-braces --mode=c  "+ dest);
 		} catch (error) {}
+		
 	}
 
 	private createCppFile(file : T2CFile ){

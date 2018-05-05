@@ -4,6 +4,7 @@ import * as fs from "fs";
 import * as path from "path"
 import { T2CNamespace } from "./T2CNamespace";
 import * as child from "child_process";
+import { T2CUtils } from "./T2CUtils";
 
 export class T2CProjectGenerator
 {
@@ -22,27 +23,35 @@ export class T2CProjectGenerator
     {
         // TODO :: better path for relative directories
         let envelopeBase = __dirname + "/../cpp_envelope/"; 
-        envelopeBase = path.normalize(envelopeBase).replace("\\out","");
+        envelopeBase = path.normalize(envelopeBase).replace("\\out","").replace("/out","");
 
         let templateProjectBase = __dirname + "/../templates/vcxproj/"; 
-        templateProjectBase = path.normalize(templateProjectBase).replace("\\out","");
+        templateProjectBase = path.normalize(templateProjectBase).replace("\\out","").replace("/out","");
         
         let projectData  = fs.readFileSync(templateProjectBase + "TemplateProject.vcxproj","utf8");
 
+        let filesForGPlusPlus = [];
         let replacePattern = "<ClCompile Include=\"Main.cpp\" />";
         let projectFiles =  replacePattern + "\n";
 
         let filesToLink : string[] = ["ts2cpp_envelope","Framework"];
         let ext : string[] = [".h",".cpp"]
 
-        let cd = child.execSync("cd",{"encoding" : "utf8"}).trim();
+        let cd = child.execSync(T2CUtils.isWindows()?"cd":"pwd",{"encoding" : "utf8"}).trim();
         filesToLink.forEach(file =>{
             projectFiles += "<ClCompile Include=\""+file+".cpp\" />"
+            filesForGPlusPlus.push(file + ".cpp");
             ext.forEach(ext =>{
                 try {
-                    let srcFile = path.normalize( cd + "/" + basePath + "/"+file+ ext);
-                    let destFile = path.normalize( envelopeBase + file + ext);
-                    child.execSync("mklink " + srcFile +" " + destFile);
+                    let destFile = path.normalize( cd + "/" + basePath + "/"+file+ ext);
+                    let srcFile = path.normalize( envelopeBase + file + ext);
+
+                    if ( T2CUtils.isWindows() ){
+                        child.execSync("mklink " + destFile +" " + srcFile);
+                    }
+                    else{
+                        child.execSync("ln -s " + srcFile + " " + destFile);
+                    }
                 } 
                 catch (error) {
                 }
@@ -56,6 +65,7 @@ export class T2CProjectGenerator
         root.getFiles().forEach(file =>{
             if ( file.name.indexOf("BindingDecorators") != -1 )
                 return;
+            filesForGPlusPlus.push(file.bareName + ".cpp");
             projectFiles += "<ClCompile Include=\"" + file.bareName + ".cpp\" />\n";
             if ( file.bareName == name ){
                 file.namespaces.forEach(ns =>{
@@ -82,6 +92,7 @@ export class T2CProjectGenerator
             fs.writeFileSync(basePath + "/" + name + ".vcxproj",projectData);
         }
 
+        filesForGPlusPlus.push("Main.cpp");
         let mainFileData  = fs.readFileSync(templateProjectBase + "Main.cpp","utf8");
 
         if ( mainClassNamespace != null )
@@ -93,6 +104,17 @@ export class T2CProjectGenerator
 
         fs.writeFileSync(basePath + "/Main.cpp",mainFileData);
 
+
+        if ( !T2CUtils.isWindows() )
+        {
+            let command = "g++ -std=c++11 -I$BOOST_DIR/include -o " + name +".out ";
+            filesForGPlusPlus.forEach(file => {
+                command += " " + file;
+            }); 
+            let buildFilename = basePath +"/build" + name + ".sh"; 
+            fs.writeFileSync( buildFilename,command);
+            child.execSync("chmod 777 " + buildFilename);
+        }
     }
 
 }
