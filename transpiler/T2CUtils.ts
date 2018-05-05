@@ -1,4 +1,6 @@
 import * as ts from "typescript";
+import * as child from "child_process";
+
 export class T2CUtils
 {
     static ExtractFirstIdentifier(node : ts.Node) : ts.Node
@@ -84,5 +86,11 @@ export class T2CUtils
 			exp = false;
 	}
 
+
+
+	static isWindows() {
+		// TODO :: PATCH :: find a better way.
+		return child.execSync("cd",{"encoding" : "utf8"}).trim().length > 0;
+	}
 
 }
