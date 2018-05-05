@@ -8,8 +8,8 @@ function main(){
 	root.processFile(fileNames[0]);
 	let name = fileNames[0].substr(fileNames[0].lastIndexOf("/") + 1).replace(".ts","");
 	let dir = fileNames[0].substr(0,fileNames[0].lastIndexOf("/") + 1);
-	root.createCppCode("./CppFiles2/" + name + "/");
-	T2CProjectGenerator.createProject("vcxproj", name,"./CppFiles2/" + name + "/" +dir + "/",root);
+	root.createCppCode("./CppFiles/" + name + "/");
+	T2CProjectGenerator.createProject("vcxproj", name,"./CppFiles/" + name + "/" +dir + "/",root);
 }
 
 main();

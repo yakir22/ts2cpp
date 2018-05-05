@@ -162,6 +162,7 @@ export class T2CParser{
 
 	private parseInterface(node: ts.Node){
 		this.mCurrentClass = new T2CClass();
+		this.mCurrentClass.isInterface = true;
 		for ( let i = 0 ; i < node.getChildren().length ; i++ )
 		{
 			let child = node.getChildAt(i);

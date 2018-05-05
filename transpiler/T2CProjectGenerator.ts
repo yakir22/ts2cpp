@@ -3,6 +3,7 @@ import {T2CFile} from "./T2CFile"
 import * as fs from "fs";
 import * as path from "path"
 import { T2CNamespace } from "./T2CNamespace";
+import * as child from "child_process";
 
 export class T2CProjectGenerator
 {
@@ -31,16 +32,17 @@ export class T2CProjectGenerator
         let replacePattern = "<ClCompile Include=\"Main.cpp\" />";
         let projectFiles =  replacePattern + "\n";
 
-        let filesToCopy : string[] = ["ts2cpp_envelope","Framework"];
+        let filesToLink : string[] = ["ts2cpp_envelope","Framework"];
         let ext : string[] = [".h",".cpp"]
-        filesToCopy.forEach(file =>{
+
+        let cd = child.execSync("cd",{"encoding" : "utf8"}).trim();
+        filesToLink.forEach(file =>{
             projectFiles += "<ClCompile Include=\""+file+".cpp\" />"
             ext.forEach(ext =>{
                 try {
-                    // TODO :: check why copyFile doesn't work
-                    //fs.copyFileSync(envelopeBase + "ts2cpp_envelope.cpp",basePath + "/ts2cpp_envelope.cpp");
-                    let data  = fs.readFileSync(envelopeBase + file + ext,"utf8");
-                    fs.writeFileSync(basePath + "/"+file+ ext,data);
+                    let srcFile = path.normalize( cd + "/" + basePath + "/"+file+ ext);
+                    let destFile = path.normalize( envelopeBase + file + ext);
+                    child.execSync("mklink " + srcFile +" " + destFile);
                 } 
                 catch (error) {
                 }

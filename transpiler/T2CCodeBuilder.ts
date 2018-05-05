@@ -30,6 +30,7 @@ export class T2CCodeBuilder{
 	protected appendCustomCodeStartClassH(cls : T2CClass){}
 	protected appendCustomCodeAfterClassH(cls : T2CClass){}
 	protected appendCustomCodeEndClassCpp(cls : T2CClass){}
+	protected appendCustomCodeBeforeInterface(cls : T2CClass){}
 	protected appendCustomCodeStartOfFileH(file: T2CFile){}
 	protected appendCustomCodeEndOfFileH(file: T2CFile){}
 	protected appendCustomCodeStartOfFileCpp(file: T2CFile){}
@@ -77,10 +78,11 @@ export class T2CCodeBuilder{
             this.append(ns.startString(file));
             this.newLine();
             ns.interfaces.forEach(cls => {
+				this.appendCustomCodeBeforeInterface(cls);
                 this.appendClassH(cls,true);
             });
 			ns.classes.forEach(cls => {
-                this.appendClassH(cls);
+                this.appendClassH(cls,false);
             });
             ns.functions.forEach(func => {
                 this.appendGlobalFunctionCppH(func);

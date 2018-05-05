@@ -9,7 +9,8 @@ export class T2CClass{
 	public functions 	: T2CFunction[] = [];
 	public classes   	: T2CClass[] = [];
 	public decorators   : string[] = [];
-
+	public isInterface  : boolean = false;
+	
 	public hasConstructor() : boolean{
 		for ( let i = 0 ; i < this.functions.length ; i++ )
 		{
