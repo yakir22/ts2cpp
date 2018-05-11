@@ -3,6 +3,6 @@
     "typescript-parser": "^2.4.0"
   },
   "devDependencies": {
-    "@types/node": "^9.6.5"
+    "@types/node": "^9.6.9"
   }
 }
