@@ -1,4 +1,4 @@
-class Point
+class TSPoint
 {
     private mX : number = 0;
     private mY : number = 0;
@@ -15,7 +15,7 @@ class Point
     }
 
 
-    static distance(p0 : Point,p1 : Point) : number
+    static distance(p0 : TSPoint,p1 : TSPoint) : number
     {
         return Math.sqrt(Math.pow(p0.mX - p1.mX,2) + Math.pow(p0.mY - p1.mY,2));
     }
@@ -25,10 +25,10 @@ namespace Testing
 {
     function main()
     {
-        let p0 = new Point(10,20);
+        let p0 = new TSPoint(10,20);
         console.log(p0.toString());
-        let p1 = new Point(20,30);
-        let distance = Point.distance(p0,p1);
+        let p1 = new TSPoint(20,30);
+        let distance = TSPoint.distance(p0,p1);
         console.log("Distance between " + p0.toString() + " to " + p1.toString() + " = " + distance);
     }
     main();
