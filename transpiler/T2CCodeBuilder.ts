@@ -16,7 +16,7 @@ import {T2CRoot} from "./T2CRoot"
 import {T2CKindHelper} from "./T2CKindHelper"
 
 export class T2CCodeBuilder{
-	protected mRoot 				: T2CRoot;
+	protected mRoot 			: T2CRoot;
 	private mCodeBufferArray 	: string[] = [];
 	private mOutDir 			: string;
 	
@@ -30,6 +30,7 @@ export class T2CCodeBuilder{
 	protected appendCustomCodeStartClassH(cls : T2CClass){}
 	protected appendCustomCodeAfterClassH(cls : T2CClass){}
 	protected appendCustomCodeEndClassCpp(cls : T2CClass){}
+	protected appendCustomCodeBeforeInterface(cls : T2CClass){}
 	protected appendCustomCodeStartOfFileH(file: T2CFile){}
 	protected appendCustomCodeEndOfFileH(file: T2CFile){}
 	protected appendCustomCodeStartOfFileCpp(file: T2CFile){}
@@ -76,8 +77,12 @@ export class T2CCodeBuilder{
 			this.appendCustomCodeStartOfFileH(file);
             this.append(ns.startString(file));
             this.newLine();
-            ns.classes.forEach(cls => {
-                this.appendClassH(cls);
+            ns.interfaces.forEach(cls => {
+				this.appendCustomCodeBeforeInterface(cls);
+                this.appendClassH(cls,true);
+            });
+			ns.classes.forEach(cls => {
+                this.appendClassH(cls,false);
             });
             ns.functions.forEach(func => {
                 this.appendGlobalFunctionCppH(func);
@@ -124,7 +129,7 @@ export class T2CCodeBuilder{
         return ret;
     }
 
-	private appendClassH(cls : T2CClass){
+	private appendClassH(cls : T2CClass,isInterface : boolean){
         this.mRoot.forwardDeclarations.push(cls.name);
         this.newLine();
 		this.append("class " + cls.name);
@@ -132,7 +137,7 @@ export class T2CCodeBuilder{
 
 		if ( cls.extends.length > 0 || cls.implements.length > 0 ) {
 			let first = true;
-			T2CUtils.assert(cls.extends.length == 1);
+			T2CUtils.assert(cls.extends.length <= 1);
 			cls.extends.forEach(base => {
 				this.append(first ? ":" : ",");
 				this.append("public " + base);
@@ -154,15 +159,16 @@ export class T2CCodeBuilder{
 		}
 
 		this.appendCustomCodeStartClassH(cls);
+		this.markInterfaceVariables(cls);
+		
 		// TODO :: sort by modifier
 		cls.variables.forEach(v => {
-			this.appendClassVariable(v);
+			if ( ! v.interfaceVar)
+				this.appendClassVariable(v);
 		});
 
-
-		cls.hasConstructor();
 		cls.functions.forEach(func => {
-			this.appendClassFunctionH(func);
+			this.appendClassFunctionH(func,isInterface);
 			this.appendCustumCodeAfterFunctionH(func,cls);
         });
 		
@@ -177,9 +183,30 @@ export class T2CCodeBuilder{
         this.newLine();
 	}
 
-
-
-
+	protected markInterfaceVariables(cls : T2CClass)
+	{
+		cls.implements.forEach(clsIface =>{
+			this.mRoot.getFiles().forEach(file => {
+				file.namespaces.forEach(nspace => {
+					nspace.interfaces.forEach(iface =>{
+						if ( clsIface == iface.name )
+						{
+							iface.variables.forEach(ifaceVar =>{
+								cls.variables.forEach(clsVar =>{
+									if ( clsVar.name == ifaceVar.name )
+									{
+										T2CUtils.assert(clsVar.type == ifaceVar.type);
+										T2CUtils.assert(clsVar.access == "public");
+										clsVar.interfaceVar = true;
+									}
+								})
+							});	
+						}
+					});	
+				});
+			});
+		});
+	}
     protected  appendX(...strings: string[]) {
         for (var i = 0; i <  strings.length; i++) {
           this.append(strings[i]);
@@ -188,13 +215,25 @@ export class T2CCodeBuilder{
     };
 
 
-	private appendClassFunctionH(func : T2CFunction){
+	private appendClassFunctionH(func : T2CFunction,isInterface : boolean){
 		// TODO :: maybe inline some short functions
-		this.append(func.getCppAccess() + ": ");
-		if (func.returns.type != "!~")
-			this.append("virtual ");
-		this.appendFunctionSignature(func,false);
-		this.append(";\n");
+
+		if ( func.getCppAccess() == "static")
+		{
+			this.append("static ");
+			this.appendFunctionSignature(func,false);
+			this.appendX(";");
+		}
+		else
+		{
+			this.append(func.getCppAccess() + ": ");
+			if (func.returns.type != "!~")
+				this.append("virtual ");
+			this.appendFunctionSignature(func,false);
+			if ( isInterface )
+				this.append(" = 0");
+			this.appendX(";");
+		}
 	}
 
 	private appendFunctionSignature(func : T2CFunction,inImplementation : boolean,memberOfClass : string = ""){
@@ -210,7 +249,7 @@ export class T2CCodeBuilder{
 		this.append(")");
 	}
 
-	private appendClassVariable(v : T2CVariable){
+	private appendClassVariable( v : T2CVariable){
 		//auto type = ToCppType(var,false);
 		this.append(v.access + ": ");
 		this.append(v.toCppType() + " ");
@@ -272,13 +311,15 @@ export class T2CCodeBuilder{
 		fs.writeFileSync(dest,buf); // don't try catch it. want it to fail on error for now
 
 		try {
+			let exe = "AStyle" + (T2CUtils.isWindows()?".exe":"");
 			// TODO :: better path for AStyle binary
-			let astylePath = __dirname + "/../externals/AStyle.exe"; 
-			astylePath = path.normalize(astylePath).replace("\\out","");
+			let astylePath = __dirname + "/../externals/" + exe; 
+			astylePath = path.normalize(astylePath).replace("\\out","").replace("/out","");
 			// need to call twice for better results ( there should be a way to do it in one command but didn't want to spend too much time on it)
 			child.execSync(astylePath + " " + dest);
 			child.execSync(astylePath + " " + "--style=allman --indent=tab --attach-namespaces --attach-classes --attach-inlines --attach-extern-c --indent-modifiers --indent-switches --indent-cases --indent-namespaces --indent-preproc-block --indent-preproc-define --indent-preproc-cond --indent-col1-comments --max-instatement-indent=100 --break-blocks=all --pad-oper --pad-header --fill-empty-lines --align-pointer=name --align-reference=name --break-closing-brackets --add-brackets --add-one-line-brackets --add-braces --mode=c  "+ dest);
 		} catch (error) {}
+		
 	}
 
 	private createCppFile(file : T2CFile ){
@@ -289,7 +330,12 @@ export class T2CCodeBuilder{
         file.namespaces.forEach(ns => {
             this.append(ns.startString(file));
             this.newLine();
-            ns.classes.forEach(cls => {
+
+            ns.interfaces.forEach(cls => {
+                this.appendClassCpp(cls);
+            });
+
+			ns.classes.forEach(cls => {
                 this.appendClassCpp(cls);
             });
             ns.functions.forEach(func => {
@@ -319,10 +365,13 @@ export class T2CCodeBuilder{
 	private appendClassCpp(cls : T2CClass){
         this.appendCustomCodeStartClassCpp(cls);
 		cls.functions.forEach(func => {
-			this.appendFunctionSignature(func,true, cls.name);
-			this.newLine();
-			this.appendFunctionBody(func,cls);
-			this.appendCustumCodeAfterFunctionCpp(func,cls);
+			if ( func.hasBody() )
+			{
+				this.appendFunctionSignature(func,true, cls.name);
+				this.newLine();
+				this.appendFunctionBody(func,cls);
+				this.appendCustumCodeAfterFunctionCpp(func,cls);
+			}
 		});
         this.newLine();
         
@@ -365,6 +414,8 @@ export class T2CCodeBuilder{
 		}
 
 		token = T2CUtils.getNextToken(tokens,ts.SyntaxKind.OpenParenToken);
+		let prevToken = token;
+		let nextToken = T2CUtils.peekNextToken(tokens);
 		let count = 1;
 		while ( token != null && count > 0)
 		{
@@ -374,14 +425,24 @@ export class T2CCodeBuilder{
 			}
 			else if ( token.kind == ts.SyntaxKind.DotToken )
 			{
-				this.append("->");
+				T2CUtils.assert(prevToken != null && nextToken != null);
+				let cls = this.mRoot.getClassByName(prevToken.getText());
+				if ( cls != null && cls.isStaticFunction(nextToken.getText()))
+				{
+					this.append("::");
+				}
+				else
+				{
+					this.append("->");
+				}
 			}
 			else 
 			{
 				this.append(token.getText());
 			}
-
+			prevToken = token
 			token = T2CUtils.getNextToken(tokens);
+			nextToken = T2CUtils.peekNextToken(tokens);
 			if ( token.kind == ts.SyntaxKind.OpenParenToken )
 				count++;
 			else if ( token.kind == ts.SyntaxKind.CloseParenToken )
@@ -397,8 +458,9 @@ export class T2CCodeBuilder{
 	private appendFunctionBody(func : T2CFunction,cls : T2CClass){
 		let tokens = T2CUtils.buildTokenList(func.body);
 		let token = T2CUtils.getNextToken(tokens);
-		let bracesCount = -1;
+		let nextToken = T2CUtils.peekNextToken(tokens);
 		let prevToken = token;
+		let bracesCount = -1;
 		//let inNewStatement = false;
 		let inInitialisationList = 0;
 		if ( cls != null )
@@ -492,7 +554,16 @@ export class T2CCodeBuilder{
 				}
 				case ts.SyntaxKind.DotToken:
 				{
-					this.append("->");
+					T2CUtils.assert(prevToken != null && nextToken != null);
+					let cls = this.mRoot.getClassByName(prevToken.getText());
+					if ( cls != null && cls.isStaticFunction(nextToken.getText()))
+					{
+						this.append("::");
+					}
+					else
+					{
+						this.append("->");
+					}
 					break;
 				}
 				case ts.SyntaxKind.EqualsToken:
@@ -613,6 +684,7 @@ export class T2CCodeBuilder{
 			}
 			prevToken = token;
 			token = T2CUtils.getNextToken(tokens);
+			nextToken = T2CUtils.peekNextToken(tokens);
 		}
 		this.newLine(2);
 	}

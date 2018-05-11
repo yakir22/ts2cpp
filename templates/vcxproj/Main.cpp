@@ -4,7 +4,7 @@ namespace $MainClassNamespace
 	void main();
 };
 
-void main()
+int main()
 {
 	$MainClassNamespace::main();
 }

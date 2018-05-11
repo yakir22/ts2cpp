@@ -3,3 +3,4 @@ out/
 templates/vcxproj/.vs/
 templates/vcxproj/TemplateProject.sln
 templates/vcxproj/Debug/
+package-lock.json

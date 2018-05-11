@@ -1,4 +1,6 @@
 import * as ts from "typescript";
+import * as child from "child_process";
+
 export class T2CUtils
 {
     static ExtractFirstIdentifier(node : ts.Node) : ts.Node
@@ -53,7 +55,14 @@ export class T2CUtils
 		tokenize(node);
 		return ret;
     }
-    
+	
+	
+	static peekNextToken(tokens : ts.Node[]) : ts.Node 
+	{
+		if ( tokens.length == 0 )
+			return null;
+		return tokens[0];
+	}
 	static getNextToken(tokens : ts.Node[], ...valids: ts.SyntaxKind[]) : ts.Node 
 	{
 		if ( tokens.length == 0 )
@@ -84,5 +93,11 @@ export class T2CUtils
 			exp = false;
 	}
 
+
+
+	static isWindows() {
+		// TODO :: PATCH :: find a better way.
+		return child.execSync("cd",{"encoding" : "utf8"}).trim().length > 0;
+	}
 
 }

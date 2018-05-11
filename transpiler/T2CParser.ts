@@ -94,13 +94,15 @@ export class T2CParser{
 		for ( let i = 0 ; i < node.getChildCount() ; i++ ){
 			let child = node.getChildAt(i);
 			switch (child.kind) {
+				case ts.SyntaxKind.InterfaceDeclaration:
+					this.parseInterface(child);
+					break;
 				case ts.SyntaxKind.ClassDeclaration : 
 					this.parseClass(child);
 					break;
 				case ts.SyntaxKind.ModuleDeclaration :
 					this.parseModule(child); // namespace
 					break;
-					
 				case ts.SyntaxKind.FunctionDeclaration:
 					this.parseFunction(child);
 					break;
@@ -113,12 +115,20 @@ export class T2CParser{
 			}
 		}
 	}
-	private parseClasHeritage(node: ts.Node) {
+	private parseClassHeritage(node: ts.Node) {
+		let isInterface = false;
 		for ( let i = 0 ; i < node.getChildCount() ; i++ ){
 			let child = node.getChildAt(i);
-			if ( child.kind == ts.SyntaxKind.SyntaxList )
+			if ( child.kind == ts.SyntaxKind.ImplementsKeyword )
 			{
-				this.mCurrentClass.extends.push(child.getText());
+				isInterface = true;
+			}
+			else if ( child.kind == ts.SyntaxKind.SyntaxList )
+			{
+				if ( isInterface )
+					this.mCurrentClass.implements.push(child.getText());
+				else
+					this.mCurrentClass.extends.push(child.getText());
 			}
 		}
 	}
@@ -127,17 +137,19 @@ export class T2CParser{
 			let child = node.getChildAt(i);
 			switch (child.kind) {
 				case ts.SyntaxKind.HeritageClause:
-					this.parseClasHeritage(child);
+					this.parseClassHeritage(child);
 					break;
 				case ts.SyntaxKind.ClassDeclaration : 
 					this.parseClass(child); // TODO :: handle subclasses 
 					break;
 				case ts.SyntaxKind.PropertyDeclaration:
+				case ts.SyntaxKind.PropertySignature:
 					let v = this.parseProperty(child);
 					this.mCurrentClass.variables.push(v);
 					break;
 				case ts.SyntaxKind.Constructor:
 				case ts.SyntaxKind.MethodDeclaration:
+				case ts.SyntaxKind.MethodSignature:
 					this.parseFunction(child);
 					break;
 				case ts.SyntaxKind.Decorator:
@@ -147,6 +159,25 @@ export class T2CParser{
 				}
 		}
 	}
+
+	private parseInterface(node: ts.Node){
+		this.mCurrentClass = new T2CClass();
+		this.mCurrentClass.isInterface = true;
+		for ( let i = 0 ; i < node.getChildren().length ; i++ )
+		{
+			let child = node.getChildAt(i);
+			switch (child.kind) {
+				case ts.SyntaxKind.Identifier:
+					this.mCurrentClass.name = child.getText();
+					break;
+				case ts.SyntaxKind.SyntaxList : 
+					this.parseClassSyntaxList(child);
+					break;
+			}
+		}
+		this.pushInterface(this.mCurrentClass);
+	}
+
 
 	private parseClass(node: ts.Node){
 		this.mCurrentClass = new T2CClass();
@@ -164,6 +195,13 @@ export class T2CParser{
 		}
 		this.pushClass(this.mCurrentClass);
 	}
+
+
+	private pushInterface(cls : T2CClass){
+		this.mCurrentNamespace.interfaces.push(this.mCurrentClass);
+		this.mCurrentClass = null;
+	}
+
 
 	private pushClass(cls : T2CClass){
 		this.mCurrentNamespace.classes.push(this.mCurrentClass);

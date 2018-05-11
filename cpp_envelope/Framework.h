@@ -1,14 +1,10 @@
 #pragma once
 #include <iostream>
-#include <direct.h>  
 #include <stdlib.h>  
 #include <errno.h>  
-#include <boost/tokenizer.hpp>
 #include <string>
 #include <fstream>
 #include <streambuf>
-#include <boost/algorithm/string/predicate.hpp>
-#include <boost/algorithm/string.hpp>
 #include <functional> 
 #include <iomanip>      // std::setfill, std::setw
 #include <cstdio>
@@ -21,9 +17,20 @@
 #include <cctype>
 #include <assert.h>
 #include <algorithm>
-#include <boost/algorithm/string.hpp>
 #include <stdio.h>
+
+#include <boost/algorithm/string/predicate.hpp>
+#include <boost/algorithm/string.hpp>
+#include <boost/tokenizer.hpp>
+
+
+#ifdef WIN32
 #include <tchar.h>
+#include <direct.h>  
+#else
+
+#endif
+
 
 class FrameworkImpl
 {
@@ -55,9 +62,9 @@ public:
 	class StringUtils
 	{
 	public:
-		std::string FrameworkImpl::StringUtils::Trim(const std::string &s);
-		std::string FrameworkImpl::StringUtils::RTrim(const std::string &s);
-		std::string FrameworkImpl::StringUtils::LTrim(const std::string &s);
+		std::string Trim(const std::string &s);
+		std::string RTrim(const std::string &s);
+		std::string LTrim(const std::string &s);
 		bool Contains(const std::string &s, const std::string & what);
 		bool BeginWith(const std::string &s, const std::string & with);
 		std::vector<std::string> Split(const std::string &str, const std::string &delim);
