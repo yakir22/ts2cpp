@@ -154,7 +154,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>./;D:\1Dev\SlateScienceV2\SlateMathV2\externals\boost_1_60_0\boost\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;D:\1Dev\SlateScience\SlateMathV2\externals\boost_1_60_0\boost\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

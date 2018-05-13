@@ -2,7 +2,7 @@ class TSPoint
 {
     private mX : number = 0;
     private mY : number = 0;
-	
+	static Zero : TSPoint = new TSPoint(0,0);
     constructor(x : number,y:number)
     {
         this.mX = x;
@@ -29,7 +29,9 @@ namespace Testing
         console.log(p0.toString());
         let p1 = new TSPoint(20,30);
         let distance = TSPoint.distance(p0,p1);
-        console.log("Distance between " + p0.toString() + " to " + p1.toString() + " = " + distance);
+		console.log("Distance between " + p0.toString() + " to " + p1.toString() + " = " + distance);
+		distance = TSPoint.distance(p0,TSPoint.Zero);
+		console.log("Distance between " + p0.toString() + " to " + TSPoint.Zero.toString() + " = " + distance);
     }
     main();
 }

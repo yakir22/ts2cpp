@@ -1,3 +1,25 @@
+/*
+ Copyright (c) 2018 Yakir Elkayam
+ 
+ Permission is hereby granted, dispose of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+ 
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+ 
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.
+ */
+
 import { ECHILD } from "constants";
 import * as child from "child_process";
 import * as ts from "typescript";
@@ -164,8 +186,15 @@ export class T2CCodeBuilder{
 		// TODO :: sort by modifier
 		cls.variables.forEach(v => {
 			if ( ! v.interfaceVar)
-				this.appendClassVariable(v);
+				this.appendClassVariable(v,false);
 		});
+
+		cls.staticVariables.forEach(v => {
+			if ( ! v.interfaceVar)
+				this.appendClassVariable(v,true);
+		});
+
+
 
 		cls.functions.forEach(func => {
 			this.appendClassFunctionH(func,isInterface);
@@ -249,18 +278,45 @@ export class T2CCodeBuilder{
 		this.append(")");
 	}
 
-	private appendClassVariable( v : T2CVariable){
-		//auto type = ToCppType(var,false);
-		this.append(v.access + ": ");
+	private appendStaticClassVariableCpp(cls : T2CClass, v : T2CVariable){
 		this.append(v.toCppType() + " ");
-		this.append(v.name);
+		this.append(cls.name + "::" + v.name);
 		if (v.size > 0 )
 		{
 			//Append("= new " + type.substr(0, type.size() - 1) + "()");
 		}
 		else if (v.value.length > 0)
 		{
-			this.append("=" + v.value);
+			let value = v.value.replace("\t"," ");
+			if ( value.indexOf("new ") == 0 ) // TODO :: might catch some buggy cases live needToRenew ( the new at the end of renew will be cought but it's good enough for now)
+			{
+				// TODO :: temporary solution. static variables should be declared as unique ptr
+				// Also need a better general solution for allocating new static variable
+				value = value.replace("new ","std::make_shared<").replace("(",">(");
+			}
+			this.append("=" + value);
+		}
+		this.append(";\n");
+		
+	}
+
+	private appendClassVariable( v : T2CVariable,isStatic : boolean){
+		//auto type = ToCppType(var,false);
+		this.append(v.access + ": ");
+		if ( isStatic )
+			this.append("static ");
+		this.append(v.toCppType() + " ");
+		this.append(v.name);
+		if ( !isStatic )
+		{
+			if (v.size > 0 )
+			{
+				//Append("= new " + type.substr(0, type.size() - 1) + "()");
+			}
+			else if (v.value.length > 0)
+			{
+				this.append("=" + v.value);
+			}
 		}
 		this.append(";\n");
 	}
@@ -363,7 +419,12 @@ export class T2CCodeBuilder{
 	}
 
 	private appendClassCpp(cls : T2CClass){
-        this.appendCustomCodeStartClassCpp(cls);
+		this.appendCustomCodeStartClassCpp(cls);
+		
+		cls.staticVariables.forEach(v =>{
+			this.appendStaticClassVariableCpp(cls,v);
+		});
+
 		cls.functions.forEach(func => {
 			if ( func.hasBody() )
 			{
