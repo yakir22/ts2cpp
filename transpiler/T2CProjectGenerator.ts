@@ -56,30 +56,35 @@ export class T2CProjectGenerator
         let replacePattern = "<ClCompile Include=\"Main.cpp\" />";
         let projectFiles =  replacePattern + "\n";
 
-        let filesToLink : string[] = ["ts2cpp_envelope","Framework"];
+        let filesToLink : string[] = ["ts2cpp_envelope","Framework","gfx","stdafx"];
+        let filesToAddToProject : string[] = ["ts2cpp_envelope","Framework","gfx"];
         let ext : string[] = [".h",".cpp"]
+        let directoriesToLink : string[] = ["SDL2","vld"];
 
         let cd = child.execSync(T2CUtils.isWindows()?"cd":"pwd",{"encoding" : "utf8"}).trim();
-        filesToLink.forEach(file =>{
+        
+        filesToAddToProject.forEach(file =>{
             projectFiles += "<ClCompile Include=\""+file+".cpp\" />"
             filesForGPlusPlus.push(file + ".cpp");
+        });
+        
+        filesToLink.forEach(file =>{
             ext.forEach(ext =>{
                 try {
-                    let destFile = path.normalize( cd + "/" + basePath + "/"+file+ ext);
-                    let srcFile = path.normalize( envelopeBase + file + ext);
-
-                    if ( T2CUtils.isWindows() ){
-                        child.execSync("mklink " + destFile +" " + srcFile);
-                    }
-                    else{
-                        child.execSync("ln -s " + srcFile + " " + destFile);
-                    }
+                    this.linkFiles(cd, basePath, file, ext, envelopeBase);
                 } 
                 catch (error) {
                 }
             })
         });
 
+        directoriesToLink.forEach(file =>{
+            try {
+                this.linkFiles(cd, basePath, file, "", envelopeBase);
+            } 
+            catch (error) {
+            }
+        });
 
 
         let mainClassNamespace : T2CNamespace= null;
@@ -139,4 +144,18 @@ export class T2CProjectGenerator
         }
     }
 
+
+    private linkFiles(cd: string, basePath: string, file: string, ext: string, envelopeBase: string) {
+        let destFile = path.normalize(cd + "/" + basePath + "/" + file + ext);
+        let srcFile = path.normalize(envelopeBase + file + ext);
+        if (T2CUtils.isWindows()) {
+            if ( ext == "" ) // linking directory. TODO :: refactor and support osx
+                child.execSync("mklink /D " + destFile + " " + srcFile);
+            else
+                child.execSync("mklink " + destFile + " " + srcFile);
+        }
+        else {
+            child.execSync("ln -s " + srcFile + " " + destFile);
+        }
+    }
 }

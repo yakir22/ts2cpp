@@ -224,35 +224,4 @@ public:
 };
 
 
-
-
-
-class JSGFX
-{
-public:
-	void init();
-	void beginDraw();
-	void drawRect(double x, double y, unsigned char r, unsigned char g, unsigned char b, unsigned char a);
-	void drawImage(double x, double y, const JSString &resource);
-	void endDraw();
-	void terminate();
-	void processEvents();
-	void loadTexture(const JSString &path);
-	double getWidth() { return 1024; }
-	double getHeight() { return 768; }
-	bool quiting() { return mQuiting; }
-	void setResourcesPath(const JSString &path);
-	void drawFPS();
-	void update();
-protected:
-	struct SDL_Renderer* mRenderer = NULL;
-	struct SDL_Window* mWindow = NULL;
-	bool mQuiting = false;
-	JSString mResourcePath;
-	std::map<std::string, struct SDL_Texture*> mResources;
-};
-
-extern JSGFX *Graphics;
-
-
 #define null nullptr

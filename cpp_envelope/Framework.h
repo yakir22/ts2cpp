@@ -41,11 +41,11 @@
 #include <assert.h>
 #include <algorithm>
 #include <stdio.h>
-
+/*
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/tokenizer.hpp>
-
+*/
 
 #ifdef WIN32
 #include <tchar.h>

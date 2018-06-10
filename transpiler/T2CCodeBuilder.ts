@@ -378,9 +378,13 @@ export class T2CCodeBuilder{
 		
 	}
 
-	private createCppFile(file : T2CFile ){
+	protected appendPCH(){
+		this.appendX("#include \"stdafx.h\"");
+	}
 
+	private createCppFile(file : T2CFile ){
 		this.clearCodeBuffer();
+		this.appendPCH();
 		this.appendCustomCodeStartOfFileCpp(file);
 		this.appendIncludesCpp(file);
         file.namespaces.forEach(ns => {
