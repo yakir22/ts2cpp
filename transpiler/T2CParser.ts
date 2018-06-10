@@ -106,7 +106,9 @@ export class T2CParser{
 			switch (child.kind) {
 				case ts.SyntaxKind.StringLiteral:
 					// TODO :: handle import path properly
-					this.mCurrentFile.imports.push(child.getText().replace(/\'/g,"").replace(/\"/g,"").replace("./",this.mCurrentDirectory + "/") + ".ts");
+					let cleanName = child.getText().replace(/\'/g,"").replace(/\"/g,"").replace("./","");
+					this.mCurrentFile.importsCleanName.push(cleanName);
+					this.mCurrentFile.imports.push(this.mCurrentDirectory + "/" + cleanName + ".ts");
 					break;
 			}	
 		}	

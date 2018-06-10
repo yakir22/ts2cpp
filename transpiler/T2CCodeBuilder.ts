@@ -412,7 +412,7 @@ export class T2CCodeBuilder{
         this.append("#include \"" + file.hName.substr(file.name.lastIndexOf("/") + 1) + "\"");
         this.newLine();
 
-        file.imports.forEach(impt => {
+        file.importsCleanName.forEach(impt => {
 			if ( impt.indexOf("BindingDecorators") >= 0 )
 				return;
             this.append("#include \"" + impt + ".h\"");
@@ -457,12 +457,6 @@ export class T2CCodeBuilder{
 	private ignoreNext(){
 		this.mIgnoreNext = true;
 	}
-
-	
-
-
-
-
 
 	protected appendNewStatement(tokens : ts.Node[]) {
 		this.append("");
@@ -579,7 +573,11 @@ export class T2CCodeBuilder{
 					}
 					break;		
 				case ts.SyntaxKind.StringLiteral:
-					this.append("JSString(" + token.getText() + ")");
+
+					let cppString = token.getText();
+					if ( cppString[0] == "\'" )
+						cppString = cppString.replace(/\'/g,"\""); // TODO :: implement proper conversion
+					this.append("JSString(" + cppString + ")");
 					break;
 				case ts.SyntaxKind.VarKeyword:
 				case ts.SyntaxKind.LetKeyword:

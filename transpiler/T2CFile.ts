@@ -32,6 +32,7 @@ export class T2CFile{
 	public processedAsDep : boolean = false;
 	public namespaces : T2CNamespace[] = [];
 	public imports : string[] = [];
+	public importsCleanName : string[] = [];
 
 	constructor(tsName : string){
 		this.tsName = tsName;

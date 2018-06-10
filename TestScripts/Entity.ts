@@ -1,13 +1,13 @@
 export class Entity
 {
-    public entities : Entity[];
+    public entities : Entity[] = [];
     public x : number;
     public y : number;
 
     constructor(x : number,y : number){
-        this.entities = new Array(); 
-        this.entities = []; 
-        this.entities = Array(); 
+        //this.entities = new Array(); 
+        //this.entities = []; 
+        //this.entities = Array(); 
         this.x = x;
         this.y = y;
     }
