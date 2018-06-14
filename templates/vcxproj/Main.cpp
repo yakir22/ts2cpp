@@ -1,6 +1,6 @@
 
 #include "stdafx.h"
-
+#include "T2CGC.h"
 #ifndef BUILD_AS_STATIC_LIB
 
 #ifndef MINIMAL_ENGINE
@@ -19,6 +19,7 @@ namespace $MainClassNamespace
 int main()
 {
 	$MainClassNamespace::main();
+	GC::Get().Collect(0);
 }
 #endif
 

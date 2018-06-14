@@ -4,3 +4,6 @@ templates/vcxproj/.vs/
 templates/vcxproj/TemplateProject.sln
 templates/vcxproj/Debug/
 package-lock.json
+cpp_envelope/my_shared_ptr.h
+cpp_envelope/gcptr.h
+cpp_envelope/gcptr.cpp

@@ -22,6 +22,7 @@
 
 import * as ts from "typescript";
 import * as child from "child_process";
+import { T2CKindHelper } from "./T2CKindHelper";
 
 export class T2CUtils
 {
@@ -46,7 +47,7 @@ export class T2CUtils
         return ret;
     }
 
-    
+	
 	static ArrayIdentifier = 10000;
 	static LengthIdentifier = 10001;
 
@@ -54,7 +55,8 @@ export class T2CUtils
 	static buildTokenList(node : ts.Node) : ts.Node[]{
 		let ret : ts.Node[] = [];
 		function tokenize(node : ts.Node){
-			if ( node.kind >= ts.SyntaxKind.OpenBraceToken && node.kind <= ts.SyntaxKind.GlobalKeyword ){
+			let nt = T2CKindHelper.getNodeText(node);
+			if ( (node.kind >= ts.SyntaxKind.OpenBraceToken && node.kind <= ts.SyntaxKind.GlobalKeyword) || ( node.kind >= T2CUtils.ArrayIdentifier ) ){
 				if ( node.kind == ts.SyntaxKind.Identifier && node.getText() == "Array" )
 					node.kind = T2CUtils.ArrayIdentifier;
 				else if ( node.kind == ts.SyntaxKind.Identifier && node.getText() == "length" )

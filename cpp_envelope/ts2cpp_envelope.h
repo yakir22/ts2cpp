@@ -166,12 +166,11 @@ const JSString JSObject::toString()
 //#define length size() // TODO :: do it only if type is array
 
 template<class T>
-class JSArray //: public std::vector<T>
+class JSArray 
 {
 	std::shared_ptr<std::vector<T> > mInternalArray;
 public:
 	JSArray(const std::initializer_list<T>& il)
-//		: std::vector<T>(il)
 	{
 		mInternalArray = std::make_shared<std::vector<T> >(il);
 	}
@@ -183,11 +182,6 @@ public:
 	{
 		mInternalArray = nullptr;
 	}
-/*
-	JSArray(JSArray<T> & other)
-	{ 
-		mInternalArray = other->mInternalArray; 
-	}*/
 
 	void splice(int start, int deleteCount){
 		// TODO :: assert values and support negative start
@@ -219,7 +213,6 @@ public:
 			mInternalArray->resize(index + 1);
 		}
 		return (*mInternalArray)[index];
-		//return std::vector<T>::operator[](index);
 	}
 };
 

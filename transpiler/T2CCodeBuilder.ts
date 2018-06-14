@@ -81,11 +81,20 @@ export class T2CCodeBuilder{
     }
     
     protected craeteForwardDeclarationFile(){
-        this.clearCodeBuffer();
-        this.append("#pragma once");
+		this.clearCodeBuffer();
+		this.appendX(	"#pragma once",
+						"#include \"T2CGC.h\"");
         this.newLine();
         this.mRoot.forwardDeclarations.forEach(fd => {
-            this.append("typedef std::shared_ptr<class " + fd + "> " + fd + "Ref;");                
+			this.appendX(	"typedef boost::intrusive_ptr<class " + fd + "> " + fd + "Ref;",
+							"typedef stack_mark_intrusive_ptr<class " + fd + "> " + fd + "StackRef;",
+							"typedef global_mark_intrusive_ptr<class " + fd + "> " + fd + "GlobalRef;",
+							"typedef static_mark_intrusive_ptr<class " + fd + "> " + fd + "StaticRef;",
+							"void intrusive_ptr_add_ref(class "+fd+"* obj);",
+							"void intrusive_ptr_release(class "+fd+"* obj);");                
+			
+			
+
             this.newLine();
         });
         this.flushCodeBuffer(this.mRoot.rootDirectory + "forwardDeclarations.h");
@@ -170,6 +179,9 @@ export class T2CCodeBuilder{
 				this.append("public " + base);
 			});
 		} 
+		else {
+				this.appendX(": public GCObject");
+		}
 
         this.newLine();
 		this.append("{");
@@ -179,10 +191,13 @@ export class T2CCodeBuilder{
 		{
 			this.appendX("private: typedef " + cls.extends[0] + " super;");
 		}
+		
 
 		this.appendCustomCodeStartClassH(cls);
 		this.markInterfaceVariables(cls);
-		
+
+		this.appendX("public: void MarkChildren();");
+
 		// TODO :: sort by modifier
 		cls.variables.forEach(v => {
 			if ( ! v.interfaceVar)
@@ -288,11 +303,11 @@ export class T2CCodeBuilder{
 		else if (v.value.length > 0)
 		{
 			let value = v.value.replace("\t"," ");
-			if ( value.indexOf("new ") == 0 ) // TODO :: might catch some buggy cases live needToRenew ( the new at the end of renew will be cought but it's good enough for now)
+			if ( value.indexOf("new ") == 0 ) // TODO :: might catch some buggy cases like needToRenew ( the new at the end of renew will be cought but it's good enough for now)
 			{
-				// TODO :: temporary solution. static variables should be declared as unique ptr
-				// Also need a better general solution for allocating new static variable
-				value = value.replace("new ","std::make_shared<").replace("(",">(");
+				// TODO :: temporary solution.
+				// TODO :: This is a very buggy implementation. must think of something better
+				value = value.replace("new ",v.toCppType().replace(v.type,v.type + "Static") + "( new ") + ")";
 			}
 			this.append("=" + value);
 		}
@@ -403,7 +418,7 @@ export class T2CCodeBuilder{
             })
             this.append(ns.endString(file));
             this.newLine();
-        });
+		});
 		this.appendCustomCodeEndOfFileCpp(file);
 		this.flushCodeBuffer(file.cppName);
 	}
@@ -438,9 +453,23 @@ export class T2CCodeBuilder{
 				this.appendCustumCodeAfterFunctionCpp(func,cls);
 			}
 		});
+		this.appendMarkChildrenImpl(cls);
         this.newLine();
-        
+		this.appendX("RefCountClassImpl("+cls.name+");");
+        this.newLine();
         this.appendCustomCodeEndClassCpp(cls);
+	}
+
+	protected appendMarkChildrenImpl(cls: T2CClass)
+	{
+		this.appendX("void " +cls.name+ "::MarkChildren(){");
+		cls.variables.forEach(v => {
+			if ( !v.isSimple() && v.size == 0){
+				this.appendX(	"if ( this->"+v.name+" != nullptr){",
+								v.name + "->Mark();","}" );
+			}
+		});
+		this.appendX("}");
 	}
 
 	protected newLine(count = 1){
@@ -469,7 +498,7 @@ export class T2CCodeBuilder{
 		}
 		else
 		{
-			this.append(token.getText() + "Ref( new " + token.getText());
+			this.append(token.getText() + "StackRef( new " + token.getText());
 		}
 
 		token = T2CUtils.getNextToken(tokens,ts.SyntaxKind.OpenParenToken);
@@ -541,6 +570,8 @@ export class T2CCodeBuilder{
 				this.appendCustomCodeStartFunctionCpp(func,cls);
 			}
 		}
+
+
 
 		while ( token != null )
 		{
