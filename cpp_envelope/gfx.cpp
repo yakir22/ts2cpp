@@ -41,7 +41,7 @@ void JSGFX::drawFPS()
 
 void JSGFX::update()
 {
-
+	processEvents();
 }
 
 
@@ -73,7 +73,7 @@ void JSGFX::init()
 
 void JSGFX::beginDraw()
 {
-	SDL_SetRenderDrawColor(mRenderer, 0, 20, 0, 0);
+	SDL_SetRenderDrawColor(mRenderer, 0, 0, 0, 0);
 	SDL_RenderClear(mRenderer);
 }
 
@@ -97,36 +97,51 @@ void JSGFX::setResourcesPath(const JSString &path)
 }
 
 
-void JSGFX::drawImage(double x, double y, const JSString &resource)
+void JSGFX::drawImage(double x, double y, const JSString &_resource,double width /*= 0*/, double height/* = 0*/)
 {
 	//    return;
+	static const JSString ext = JSString(".png");
+	const JSString resource = _resource + ext;
 	int dummyi;
 	unsigned dummyu;
 	SDL_Rect srect, drect;
 
 	auto texture = mResources[resource];
 	if (!texture)
-		return;
-
+	{
+		loadTexture(resource);
+		texture = mResources[resource];
+		if ( !texture) 
+			return;
+	}
 	srect.x = 0;
 	srect.y = 0;
-	SDL_QueryTexture(texture, &dummyu, &dummyi, &srect.w, &srect.h);
-	drect = srect;
 	drect.x = (int)x;
 	drect.y = (int)y;
+	SDL_QueryTexture(texture, &dummyu, &dummyi, &srect.w, &srect.h);
+	if (width > 0 && height > 0)
+	{
+		drect.w = (int)width;
+		drect.h = (int)height;
+	}
+	else
+	{
+		drect.w = srect.w;
+		drect.h = srect.h;
+	}
 
 	SDL_RenderCopyEx(mRenderer, texture, &srect, &drect, 0, NULL, SDL_FLIP_NONE);
 }
 
-void JSGFX::drawRect(double x, double y, unsigned char r, unsigned char g, unsigned char b, unsigned char a)
+void JSGFX::drawRect(double x, double y,double width, double height, unsigned char r, unsigned char g, unsigned char b, unsigned char a)
 {
-	SDL_SetRenderDrawColor(mRenderer, r, g, b, a);
+	SDL_SetRenderDrawColor(mRenderer, r * 255, g * 255, b * 255, a * 255);
 	//	SDL_SetRenderDrawColor(mRenderer, 255,0,255,255);
 	SDL_Rect rect;
 	rect.x = (int)x;
 	rect.y = (int)y;
-	rect.w = 10;
-	rect.h = 10;
+	rect.w = (int)width;
+	rect.h = (int)height;
 	SDL_RenderFillRect(mRenderer, &rect);
 
 }

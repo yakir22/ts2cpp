@@ -155,6 +155,12 @@ JSString operator+(T i, const JSString& a)
 	return JSString::ToJSNumber(std::to_string(i)) + a.c_str();
 };
 
+inline
+JSString operator+(const JSString& b, const JSString& a)
+{
+	auto ret = *((std::string*)&b) + *((std::string*)&a);
+	return ret;
+};
 
 inline
 const JSString JSObject::toString()

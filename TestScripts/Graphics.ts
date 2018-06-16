@@ -26,7 +26,7 @@ class JSGraphics
 
     }
 
-    public drawImage( x : number, y: number,resource : string)
+    public drawImage( x : number, y: number,resource : string,w?:number, height?:number)
     {
     }
     public beginDraw()
@@ -42,10 +42,10 @@ class JSGraphics
         return this.mCanvas.height;
     }
 
-    public drawRect(x :number, y:number,  r:number, g:number, b:number,a:number)
+    public drawRect(x :number, y:number,w : number, h:number,  r:number, g:number, b:number,a:number)
     {
         this.mContext.fillStyle="#FF00FF";
-        this.mContext.fillRect(x, y,10,10);
+        this.mContext.fillRect(x, y,w,h);
         this.mContext.stroke();
     }
 	public  endDraw(){}
