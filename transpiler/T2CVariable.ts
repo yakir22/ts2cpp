@@ -76,9 +76,11 @@ export class T2CVariable{
 		return this.type == "void" || this.type == "";
 	}
 	
-	public toCppType(): string
+	public toCppType(isMethodSignature : boolean = false): string
 	{
-		return T2CVariable.getCppType(this.type,this.size)
+		if ( T2CCodeBuilder.getBuilder().getRoot().isEnum(this.type) )
+			return this.type;
+		return T2CVariable.getCppType(this.type,this.size,this.value,isMethodSignature)
 	}
 
 	public toCppArrayItemType(): string
@@ -86,21 +88,51 @@ export class T2CVariable{
 		if ( this.size == 0 )
 			throw "bad usage";
 		this.size--;
-		let ret =  T2CVariable.getCppType(this.type,this.size)
+		let ret =  T2CVariable.getCppType(this.type,this.size,this.value)
 		this.size++;
 		return ret;
 	}
 
-	static getCppType(type : string,size : number) : string
+	
+	static getCppType(type : string,size : number,value: string,isMethodSignature : boolean = false) : string
 	{
 		let typeString  = "";
 		if (type == "!~")				typeString = ""; // constructor
 		else if (type == "number")		typeString = "double";
 		else if (type == "auto")		typeString = "auto";
-		else if (type == "boolean")	typeString = "bool";
-		else if (type == "string")		typeString = "JSString";
-		else if (type == "void" || type == "")	typeString = "void";
-		else typeString = type + "Ref";
+		else if (type == "boolean")		typeString = "bool";
+		else if (type == "string")		typeString = isMethodSignature?"const JSString& ":"JSString";
+		else if (type == "void" )		typeString = "void";
+		else if (type == "" ){
+			if ( value == "" )
+				typeString = "void";
+			else {
+				// figure out the type or throw
+				if ( size > 0 )
+					throw "not implemented";
+				if ( value.indexOf("new ") == 0 )
+				{
+					for ( let i = 4 ; i < value.length ;i++ ){
+						if( T2CUtils.isAlphaNumeric(value.charCodeAt(i)) )
+							typeString += value.charAt(i);
+						else
+						{
+							typeString += "Ref";				
+							break;
+						}
+					}
+				}
+				if ( !isNaN(parseFloat(value) ) )
+					typeString = "double";
+				else if ( value == "true" || value == "false" )
+					typeString = "bool";
+				else
+					typeString = isMethodSignature?"const JSString& ":"JSString";
+			}
+		}
+		else{
+			typeString = type + "Ref" ;
+		} 
 	
 		if ( size )
 		{

@@ -28,6 +28,7 @@ import {T2CFile} 		from "./T2CFile"
 import {T2CFunction} 	from "./T2CFunction"
 import {T2CVariable} 	from "./T2CVariable"
 import {T2CKindHelper} 	from "./T2CKindHelper"
+import { T2CEnum } from "./T2CEnum";
 
 
 export class T2CParser{
@@ -100,6 +101,22 @@ export class T2CParser{
 		this.mCurrentNamespace = curNS; // TODO :: support nested namespaces
 	}
 
+	private parseEnum(node: ts.Node){
+		let enm  = new T2CEnum();
+		for ( let i = 0 ; i < node.getChildCount() ; i++ ){
+			let child = node.getChildAt(i);
+			switch (child.kind) {
+				case ts.SyntaxKind.Identifier:
+					enm.name = child.getText();
+					break;
+				case ts.SyntaxKind.SyntaxList:
+					enm.values = child.getText();
+					break;
+			}
+		}
+		this.mCurrentNamespace.enums.push(enm);
+	}
+
 	private parseImport(node: ts.Node) {
 		for ( let i = 0 ; i < node.getChildCount() ; i++ ){
 			let child = node.getChildAt(i);
@@ -133,6 +150,8 @@ export class T2CParser{
 				case ts.SyntaxKind.ImportDeclaration:
 					this.parseImport(child);
 					break;
+				case ts.SyntaxKind.EnumDeclaration:
+					this.parseEnum(child);
 				/*case ts.SyntaxKind.PropertyDeclaration:
 					this.parseProperty(child);
 					break;*/

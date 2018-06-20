@@ -29,8 +29,9 @@ class JSGFX
 public:
 	void init();
 	void beginDraw();
-	void drawRect(double x, double y, double width, double height, unsigned char r, unsigned char g, unsigned char b, unsigned char a);
+	void drawRect(double x, double y, double width, double height, double r, double g, double b, double a);
 	void drawImage(double x, double y, const JSString &resource, double width = 0, double height = 0);
+	void drawText(double x, double y, const JSString &text, double size, double r, double g, double b, double a);
 	void endDraw();
 	void terminate();
 	void loadTexture(const JSString &path);
@@ -48,6 +49,8 @@ protected:
 	bool mQuiting = false;
 	JSString mResourcePath;
 	std::map<std::string, struct SDL_Texture*> mResources;
+	std::map<std::string, struct SDL_Texture*> mTexts;
+	std::map<int, struct _TTF_Font*> mFonts;
 };
 
 extern JSGFX *Graphics;

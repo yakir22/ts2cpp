@@ -1,0 +1,2110 @@
+0-SourceFile: enum NodeType{
+        None,
+        Image,
+        Text,
+        Rect
+}
+
+class SceneGraphNode
+{
+        constructor(type : NodeType, parent : SceneGraphNode,value: string = "" )
+        {
+                this.value = value;
+                this.mType = type;
+                this.mParent = parent;
+                if ( this.mParent != null)
+                        this.mParent.addChild(this);
+        }
+
+        setColor(r,g,b,a){
+                this.r = r;
+                this.g = g;
+                this.b = b;
+                this.a = a;
+        }
+
+        setSize(w,h){
+                this.w = w;
+                this.h = h;
+        }
+
+        getType(){
+                return this.mType;
+        }
+        addChild(node : SceneGraphNode){
+                this.mChildren.push(node);
+        }
+        getChildren() {
+                return this.mChildren;
+        }
+
+        protected mType : NodeType;
+        protected mParent : SceneGraphNode;
+        protected mValue:  string;
+
+        protected mChildren : SceneGraphNode[] = [];
+
+        public value : string;
+        public x = 0;
+        public y = 0;
+        public anchorX = 0.5;
+        public anchorY = 0.5;
+        public r = 1;
+        public g = 1;
+        public b = 1;
+        public a = 1;
+        public w = 1;
+        public h = 1;
+
+}
+
+
+class SceneGraph
+{
+        protected mRoot : SceneGraphNode = new SceneGraphNode(NodeType.None,null);
+
+        public getRoot() : SceneGraphNode{
+                return this.mRoot;
+        }
+
+        public draw(): void{
+                this.drawInternal(this.getRoot(),0,0);
+        }
+
+        protected drawInternal(node : SceneGraphNode, px : number,py : number ){
+                this.getRoot().getChildren().forEach(child =>{
+                        let x = px + child.x;
+                        let y = py + child.y;
+                        switch(child.getType() ){
+                                case NodeType.None:
+                                        break;
+                                case NodeType.Image:
+                                        Graphics.drawImage(x,y,child.value);
+                                        break;
+                                case NodeType.Text:
+                                        Graphics.drawText(x,y,child.value,16,child.r,child.g,child.b,child.a);
+                                        break;
+                                case NodeType.Rect:
+                                        Graphics.drawRect(x, y,child.w,child.h,child.r,child.g,child.b,child.a);
+                                        break;
+                        }
+                        this.drawInternal(child,px + child.x,py + child.y)
+                })
+
+        }
+}
+
+
+class GameCell{
+        constructor(node,value){
+                this.node = node;
+                this.value = value;
+        }
+        public node : SceneGraphNode;
+        public value : number;
+}
+
+class MiniGame
+{
+        private mScene = new SceneGraph();
+        private mCells : GameCell[][] = [];
+        constructor(){
+                for ( let y = 0 ; y < 10 ; y++ ){
+                        this.mCells[y] = [];
+                        for ( let x = 0 ; x < 10 ; x++){
+
+                                var rect = new SceneGraphNode(NodeType.Rect,this.mScene.getRoot());
+                                rect.setSize(50,50);
+                                rect.x = x * 60;
+                                rect.y = y * 60;
+                                var text = new SceneGraphNode(NodeType.Text,rect,"" + (x * y) );
+                                this.mCells[y][x] = new GameCell(rect,x * y);
+                        }
+                }
+        }
+        public update()
+        {
+                this.mScene.draw();
+        }
+}
+
+
+namespace Testing{
+        function main()
+        {
+                let game = new MiniGame();
+                Graphics.init();
+                while (!Graphics.quiting())
+                {
+                        Graphics.update();
+                        Graphics.beginDraw();
+                        game.update();
+                        Graphics.drawFPS();
+                        Graphics.endDraw();
+                }
+        }
+}
+1-SyntaxList: enum NodeType{
+        None,
+        Image,
+        Text,
+        Rect
+}
+
+class SceneGraphNode
+{
+        constructor(type : NodeType, parent : SceneGraphNode,value: string = "" )
+        {
+                this.value = value;
+                this.mType = type;
+                this.mParent = parent;
+                if ( this.mParent != null)
+                        this.mParent.addChild(this);
+        }
+
+        setColor(r,g,b,a){
+                this.r = r;
+                this.g = g;
+                this.b = b;
+                this.a = a;
+        }
+
+        setSize(w,h){
+                this.w = w;
+                this.h = h;
+        }
+
+        getType(){
+                return this.mType;
+        }
+        addChild(node : SceneGraphNode){
+                this.mChildren.push(node);
+        }
+        getChildren() {
+                return this.mChildren;
+        }
+
+        protected mType : NodeType;
+        protected mParent : SceneGraphNode;
+        protected mValue:  string;
+
+        protected mChildren : SceneGraphNode[] = [];
+
+        public value : string;
+        public x = 0;
+        public y = 0;
+        public anchorX = 0.5;
+        public anchorY = 0.5;
+        public r = 1;
+        public g = 1;
+        public b = 1;
+        public a = 1;
+        public w = 1;
+        public h = 1;
+
+}
+
+
+class SceneGraph
+{
+        protected mRoot : SceneGraphNode = new SceneGraphNode(NodeType.None,null);
+
+        public getRoot() : SceneGraphNode{
+                return this.mRoot;
+        }
+
+        public draw(): void{
+                this.drawInternal(this.getRoot(),0,0);
+        }
+
+        protected drawInternal(node : SceneGraphNode, px : number,py : number ){
+                this.getRoot().getChildren().forEach(child =>{
+                        let x = px + child.x;
+                        let y = py + child.y;
+                        switch(child.getType() ){
+                                case NodeType.None:
+                                        break;
+                                case NodeType.Image:
+                                        Graphics.drawImage(x,y,child.value);
+                                        break;
+                                case NodeType.Text:
+                                        Graphics.drawText(x,y,child.value,16,child.r,child.g,child.b,child.a);
+                                        break;
+                                case NodeType.Rect:
+                                        Graphics.drawRect(x, y,child.w,child.h,child.r,child.g,child.b,child.a);
+                                        break;
+                        }
+                        this.drawInternal(child,px + child.x,py + child.y)
+                })
+
+        }
+}
+
+
+class GameCell{
+        constructor(node,value){
+                this.node = node;
+                this.value = value;
+        }
+        public node : SceneGraphNode;
+        public value : number;
+}
+
+class MiniGame
+{
+        private mScene = new SceneGraph();
+        private mCells : GameCell[][] = [];
+        constructor(){
+                for ( let y = 0 ; y < 10 ; y++ ){
+                        this.mCells[y] = [];
+                        for ( let x = 0 ; x < 10 ; x++){
+
+                                var rect = new SceneGraphNode(NodeType.Rect,this.mScene.getRoot());
+                                rect.setSize(50,50);
+                                rect.x = x * 60;
+                                rect.y = y * 60;
+                                var text = new SceneGraphNode(NodeType.Text,rect,"" + (x * y) );
+                                this.mCells[y][x] = new GameCell(rect,x * y);
+                        }
+                }
+        }
+        public update()
+        {
+                this.mScene.draw();
+        }
+}
+
+
+namespace Testing{
+        function main()
+        {
+                let game = new MiniGame();
+                Graphics.init();
+                while (!Graphics.quiting())
+                {
+                        Graphics.update();
+                        Graphics.beginDraw();
+                        game.update();
+                        Graphics.drawFPS();
+                        Graphics.endDraw();
+                }
+        }
+}
+2-EnumDeclaration: enum NodeType{
+        None,
+        Image,
+        Text,
+        Rect
+}
+3-EnumKeyword: enum
+3-Identifier: NodeType
+3-OpenBraceToken: {
+3-SyntaxList: None,
+        Image,
+        Text,
+        Rect
+4-EnumMember: None
+5-Identifier: None
+4-CommaToken: ,
+4-EnumMember: Image
+5-Identifier: Image
+4-CommaToken: ,
+4-EnumMember: Text
+5-Identifier: Text
+4-CommaToken: ,
+4-EnumMember: Rect
+5-Identifier: Rect
+3-CloseBraceToken: }
+2-ClassDeclaration: class SceneGraphNode
+{
+        constructor(type : NodeType, parent : SceneGraphNode,value: string = "" )
+        {
+                this.value = value;
+                this.mType = type;
+                this.mParent = parent;
+                if ( this.mParent != null)
+                        this.mParent.addChild(this);
+        }
+
+        setColor(r,g,b,a){
+                this.r = r;
+                this.g = g;
+                this.b = b;
+                this.a = a;
+        }
+
+        setSize(w,h){
+                this.w = w;
+                this.h = h;
+        }
+
+        getType(){
+                return this.mType;
+        }
+        addChild(node : SceneGraphNode){
+                this.mChildren.push(node);
+        }
+        getChildren() {
+                return this.mChildren;
+        }
+
+        protected mType : NodeType;
+        protected mParent : SceneGraphNode;
+        protected mValue:  string;
+
+        protected mChildren : SceneGraphNode[] = [];
+
+        public value : string;
+        public x = 0;
+        public y = 0;
+        public anchorX = 0.5;
+        public anchorY = 0.5;
+        public r = 1;
+        public g = 1;
+        public b = 1;
+        public a = 1;
+        public w = 1;
+        public h = 1;
+
+}
+3-ClassKeyword: class
+3-Identifier: SceneGraphNode
+3-OpenBraceToken: {
+3-SyntaxList: constructor(type : NodeType, parent : SceneGraphNode,value: string = "" )
+        {
+                this.value = value;
+                this.mType = type;
+                this.mParent = parent;
+                if ( this.mParent != null)
+                        this.mParent.addChild(this);
+        }
+
+        setColor(r,g,b,a){
+                this.r = r;
+                this.g = g;
+                this.b = b;
+                this.a = a;
+        }
+
+        setSize(w,h){
+                this.w = w;
+                this.h = h;
+        }
+
+        getType(){
+                return this.mType;
+        }
+        addChild(node : SceneGraphNode){
+                this.mChildren.push(node);
+        }
+        getChildren() {
+                return this.mChildren;
+        }
+
+        protected mType : NodeType;
+        protected mParent : SceneGraphNode;
+        protected mValue:  string;
+
+        protected mChildren : SceneGraphNode[] = [];
+
+        public value : string;
+        public x = 0;
+        public y = 0;
+        public anchorX = 0.5;
+        public anchorY = 0.5;
+        public r = 1;
+        public g = 1;
+        public b = 1;
+        public a = 1;
+        public w = 1;
+        public h = 1;
+4-Constructor: constructor(type : NodeType, parent : SceneGraphNode,value: string = "" )
+        {
+                this.value = value;
+                this.mType = type;
+                this.mParent = parent;
+                if ( this.mParent != null)
+                        this.mParent.addChild(this);
+        }
+5-ConstructorKeyword: constructor
+5-OpenParenToken: (
+5-SyntaxList: type : NodeType, parent : SceneGraphNode,value: string = ""
+6-Parameter: type : NodeType
+7-Identifier: type
+7-ColonToken: :
+7-TypeReference: NodeType
+8-Identifier: NodeType
+6-CommaToken: ,
+6-Parameter: parent : SceneGraphNode
+7-Identifier: parent
+7-ColonToken: :
+7-TypeReference: SceneGraphNode
+8-Identifier: SceneGraphNode
+6-CommaToken: ,
+6-Parameter: value: string = ""
+7-Identifier: value
+7-ColonToken: :
+7-StringKeyword: string
+7-EqualsToken: =
+7-StringLiteral: ""
+5-CloseParenToken: )
+5-Block: {
+                this.value = value;
+                this.mType = type;
+                this.mParent = parent;
+                if ( this.mParent != null)
+                        this.mParent.addChild(this);
+        }
+6-OpenBraceToken: {
+6-SyntaxList: this.value = value;
+                this.mType = type;
+                this.mParent = parent;
+                if ( this.mParent != null)
+                        this.mParent.addChild(this);
+7-ExpressionStatement: this.value = value;
+8-BinaryExpression: this.value = value
+9-PropertyAccessExpression: this.value
+10-ThisKeyword: this
+10-DotToken: .
+10-Identifier: value
+9-EqualsToken: =
+9-Identifier: value
+8-SemicolonToken: ;
+7-ExpressionStatement: this.mType = type;
+8-BinaryExpression: this.mType = type
+9-PropertyAccessExpression: this.mType
+10-ThisKeyword: this
+10-DotToken: .
+10-Identifier: mType
+9-EqualsToken: =
+9-Identifier: type
+8-SemicolonToken: ;
+7-ExpressionStatement: this.mParent = parent;
+8-BinaryExpression: this.mParent = parent
+9-PropertyAccessExpression: this.mParent
+10-ThisKeyword: this
+10-DotToken: .
+10-Identifier: mParent
+9-EqualsToken: =
+9-Identifier: parent
+8-SemicolonToken: ;
+7-IfStatement: if ( this.mParent != null)
+                        this.mParent.addChild(this);
+8-IfKeyword: if
+8-OpenParenToken: (
+8-BinaryExpression: this.mParent != null
+9-PropertyAccessExpression: this.mParent
+10-ThisKeyword: this
+10-DotToken: .
+10-Identifier: mParent
+9-ExclamationEqualsToken: !=
+9-NullKeyword: null
+8-CloseParenToken: )
+8-ExpressionStatement: this.mParent.addChild(this);
+9-CallExpression: this.mParent.addChild(this)
+10-PropertyAccessExpression: this.mParent.addChild
+11-PropertyAccessExpression: this.mParent
+12-ThisKeyword: this
+12-DotToken: .
+12-Identifier: mParent
+11-DotToken: .
+11-Identifier: addChild
+10-OpenParenToken: (
+10-SyntaxList: this
+11-ThisKeyword: this
+10-CloseParenToken: )
+9-SemicolonToken: ;
+6-CloseBraceToken: }
+4-MethodDeclaration: setColor(r,g,b,a){
+                this.r = r;
+                this.g = g;
+                this.b = b;
+                this.a = a;
+        }
+5-Identifier: setColor
+5-OpenParenToken: (
+5-SyntaxList: r,g,b,a
+6-Parameter: r
+7-Identifier: r
+6-CommaToken: ,
+6-Parameter: g
+7-Identifier: g
+6-CommaToken: ,
+6-Parameter: b
+7-Identifier: b
+6-CommaToken: ,
+6-Parameter: a
+7-Identifier: a
+5-CloseParenToken: )
+5-Block: {
+                this.r = r;
+                this.g = g;
+                this.b = b;
+                this.a = a;
+        }
+6-OpenBraceToken: {
+6-SyntaxList: this.r = r;
+                this.g = g;
+                this.b = b;
+                this.a = a;
+7-ExpressionStatement: this.r = r;
+8-BinaryExpression: this.r = r
+9-PropertyAccessExpression: this.r
+10-ThisKeyword: this
+10-DotToken: .
+10-Identifier: r
+9-EqualsToken: =
+9-Identifier: r
+8-SemicolonToken: ;
+7-ExpressionStatement: this.g = g;
+8-BinaryExpression: this.g = g
+9-PropertyAccessExpression: this.g
+10-ThisKeyword: this
+10-DotToken: .
+10-Identifier: g
+9-EqualsToken: =
+9-Identifier: g
+8-SemicolonToken: ;
+7-ExpressionStatement: this.b = b;
+8-BinaryExpression: this.b = b
+9-PropertyAccessExpression: this.b
+10-ThisKeyword: this
+10-DotToken: .
+10-Identifier: b
+9-EqualsToken: =
+9-Identifier: b
+8-SemicolonToken: ;
+7-ExpressionStatement: this.a = a;
+8-BinaryExpression: this.a = a
+9-PropertyAccessExpression: this.a
+10-ThisKeyword: this
+10-DotToken: .
+10-Identifier: a
+9-EqualsToken: =
+9-Identifier: a
+8-SemicolonToken: ;
+6-CloseBraceToken: }
+4-MethodDeclaration: setSize(w,h){
+                this.w = w;
+                this.h = h;
+        }
+5-Identifier: setSize
+5-OpenParenToken: (
+5-SyntaxList: w,h
+6-Parameter: w
+7-Identifier: w
+6-CommaToken: ,
+6-Parameter: h
+7-Identifier: h
+5-CloseParenToken: )
+5-Block: {
+                this.w = w;
+                this.h = h;
+        }
+6-OpenBraceToken: {
+6-SyntaxList: this.w = w;
+                this.h = h;
+7-ExpressionStatement: this.w = w;
+8-BinaryExpression: this.w = w
+9-PropertyAccessExpression: this.w
+10-ThisKeyword: this
+10-DotToken: .
+10-Identifier: w
+9-EqualsToken: =
+9-Identifier: w
+8-SemicolonToken: ;
+7-ExpressionStatement: this.h = h;
+8-BinaryExpression: this.h = h
+9-PropertyAccessExpression: this.h
+10-ThisKeyword: this
+10-DotToken: .
+10-Identifier: h
+9-EqualsToken: =
+9-Identifier: h
+8-SemicolonToken: ;
+6-CloseBraceToken: }
+4-MethodDeclaration: getType(){
+                return this.mType;
+        }
+5-Identifier: getType
+5-OpenParenToken: (
+5-SyntaxList:
+5-CloseParenToken: )
+5-Block: {
+                return this.mType;
+        }
+6-OpenBraceToken: {
+6-SyntaxList: return this.mType;
+7-ReturnStatement: return this.mType;
+8-ReturnKeyword: return
+8-PropertyAccessExpression: this.mType
+9-ThisKeyword: this
+9-DotToken: .
+9-Identifier: mType
+8-SemicolonToken: ;
+6-CloseBraceToken: }
+4-MethodDeclaration: addChild(node : SceneGraphNode){
+                this.mChildren.push(node);
+        }
+5-Identifier: addChild
+5-OpenParenToken: (
+5-SyntaxList: node : SceneGraphNode
+6-Parameter: node : SceneGraphNode
+7-Identifier: node
+7-ColonToken: :
+7-TypeReference: SceneGraphNode
+8-Identifier: SceneGraphNode
+5-CloseParenToken: )
+5-Block: {
+                this.mChildren.push(node);
+        }
+6-OpenBraceToken: {
+6-SyntaxList: this.mChildren.push(node);
+7-ExpressionStatement: this.mChildren.push(node);
+8-CallExpression: this.mChildren.push(node)
+9-PropertyAccessExpression: this.mChildren.push
+10-PropertyAccessExpression: this.mChildren
+11-ThisKeyword: this
+11-DotToken: .
+11-Identifier: mChildren
+10-DotToken: .
+10-Identifier: push
+9-OpenParenToken: (
+9-SyntaxList: node
+10-Identifier: node
+9-CloseParenToken: )
+8-SemicolonToken: ;
+6-CloseBraceToken: }
+4-MethodDeclaration: getChildren() {
+                return this.mChildren;
+        }
+5-Identifier: getChildren
+5-OpenParenToken: (
+5-SyntaxList:
+5-CloseParenToken: )
+5-Block: {
+                return this.mChildren;
+        }
+6-OpenBraceToken: {
+6-SyntaxList: return this.mChildren;
+7-ReturnStatement: return this.mChildren;
+8-ReturnKeyword: return
+8-PropertyAccessExpression: this.mChildren
+9-ThisKeyword: this
+9-DotToken: .
+9-Identifier: mChildren
+8-SemicolonToken: ;
+6-CloseBraceToken: }
+4-PropertyDeclaration: protected mType : NodeType;
+5-SyntaxList: protected
+6-ProtectedKeyword: protected
+5-Identifier: mType
+5-ColonToken: :
+5-TypeReference: NodeType
+6-Identifier: NodeType
+5-SemicolonToken: ;
+4-PropertyDeclaration: protected mParent : SceneGraphNode;
+5-SyntaxList: protected
+6-ProtectedKeyword: protected
+5-Identifier: mParent
+5-ColonToken: :
+5-TypeReference: SceneGraphNode
+6-Identifier: SceneGraphNode
+5-SemicolonToken: ;
+4-PropertyDeclaration: protected mValue:  string;
+5-SyntaxList: protected
+6-ProtectedKeyword: protected
+5-Identifier: mValue
+5-ColonToken: :
+5-StringKeyword: string
+5-SemicolonToken: ;
+4-PropertyDeclaration: protected mChildren : SceneGraphNode[] = [];
+5-SyntaxList: protected
+6-ProtectedKeyword: protected
+5-Identifier: mChildren
+5-ColonToken: :
+5-ArrayType: SceneGraphNode[]
+6-TypeReference: SceneGraphNode
+7-Identifier: SceneGraphNode
+6-OpenBracketToken: [
+6-CloseBracketToken: ]
+5-EqualsToken: =
+5-ArrayLiteralExpression: []
+6-OpenBracketToken: [
+6-SyntaxList:
+6-CloseBracketToken: ]
+5-SemicolonToken: ;
+4-PropertyDeclaration: public value : string;
+5-SyntaxList: public
+6-PublicKeyword: public
+5-Identifier: value
+5-ColonToken: :
+5-StringKeyword: string
+5-SemicolonToken: ;
+4-PropertyDeclaration: public x = 0;
+5-SyntaxList: public
+6-PublicKeyword: public
+5-Identifier: x
+5-EqualsToken: =
+5-NumericLiteral: 0
+5-SemicolonToken: ;
+4-PropertyDeclaration: public y = 0;
+5-SyntaxList: public
+6-PublicKeyword: public
+5-Identifier: y
+5-EqualsToken: =
+5-NumericLiteral: 0
+5-SemicolonToken: ;
+4-PropertyDeclaration: public anchorX = 0.5;
+5-SyntaxList: public
+6-PublicKeyword: public
+5-Identifier: anchorX
+5-EqualsToken: =
+5-NumericLiteral: 0.5
+5-SemicolonToken: ;
+4-PropertyDeclaration: public anchorY = 0.5;
+5-SyntaxList: public
+6-PublicKeyword: public
+5-Identifier: anchorY
+5-EqualsToken: =
+5-NumericLiteral: 0.5
+5-SemicolonToken: ;
+4-PropertyDeclaration: public r = 1;
+5-SyntaxList: public
+6-PublicKeyword: public
+5-Identifier: r
+5-EqualsToken: =
+5-NumericLiteral: 1
+5-SemicolonToken: ;
+4-PropertyDeclaration: public g = 1;
+5-SyntaxList: public
+6-PublicKeyword: public
+5-Identifier: g
+5-EqualsToken: =
+5-NumericLiteral: 1
+5-SemicolonToken: ;
+4-PropertyDeclaration: public b = 1;
+5-SyntaxList: public
+6-PublicKeyword: public
+5-Identifier: b
+5-EqualsToken: =
+5-NumericLiteral: 1
+5-SemicolonToken: ;
+4-PropertyDeclaration: public a = 1;
+5-SyntaxList: public
+6-PublicKeyword: public
+5-Identifier: a
+5-EqualsToken: =
+5-NumericLiteral: 1
+5-SemicolonToken: ;
+4-PropertyDeclaration: public w = 1;
+5-SyntaxList: public
+6-PublicKeyword: public
+5-Identifier: w
+5-EqualsToken: =
+5-NumericLiteral: 1
+5-SemicolonToken: ;
+4-PropertyDeclaration: public h = 1;
+5-SyntaxList: public
+6-PublicKeyword: public
+5-Identifier: h
+5-EqualsToken: =
+5-NumericLiteral: 1
+5-SemicolonToken: ;
+3-CloseBraceToken: }
+2-ClassDeclaration: class SceneGraph
+{
+        protected mRoot : SceneGraphNode = new SceneGraphNode(NodeType.None,null);
+
+        public getRoot() : SceneGraphNode{
+                return this.mRoot;
+        }
+
+        public draw(): void{
+                this.drawInternal(this.getRoot(),0,0);
+        }
+
+        protected drawInternal(node : SceneGraphNode, px : number,py : number ){
+                this.getRoot().getChildren().forEach(child =>{
+                        let x = px + child.x;
+                        let y = py + child.y;
+                        switch(child.getType() ){
+                                case NodeType.None:
+                                        break;
+                                case NodeType.Image:
+                                        Graphics.drawImage(x,y,child.value);
+                                        break;
+                                case NodeType.Text:
+                                        Graphics.drawText(x,y,child.value,16,child.r,child.g,child.b,child.a);
+                                        break;
+                                case NodeType.Rect:
+                                        Graphics.drawRect(x, y,child.w,child.h,child.r,child.g,child.b,child.a);
+                                        break;
+                        }
+                        this.drawInternal(child,px + child.x,py + child.y)
+                })
+
+        }
+}
+3-ClassKeyword: class
+3-Identifier: SceneGraph
+3-OpenBraceToken: {
+3-SyntaxList: protected mRoot : SceneGraphNode = new SceneGraphNode(NodeType.None,null);
+
+        public getRoot() : SceneGraphNode{
+                return this.mRoot;
+        }
+
+        public draw(): void{
+                this.drawInternal(this.getRoot(),0,0);
+        }
+
+        protected drawInternal(node : SceneGraphNode, px : number,py : number ){
+                this.getRoot().getChildren().forEach(child =>{
+                        let x = px + child.x;
+                        let y = py + child.y;
+                        switch(child.getType() ){
+                                case NodeType.None:
+                                        break;
+                                case NodeType.Image:
+                                        Graphics.drawImage(x,y,child.value);
+                                        break;
+                                case NodeType.Text:
+                                        Graphics.drawText(x,y,child.value,16,child.r,child.g,child.b,child.a);
+                                        break;
+                                case NodeType.Rect:
+                                        Graphics.drawRect(x, y,child.w,child.h,child.r,child.g,child.b,child.a);
+                                        break;
+                        }
+                        this.drawInternal(child,px + child.x,py + child.y)
+                })
+
+        }
+4-PropertyDeclaration: protected mRoot : SceneGraphNode = new SceneGraphNode(NodeType.None,null);
+5-SyntaxList: protected
+6-ProtectedKeyword: protected
+5-Identifier: mRoot
+5-ColonToken: :
+5-TypeReference: SceneGraphNode
+6-Identifier: SceneGraphNode
+5-EqualsToken: =
+5-NewExpression: new SceneGraphNode(NodeType.None,null)
+6-NewKeyword: new
+6-Identifier: SceneGraphNode
+6-OpenParenToken: (
+6-SyntaxList: NodeType.None,null
+7-PropertyAccessExpression: NodeType.None
+8-Identifier: NodeType
+8-DotToken: .
+8-Identifier: None
+7-CommaToken: ,
+7-NullKeyword: null
+6-CloseParenToken: )
+5-SemicolonToken: ;
+4-MethodDeclaration: public getRoot() : SceneGraphNode{
+                return this.mRoot;
+        }
+5-SyntaxList: public
+6-PublicKeyword: public
+5-Identifier: getRoot
+5-OpenParenToken: (
+5-SyntaxList:
+5-CloseParenToken: )
+5-ColonToken: :
+5-TypeReference: SceneGraphNode
+6-Identifier: SceneGraphNode
+5-Block: {
+                return this.mRoot;
+        }
+6-OpenBraceToken: {
+6-SyntaxList: return this.mRoot;
+7-ReturnStatement: return this.mRoot;
+8-ReturnKeyword: return
+8-PropertyAccessExpression: this.mRoot
+9-ThisKeyword: this
+9-DotToken: .
+9-Identifier: mRoot
+8-SemicolonToken: ;
+6-CloseBraceToken: }
+4-MethodDeclaration: public draw(): void{
+                this.drawInternal(this.getRoot(),0,0);
+        }
+5-SyntaxList: public
+6-PublicKeyword: public
+5-Identifier: draw
+5-OpenParenToken: (
+5-SyntaxList:
+5-CloseParenToken: )
+5-ColonToken: :
+5-VoidKeyword: void
+5-Block: {
+                this.drawInternal(this.getRoot(),0,0);
+        }
+6-OpenBraceToken: {
+6-SyntaxList: this.drawInternal(this.getRoot(),0,0);
+7-ExpressionStatement: this.drawInternal(this.getRoot(),0,0);
+8-CallExpression: this.drawInternal(this.getRoot(),0,0)
+9-PropertyAccessExpression: this.drawInternal
+10-ThisKeyword: this
+10-DotToken: .
+10-Identifier: drawInternal
+9-OpenParenToken: (
+9-SyntaxList: this.getRoot(),0,0
+10-CallExpression: this.getRoot()
+11-PropertyAccessExpression: this.getRoot
+12-ThisKeyword: this
+12-DotToken: .
+12-Identifier: getRoot
+11-OpenParenToken: (
+11-SyntaxList:
+11-CloseParenToken: )
+10-CommaToken: ,
+10-NumericLiteral: 0
+10-CommaToken: ,
+10-NumericLiteral: 0
+9-CloseParenToken: )
+8-SemicolonToken: ;
+6-CloseBraceToken: }
+4-MethodDeclaration: protected drawInternal(node : SceneGraphNode, px : number,py : number ){
+                this.getRoot().getChildren().forEach(child =>{
+                        let x = px + child.x;
+                        let y = py + child.y;
+                        switch(child.getType() ){
+                                case NodeType.None:
+                                        break;
+                                case NodeType.Image:
+                                        Graphics.drawImage(x,y,child.value);
+                                        break;
+                                case NodeType.Text:
+                                        Graphics.drawText(x,y,child.value,16,child.r,child.g,child.b,child.a);
+                                        break;
+                                case NodeType.Rect:
+                                        Graphics.drawRect(x, y,child.w,child.h,child.r,child.g,child.b,child.a);
+                                        break;
+                        }
+                        this.drawInternal(child,px + child.x,py + child.y)
+                })
+
+        }
+5-SyntaxList: protected
+6-ProtectedKeyword: protected
+5-Identifier: drawInternal
+5-OpenParenToken: (
+5-SyntaxList: node : SceneGraphNode, px : number,py : number
+6-Parameter: node : SceneGraphNode
+7-Identifier: node
+7-ColonToken: :
+7-TypeReference: SceneGraphNode
+8-Identifier: SceneGraphNode
+6-CommaToken: ,
+6-Parameter: px : number
+7-Identifier: px
+7-ColonToken: :
+7-NumberKeyword: number
+6-CommaToken: ,
+6-Parameter: py : number
+7-Identifier: py
+7-ColonToken: :
+7-NumberKeyword: number
+5-CloseParenToken: )
+5-Block: {
+                this.getRoot().getChildren().forEach(child =>{
+                        let x = px + child.x;
+                        let y = py + child.y;
+                        switch(child.getType() ){
+                                case NodeType.None:
+                                        break;
+                                case NodeType.Image:
+                                        Graphics.drawImage(x,y,child.value);
+                                        break;
+                                case NodeType.Text:
+                                        Graphics.drawText(x,y,child.value,16,child.r,child.g,child.b,child.a);
+                                        break;
+                                case NodeType.Rect:
+                                        Graphics.drawRect(x, y,child.w,child.h,child.r,child.g,child.b,child.a);
+                                        break;
+                        }
+                        this.drawInternal(child,px + child.x,py + child.y)
+                })
+
+        }
+6-OpenBraceToken: {
+6-SyntaxList: this.getRoot().getChildren().forEach(child =>{
+                        let x = px + child.x;
+                        let y = py + child.y;
+                        switch(child.getType() ){
+                                case NodeType.None:
+                                        break;
+                                case NodeType.Image:
+                                        Graphics.drawImage(x,y,child.value);
+                                        break;
+                                case NodeType.Text:
+                                        Graphics.drawText(x,y,child.value,16,child.r,child.g,child.b,child.a);
+                                        break;
+                                case NodeType.Rect:
+                                        Graphics.drawRect(x, y,child.w,child.h,child.r,child.g,child.b,child.a);
+                                        break;
+                        }
+                        this.drawInternal(child,px + child.x,py + child.y)
+                })
+7-ExpressionStatement: this.getRoot().getChildren().forEach(child =>{
+                        let x = px + child.x;
+                        let y = py + child.y;
+                        switch(child.getType() ){
+                                case NodeType.None:
+                                        break;
+                                case NodeType.Image:
+                                        Graphics.drawImage(x,y,child.value);
+                                        break;
+                                case NodeType.Text:
+                                        Graphics.drawText(x,y,child.value,16,child.r,child.g,child.b,child.a);
+                                        break;
+                                case NodeType.Rect:
+                                        Graphics.drawRect(x, y,child.w,child.h,child.r,child.g,child.b,child.a);
+                                        break;
+                        }
+                        this.drawInternal(child,px + child.x,py + child.y)
+                })
+8-CallExpression: this.getRoot().getChildren().forEach(child =>{
+                        let x = px + child.x;
+                        let y = py + child.y;
+                        switch(child.getType() ){
+                                case NodeType.None:
+                                        break;
+                                case NodeType.Image:
+                                        Graphics.drawImage(x,y,child.value);
+                                        break;
+                                case NodeType.Text:
+                                        Graphics.drawText(x,y,child.value,16,child.r,child.g,child.b,child.a);
+                                        break;
+                                case NodeType.Rect:
+                                        Graphics.drawRect(x, y,child.w,child.h,child.r,child.g,child.b,child.a);
+                                        break;
+                        }
+                        this.drawInternal(child,px + child.x,py + child.y)
+                })
+9-PropertyAccessExpression: this.getRoot().getChildren().forEach
+10-CallExpression: this.getRoot().getChildren()
+11-PropertyAccessExpression: this.getRoot().getChildren
+12-CallExpression: this.getRoot()
+13-PropertyAccessExpression: this.getRoot
+14-ThisKeyword: this
+14-DotToken: .
+14-Identifier: getRoot
+13-OpenParenToken: (
+13-SyntaxList:
+13-CloseParenToken: )
+12-DotToken: .
+12-Identifier: getChildren
+11-OpenParenToken: (
+11-SyntaxList:
+11-CloseParenToken: )
+10-DotToken: .
+10-Identifier: forEach
+9-OpenParenToken: (
+9-SyntaxList: child =>{
+                        let x = px + child.x;
+                        let y = py + child.y;
+                        switch(child.getType() ){
+                                case NodeType.None:
+                                        break;
+                                case NodeType.Image:
+                                        Graphics.drawImage(x,y,child.value);
+                                        break;
+                                case NodeType.Text:
+                                        Graphics.drawText(x,y,child.value,16,child.r,child.g,child.b,child.a);
+                                        break;
+                                case NodeType.Rect:
+                                        Graphics.drawRect(x, y,child.w,child.h,child.r,child.g,child.b,child.a);
+                                        break;
+                        }
+                        this.drawInternal(child,px + child.x,py + child.y)
+                }
+10-ArrowFunction: child =>{
+                        let x = px + child.x;
+                        let y = py + child.y;
+                        switch(child.getType() ){
+                                case NodeType.None:
+                                        break;
+                                case NodeType.Image:
+                                        Graphics.drawImage(x,y,child.value);
+                                        break;
+                                case NodeType.Text:
+                                        Graphics.drawText(x,y,child.value,16,child.r,child.g,child.b,child.a);
+                                        break;
+                                case NodeType.Rect:
+                                        Graphics.drawRect(x, y,child.w,child.h,child.r,child.g,child.b,child.a);
+                                        break;
+                        }
+                        this.drawInternal(child,px + child.x,py + child.y)
+                }
+11-SyntaxList: child
+12-Parameter: child
+13-Identifier: child
+11-EqualsGreaterThanToken: =>
+11-Block: {
+                        let x = px + child.x;
+                        let y = py + child.y;
+                        switch(child.getType() ){
+                                case NodeType.None:
+                                        break;
+                                case NodeType.Image:
+                                        Graphics.drawImage(x,y,child.value);
+                                        break;
+                                case NodeType.Text:
+                                        Graphics.drawText(x,y,child.value,16,child.r,child.g,child.b,child.a);
+                                        break;
+                                case NodeType.Rect:
+                                        Graphics.drawRect(x, y,child.w,child.h,child.r,child.g,child.b,child.a);
+                                        break;
+                        }
+                        this.drawInternal(child,px + child.x,py + child.y)
+                }
+12-OpenBraceToken: {
+12-SyntaxList: let x = px + child.x;
+                        let y = py + child.y;
+                        switch(child.getType() ){
+                                case NodeType.None:
+                                        break;
+                                case NodeType.Image:
+                                        Graphics.drawImage(x,y,child.value);
+                                        break;
+                                case NodeType.Text:
+                                        Graphics.drawText(x,y,child.value,16,child.r,child.g,child.b,child.a);
+                                        break;
+                                case NodeType.Rect:
+                                        Graphics.drawRect(x, y,child.w,child.h,child.r,child.g,child.b,child.a);
+                                        break;
+                        }
+                        this.drawInternal(child,px + child.x,py + child.y)
+13-VariableStatement: let x = px + child.x;
+14-VariableDeclarationList: let x = px + child.x
+15-LetKeyword: let
+15-SyntaxList: x = px + child.x
+16-VariableDeclaration: x = px + child.x
+17-Identifier: x
+17-EqualsToken: =
+17-BinaryExpression: px + child.x
+18-Identifier: px
+18-PlusToken: +
+18-PropertyAccessExpression: child.x
+19-Identifier: child
+19-DotToken: .
+19-Identifier: x
+14-SemicolonToken: ;
+13-VariableStatement: let y = py + child.y;
+14-VariableDeclarationList: let y = py + child.y
+15-LetKeyword: let
+15-SyntaxList: y = py + child.y
+16-VariableDeclaration: y = py + child.y
+17-Identifier: y
+17-EqualsToken: =
+17-BinaryExpression: py + child.y
+18-Identifier: py
+18-PlusToken: +
+18-PropertyAccessExpression: child.y
+19-Identifier: child
+19-DotToken: .
+19-Identifier: y
+14-SemicolonToken: ;
+13-SwitchStatement: switch(child.getType() ){
+                                case NodeType.None:
+                                        break;
+                                case NodeType.Image:
+                                        Graphics.drawImage(x,y,child.value);
+                                        break;
+                                case NodeType.Text:
+                                        Graphics.drawText(x,y,child.value,16,child.r,child.g,child.b,child.a);
+                                        break;
+                                case NodeType.Rect:
+                                        Graphics.drawRect(x, y,child.w,child.h,child.r,child.g,child.b,child.a);
+                                        break;
+                        }
+14-SwitchKeyword: switch
+14-OpenParenToken: (
+14-CallExpression: child.getType()
+15-PropertyAccessExpression: child.getType
+16-Identifier: child
+16-DotToken: .
+16-Identifier: getType
+15-OpenParenToken: (
+15-SyntaxList:
+15-CloseParenToken: )
+14-CloseParenToken: )
+14-CaseBlock: {
+                                case NodeType.None:
+                                        break;
+                                case NodeType.Image:
+                                        Graphics.drawImage(x,y,child.value);
+                                        break;
+                                case NodeType.Text:
+                                        Graphics.drawText(x,y,child.value,16,child.r,child.g,child.b,child.a);
+                                        break;
+                                case NodeType.Rect:
+                                        Graphics.drawRect(x, y,child.w,child.h,child.r,child.g,child.b,child.a);
+                                        break;
+                        }
+15-OpenBraceToken: {
+15-SyntaxList: case NodeType.None:
+                                        break;
+                                case NodeType.Image:
+                                        Graphics.drawImage(x,y,child.value);
+                                        break;
+                                case NodeType.Text:
+                                        Graphics.drawText(x,y,child.value,16,child.r,child.g,child.b,child.a);
+                                        break;
+                                case NodeType.Rect:
+                                        Graphics.drawRect(x, y,child.w,child.h,child.r,child.g,child.b,child.a);
+                                        break;
+16-CaseClause: case NodeType.None:
+                                        break;
+17-CaseKeyword: case
+17-PropertyAccessExpression: NodeType.None
+18-Identifier: NodeType
+18-DotToken: .
+18-Identifier: None
+17-ColonToken: :
+17-SyntaxList: break;
+18-BreakStatement: break;
+19-BreakKeyword: break
+19-SemicolonToken: ;
+16-CaseClause: case NodeType.Image:
+                                        Graphics.drawImage(x,y,child.value);
+                                        break;
+17-CaseKeyword: case
+17-PropertyAccessExpression: NodeType.Image
+18-Identifier: NodeType
+18-DotToken: .
+18-Identifier: Image
+17-ColonToken: :
+17-SyntaxList: Graphics.drawImage(x,y,child.value);
+                                        break;
+18-ExpressionStatement: Graphics.drawImage(x,y,child.value);
+19-CallExpression: Graphics.drawImage(x,y,child.value)
+20-PropertyAccessExpression: Graphics.drawImage
+21-Identifier: Graphics
+21-DotToken: .
+21-Identifier: drawImage
+20-OpenParenToken: (
+20-SyntaxList: x,y,child.value
+21-Identifier: x
+21-CommaToken: ,
+21-Identifier: y
+21-CommaToken: ,
+21-PropertyAccessExpression: child.value
+22-Identifier: child
+22-DotToken: .
+22-Identifier: value
+20-CloseParenToken: )
+19-SemicolonToken: ;
+18-BreakStatement: break;
+19-BreakKeyword: break
+19-SemicolonToken: ;
+16-CaseClause: case NodeType.Text:
+                                        Graphics.drawText(x,y,child.value,16,child.r,child.g,child.b,child.a);
+                                        break;
+17-CaseKeyword: case
+17-PropertyAccessExpression: NodeType.Text
+18-Identifier: NodeType
+18-DotToken: .
+18-Identifier: Text
+17-ColonToken: :
+17-SyntaxList: Graphics.drawText(x,y,child.value,16,child.r,child.g,child.b,child.a);
+                                        break;
+18-ExpressionStatement: Graphics.drawText(x,y,child.value,16,child.r,child.g,child.b,child.a);
+19-CallExpression: Graphics.drawText(x,y,child.value,16,child.r,child.g,child.b,child.a)
+20-PropertyAccessExpression: Graphics.drawText
+21-Identifier: Graphics
+21-DotToken: .
+21-Identifier: drawText
+20-OpenParenToken: (
+20-SyntaxList: x,y,child.value,16,child.r,child.g,child.b,child.a
+21-Identifier: x
+21-CommaToken: ,
+21-Identifier: y
+21-CommaToken: ,
+21-PropertyAccessExpression: child.value
+22-Identifier: child
+22-DotToken: .
+22-Identifier: value
+21-CommaToken: ,
+21-NumericLiteral: 16
+21-CommaToken: ,
+21-PropertyAccessExpression: child.r
+22-Identifier: child
+22-DotToken: .
+22-Identifier: r
+21-CommaToken: ,
+21-PropertyAccessExpression: child.g
+22-Identifier: child
+22-DotToken: .
+22-Identifier: g
+21-CommaToken: ,
+21-PropertyAccessExpression: child.b
+22-Identifier: child
+22-DotToken: .
+22-Identifier: b
+21-CommaToken: ,
+21-PropertyAccessExpression: child.a
+22-Identifier: child
+22-DotToken: .
+22-Identifier: a
+20-CloseParenToken: )
+19-SemicolonToken: ;
+18-BreakStatement: break;
+19-BreakKeyword: break
+19-SemicolonToken: ;
+16-CaseClause: case NodeType.Rect:
+                                        Graphics.drawRect(x, y,child.w,child.h,child.r,child.g,child.b,child.a);
+                                        break;
+17-CaseKeyword: case
+17-PropertyAccessExpression: NodeType.Rect
+18-Identifier: NodeType
+18-DotToken: .
+18-Identifier: Rect
+17-ColonToken: :
+17-SyntaxList: Graphics.drawRect(x, y,child.w,child.h,child.r,child.g,child.b,child.a);
+                                        break;
+18-ExpressionStatement: Graphics.drawRect(x, y,child.w,child.h,child.r,child.g,child.b,child.a);
+19-CallExpression: Graphics.drawRect(x, y,child.w,child.h,child.r,child.g,child.b,child.a)
+20-PropertyAccessExpression: Graphics.drawRect
+21-Identifier: Graphics
+21-DotToken: .
+21-Identifier: drawRect
+20-OpenParenToken: (
+20-SyntaxList: x, y,child.w,child.h,child.r,child.g,child.b,child.a
+21-Identifier: x
+21-CommaToken: ,
+21-Identifier: y
+21-CommaToken: ,
+21-PropertyAccessExpression: child.w
+22-Identifier: child
+22-DotToken: .
+22-Identifier: w
+21-CommaToken: ,
+21-PropertyAccessExpression: child.h
+22-Identifier: child
+22-DotToken: .
+22-Identifier: h
+21-CommaToken: ,
+21-PropertyAccessExpression: child.r
+22-Identifier: child
+22-DotToken: .
+22-Identifier: r
+21-CommaToken: ,
+21-PropertyAccessExpression: child.g
+22-Identifier: child
+22-DotToken: .
+22-Identifier: g
+21-CommaToken: ,
+21-PropertyAccessExpression: child.b
+22-Identifier: child
+22-DotToken: .
+22-Identifier: b
+21-CommaToken: ,
+21-PropertyAccessExpression: child.a
+22-Identifier: child
+22-DotToken: .
+22-Identifier: a
+20-CloseParenToken: )
+19-SemicolonToken: ;
+18-BreakStatement: break;
+19-BreakKeyword: break
+19-SemicolonToken: ;
+15-CloseBraceToken: }
+13-ExpressionStatement: this.drawInternal(child,px + child.x,py + child.y)
+14-CallExpression: this.drawInternal(child,px + child.x,py + child.y)
+15-PropertyAccessExpression: this.drawInternal
+16-ThisKeyword: this
+16-DotToken: .
+16-Identifier: drawInternal
+15-OpenParenToken: (
+15-SyntaxList: child,px + child.x,py + child.y
+16-Identifier: child
+16-CommaToken: ,
+16-BinaryExpression: px + child.x
+17-Identifier: px
+17-PlusToken: +
+17-PropertyAccessExpression: child.x
+18-Identifier: child
+18-DotToken: .
+18-Identifier: x
+16-CommaToken: ,
+16-BinaryExpression: py + child.y
+17-Identifier: py
+17-PlusToken: +
+17-PropertyAccessExpression: child.y
+18-Identifier: child
+18-DotToken: .
+18-Identifier: y
+15-CloseParenToken: )
+12-CloseBraceToken: }
+9-CloseParenToken: )
+6-CloseBraceToken: }
+3-CloseBraceToken: }
+2-ClassDeclaration: class GameCell{
+        constructor(node,value){
+                this.node = node;
+                this.value = value;
+        }
+        public node : SceneGraphNode;
+        public value : number;
+}
+3-ClassKeyword: class
+3-Identifier: GameCell
+3-OpenBraceToken: {
+3-SyntaxList: constructor(node,value){
+                this.node = node;
+                this.value = value;
+        }
+        public node : SceneGraphNode;
+        public value : number;
+4-Constructor: constructor(node,value){
+                this.node = node;
+                this.value = value;
+        }
+5-ConstructorKeyword: constructor
+5-OpenParenToken: (
+5-SyntaxList: node,value
+6-Parameter: node
+7-Identifier: node
+6-CommaToken: ,
+6-Parameter: value
+7-Identifier: value
+5-CloseParenToken: )
+5-Block: {
+                this.node = node;
+                this.value = value;
+        }
+6-OpenBraceToken: {
+6-SyntaxList: this.node = node;
+                this.value = value;
+7-ExpressionStatement: this.node = node;
+8-BinaryExpression: this.node = node
+9-PropertyAccessExpression: this.node
+10-ThisKeyword: this
+10-DotToken: .
+10-Identifier: node
+9-EqualsToken: =
+9-Identifier: node
+8-SemicolonToken: ;
+7-ExpressionStatement: this.value = value;
+8-BinaryExpression: this.value = value
+9-PropertyAccessExpression: this.value
+10-ThisKeyword: this
+10-DotToken: .
+10-Identifier: value
+9-EqualsToken: =
+9-Identifier: value
+8-SemicolonToken: ;
+6-CloseBraceToken: }
+4-PropertyDeclaration: public node : SceneGraphNode;
+5-SyntaxList: public
+6-PublicKeyword: public
+5-Identifier: node
+5-ColonToken: :
+5-TypeReference: SceneGraphNode
+6-Identifier: SceneGraphNode
+5-SemicolonToken: ;
+4-PropertyDeclaration: public value : number;
+5-SyntaxList: public
+6-PublicKeyword: public
+5-Identifier: value
+5-ColonToken: :
+5-NumberKeyword: number
+5-SemicolonToken: ;
+3-CloseBraceToken: }
+2-ClassDeclaration: class MiniGame
+{
+        private mScene = new SceneGraph();
+        private mCells : GameCell[][] = [];
+        constructor(){
+                for ( let y = 0 ; y < 10 ; y++ ){
+                        this.mCells[y] = [];
+                        for ( let x = 0 ; x < 10 ; x++){
+
+                                var rect = new SceneGraphNode(NodeType.Rect,this.mScene.getRoot());
+                                rect.setSize(50,50);
+                                rect.x = x * 60;
+                                rect.y = y * 60;
+                                var text = new SceneGraphNode(NodeType.Text,rect,"" + (x * y) );
+                                this.mCells[y][x] = new GameCell(rect,x * y);
+                        }
+                }
+        }
+        public update()
+        {
+                this.mScene.draw();
+        }
+}
+3-ClassKeyword: class
+3-Identifier: MiniGame
+3-OpenBraceToken: {
+3-SyntaxList: private mScene = new SceneGraph();
+        private mCells : GameCell[][] = [];
+        constructor(){
+                for ( let y = 0 ; y < 10 ; y++ ){
+                        this.mCells[y] = [];
+                        for ( let x = 0 ; x < 10 ; x++){
+
+                                var rect = new SceneGraphNode(NodeType.Rect,this.mScene.getRoot());
+                                rect.setSize(50,50);
+                                rect.x = x * 60;
+                                rect.y = y * 60;
+                                var text = new SceneGraphNode(NodeType.Text,rect,"" + (x * y) );
+                                this.mCells[y][x] = new GameCell(rect,x * y);
+                        }
+                }
+        }
+        public update()
+        {
+                this.mScene.draw();
+        }
+4-PropertyDeclaration: private mScene = new SceneGraph();
+5-SyntaxList: private
+6-PrivateKeyword: private
+5-Identifier: mScene
+5-EqualsToken: =
+5-NewExpression: new SceneGraph()
+6-NewKeyword: new
+6-Identifier: SceneGraph
+6-OpenParenToken: (
+6-SyntaxList:
+6-CloseParenToken: )
+5-SemicolonToken: ;
+4-PropertyDeclaration: private mCells : GameCell[][] = [];
+5-SyntaxList: private
+6-PrivateKeyword: private
+5-Identifier: mCells
+5-ColonToken: :
+5-ArrayType: GameCell[][]
+6-ArrayType: GameCell[]
+7-TypeReference: GameCell
+8-Identifier: GameCell
+7-OpenBracketToken: [
+7-CloseBracketToken: ]
+6-OpenBracketToken: [
+6-CloseBracketToken: ]
+5-EqualsToken: =
+5-ArrayLiteralExpression: []
+6-OpenBracketToken: [
+6-SyntaxList:
+6-CloseBracketToken: ]
+5-SemicolonToken: ;
+4-Constructor: constructor(){
+                for ( let y = 0 ; y < 10 ; y++ ){
+                        this.mCells[y] = [];
+                        for ( let x = 0 ; x < 10 ; x++){
+
+                                var rect = new SceneGraphNode(NodeType.Rect,this.mScene.getRoot());
+                                rect.setSize(50,50);
+                                rect.x = x * 60;
+                                rect.y = y * 60;
+                                var text = new SceneGraphNode(NodeType.Text,rect,"" + (x * y) );
+                                this.mCells[y][x] = new GameCell(rect,x * y);
+                        }
+                }
+        }
+5-ConstructorKeyword: constructor
+5-OpenParenToken: (
+5-SyntaxList:
+5-CloseParenToken: )
+5-Block: {
+                for ( let y = 0 ; y < 10 ; y++ ){
+                        this.mCells[y] = [];
+                        for ( let x = 0 ; x < 10 ; x++){
+
+                                var rect = new SceneGraphNode(NodeType.Rect,this.mScene.getRoot());
+                                rect.setSize(50,50);
+                                rect.x = x * 60;
+                                rect.y = y * 60;
+                                var text = new SceneGraphNode(NodeType.Text,rect,"" + (x * y) );
+                                this.mCells[y][x] = new GameCell(rect,x * y);
+                        }
+                }
+        }
+6-OpenBraceToken: {
+6-SyntaxList: for ( let y = 0 ; y < 10 ; y++ ){
+                        this.mCells[y] = [];
+                        for ( let x = 0 ; x < 10 ; x++){
+
+                                var rect = new SceneGraphNode(NodeType.Rect,this.mScene.getRoot());
+                                rect.setSize(50,50);
+                                rect.x = x * 60;
+                                rect.y = y * 60;
+                                var text = new SceneGraphNode(NodeType.Text,rect,"" + (x * y) );
+                                this.mCells[y][x] = new GameCell(rect,x * y);
+                        }
+                }
+7-ForStatement: for ( let y = 0 ; y < 10 ; y++ ){
+                        this.mCells[y] = [];
+                        for ( let x = 0 ; x < 10 ; x++){
+
+                                var rect = new SceneGraphNode(NodeType.Rect,this.mScene.getRoot());
+                                rect.setSize(50,50);
+                                rect.x = x * 60;
+                                rect.y = y * 60;
+                                var text = new SceneGraphNode(NodeType.Text,rect,"" + (x * y) );
+                                this.mCells[y][x] = new GameCell(rect,x * y);
+                        }
+                }
+8-ForKeyword: for
+8-OpenParenToken: (
+8-VariableDeclarationList: let y = 0
+9-LetKeyword: let
+9-SyntaxList: y = 0
+10-VariableDeclaration: y = 0
+11-Identifier: y
+11-EqualsToken: =
+11-NumericLiteral: 0
+8-SemicolonToken: ;
+8-BinaryExpression: y < 10
+9-Identifier: y
+9-LessThanToken: <
+9-NumericLiteral: 10
+8-SemicolonToken: ;
+8-PostfixUnaryExpression: y++
+9-Identifier: y
+9-PlusPlusToken: ++
+8-CloseParenToken: )
+8-Block: {
+                        this.mCells[y] = [];
+                        for ( let x = 0 ; x < 10 ; x++){
+
+                                var rect = new SceneGraphNode(NodeType.Rect,this.mScene.getRoot());
+                                rect.setSize(50,50);
+                                rect.x = x * 60;
+                                rect.y = y * 60;
+                                var text = new SceneGraphNode(NodeType.Text,rect,"" + (x * y) );
+                                this.mCells[y][x] = new GameCell(rect,x * y);
+                        }
+                }
+9-OpenBraceToken: {
+9-SyntaxList: this.mCells[y] = [];
+                        for ( let x = 0 ; x < 10 ; x++){
+
+                                var rect = new SceneGraphNode(NodeType.Rect,this.mScene.getRoot());
+                                rect.setSize(50,50);
+                                rect.x = x * 60;
+                                rect.y = y * 60;
+                                var text = new SceneGraphNode(NodeType.Text,rect,"" + (x * y) );
+                                this.mCells[y][x] = new GameCell(rect,x * y);
+                        }
+10-ExpressionStatement: this.mCells[y] = [];
+11-BinaryExpression: this.mCells[y] = []
+12-ElementAccessExpression: this.mCells[y]
+13-PropertyAccessExpression: this.mCells
+14-ThisKeyword: this
+14-DotToken: .
+14-Identifier: mCells
+13-OpenBracketToken: [
+13-Identifier: y
+13-CloseBracketToken: ]
+12-EqualsToken: =
+12-ArrayLiteralExpression: []
+13-OpenBracketToken: [
+13-SyntaxList:
+13-CloseBracketToken: ]
+11-SemicolonToken: ;
+10-ForStatement: for ( let x = 0 ; x < 10 ; x++){
+
+                                var rect = new SceneGraphNode(NodeType.Rect,this.mScene.getRoot());
+                                rect.setSize(50,50);
+                                rect.x = x * 60;
+                                rect.y = y * 60;
+                                var text = new SceneGraphNode(NodeType.Text,rect,"" + (x * y) );
+                                this.mCells[y][x] = new GameCell(rect,x * y);
+                        }
+11-ForKeyword: for
+11-OpenParenToken: (
+11-VariableDeclarationList: let x = 0
+12-LetKeyword: let
+12-SyntaxList: x = 0
+13-VariableDeclaration: x = 0
+14-Identifier: x
+14-EqualsToken: =
+14-NumericLiteral: 0
+11-SemicolonToken: ;
+11-BinaryExpression: x < 10
+12-Identifier: x
+12-LessThanToken: <
+12-NumericLiteral: 10
+11-SemicolonToken: ;
+11-PostfixUnaryExpression: x++
+12-Identifier: x
+12-PlusPlusToken: ++
+11-CloseParenToken: )
+11-Block: {
+
+                                var rect = new SceneGraphNode(NodeType.Rect,this.mScene.getRoot());
+                                rect.setSize(50,50);
+                                rect.x = x * 60;
+                                rect.y = y * 60;
+                                var text = new SceneGraphNode(NodeType.Text,rect,"" + (x * y) );
+                                this.mCells[y][x] = new GameCell(rect,x * y);
+                        }
+12-OpenBraceToken: {
+12-SyntaxList: var rect = new SceneGraphNode(NodeType.Rect,this.mScene.getRoot());
+                                rect.setSize(50,50);
+                                rect.x = x * 60;
+                                rect.y = y * 60;
+                                var text = new SceneGraphNode(NodeType.Text,rect,"" + (x * y) );
+                                this.mCells[y][x] = new GameCell(rect,x * y);
+13-VariableStatement: var rect = new SceneGraphNode(NodeType.Rect,this.mScene.getRoot());
+14-VariableDeclarationList: var rect = new SceneGraphNode(NodeType.Rect,this.mScene.getRoot())
+15-VarKeyword: var
+15-SyntaxList: rect = new SceneGraphNode(NodeType.Rect,this.mScene.getRoot())
+16-VariableDeclaration: rect = new SceneGraphNode(NodeType.Rect,this.mScene.getRoot())
+17-Identifier: rect
+17-EqualsToken: =
+17-NewExpression: new SceneGraphNode(NodeType.Rect,this.mScene.getRoot())
+18-NewKeyword: new
+18-Identifier: SceneGraphNode
+18-OpenParenToken: (
+18-SyntaxList: NodeType.Rect,this.mScene.getRoot()
+19-PropertyAccessExpression: NodeType.Rect
+20-Identifier: NodeType
+20-DotToken: .
+20-Identifier: Rect
+19-CommaToken: ,
+19-CallExpression: this.mScene.getRoot()
+20-PropertyAccessExpression: this.mScene.getRoot
+21-PropertyAccessExpression: this.mScene
+22-ThisKeyword: this
+22-DotToken: .
+22-Identifier: mScene
+21-DotToken: .
+21-Identifier: getRoot
+20-OpenParenToken: (
+20-SyntaxList:
+20-CloseParenToken: )
+18-CloseParenToken: )
+14-SemicolonToken: ;
+13-ExpressionStatement: rect.setSize(50,50);
+14-CallExpression: rect.setSize(50,50)
+15-PropertyAccessExpression: rect.setSize
+16-Identifier: rect
+16-DotToken: .
+16-Identifier: setSize
+15-OpenParenToken: (
+15-SyntaxList: 50,50
+16-NumericLiteral: 50
+16-CommaToken: ,
+16-NumericLiteral: 50
+15-CloseParenToken: )
+14-SemicolonToken: ;
+13-ExpressionStatement: rect.x = x * 60;
+14-BinaryExpression: rect.x = x * 60
+15-PropertyAccessExpression: rect.x
+16-Identifier: rect
+16-DotToken: .
+16-Identifier: x
+15-EqualsToken: =
+15-BinaryExpression: x * 60
+16-Identifier: x
+16-AsteriskToken: *
+16-NumericLiteral: 60
+14-SemicolonToken: ;
+13-ExpressionStatement: rect.y = y * 60;
+14-BinaryExpression: rect.y = y * 60
+15-PropertyAccessExpression: rect.y
+16-Identifier: rect
+16-DotToken: .
+16-Identifier: y
+15-EqualsToken: =
+15-BinaryExpression: y * 60
+16-Identifier: y
+16-AsteriskToken: *
+16-NumericLiteral: 60
+14-SemicolonToken: ;
+13-VariableStatement: var text = new SceneGraphNode(NodeType.Text,rect,"" + (x * y) );
+14-VariableDeclarationList: var text = new SceneGraphNode(NodeType.Text,rect,"" + (x * y) )
+15-VarKeyword: var
+15-SyntaxList: text = new SceneGraphNode(NodeType.Text,rect,"" + (x * y) )
+16-VariableDeclaration: text = new SceneGraphNode(NodeType.Text,rect,"" + (x * y) )
+17-Identifier: text
+17-EqualsToken: =
+17-NewExpression: new SceneGraphNode(NodeType.Text,rect,"" + (x * y) )
+18-NewKeyword: new
+18-Identifier: SceneGraphNode
+18-OpenParenToken: (
+18-SyntaxList: NodeType.Text,rect,"" + (x * y)
+19-PropertyAccessExpression: NodeType.Text
+20-Identifier: NodeType
+20-DotToken: .
+20-Identifier: Text
+19-CommaToken: ,
+19-Identifier: rect
+19-CommaToken: ,
+19-BinaryExpression: "" + (x * y)
+20-StringLiteral: ""
+20-PlusToken: +
+20-ParenthesizedExpression: (x * y)
+21-OpenParenToken: (
+21-BinaryExpression: x * y
+22-Identifier: x
+22-AsteriskToken: *
+22-Identifier: y
+21-CloseParenToken: )
+18-CloseParenToken: )
+14-SemicolonToken: ;
+13-ExpressionStatement: this.mCells[y][x] = new GameCell(rect,x * y);
+14-BinaryExpression: this.mCells[y][x] = new GameCell(rect,x * y)
+15-ElementAccessExpression: this.mCells[y][x]
+16-ElementAccessExpression: this.mCells[y]
+17-PropertyAccessExpression: this.mCells
+18-ThisKeyword: this
+18-DotToken: .
+18-Identifier: mCells
+17-OpenBracketToken: [
+17-Identifier: y
+17-CloseBracketToken: ]
+16-OpenBracketToken: [
+16-Identifier: x
+16-CloseBracketToken: ]
+15-EqualsToken: =
+15-NewExpression: new GameCell(rect,x * y)
+16-NewKeyword: new
+16-Identifier: GameCell
+16-OpenParenToken: (
+16-SyntaxList: rect,x * y
+17-Identifier: rect
+17-CommaToken: ,
+17-BinaryExpression: x * y
+18-Identifier: x
+18-AsteriskToken: *
+18-Identifier: y
+16-CloseParenToken: )
+14-SemicolonToken: ;
+12-CloseBraceToken: }
+9-CloseBraceToken: }
+6-CloseBraceToken: }
+4-MethodDeclaration: public update()
+        {
+                this.mScene.draw();
+        }
+5-SyntaxList: public
+6-PublicKeyword: public
+5-Identifier: update
+5-OpenParenToken: (
+5-SyntaxList:
+5-CloseParenToken: )
+5-Block: {
+                this.mScene.draw();
+        }
+6-OpenBraceToken: {
+6-SyntaxList: this.mScene.draw();
+7-ExpressionStatement: this.mScene.draw();
+8-CallExpression: this.mScene.draw()
+9-PropertyAccessExpression: this.mScene.draw
+10-PropertyAccessExpression: this.mScene
+11-ThisKeyword: this
+11-DotToken: .
+11-Identifier: mScene
+10-DotToken: .
+10-Identifier: draw
+9-OpenParenToken: (
+9-SyntaxList:
+9-CloseParenToken: )
+8-SemicolonToken: ;
+6-CloseBraceToken: }
+3-CloseBraceToken: }
+2-ModuleDeclaration: namespace Testing{
+        function main()
+        {
+                let game = new MiniGame();
+                Graphics.init();
+                while (!Graphics.quiting())
+                {
+                        Graphics.update();
+                        Graphics.beginDraw();
+                        game.update();
+                        Graphics.drawFPS();
+                        Graphics.endDraw();
+                }
+        }
+}
+3-NamespaceKeyword: namespace
+3-Identifier: Testing
+3-ModuleBlock: {
+        function main()
+        {
+                let game = new MiniGame();
+                Graphics.init();
+                while (!Graphics.quiting())
+                {
+                        Graphics.update();
+                        Graphics.beginDraw();
+                        game.update();
+                        Graphics.drawFPS();
+                        Graphics.endDraw();
+                }
+        }
+}
+4-OpenBraceToken: {
+4-SyntaxList: function main()
+        {
+                let game = new MiniGame();
+                Graphics.init();
+                while (!Graphics.quiting())
+                {
+                        Graphics.update();
+                        Graphics.beginDraw();
+                        game.update();
+                        Graphics.drawFPS();
+                        Graphics.endDraw();
+                }
+        }
+5-FunctionDeclaration: function main()
+        {
+                let game = new MiniGame();
+                Graphics.init();
+                while (!Graphics.quiting())
+                {
+                        Graphics.update();
+                        Graphics.beginDraw();
+                        game.update();
+                        Graphics.drawFPS();
+                        Graphics.endDraw();
+                }
+        }
+6-FunctionKeyword: function
+6-Identifier: main
+6-OpenParenToken: (
+6-SyntaxList:
+6-CloseParenToken: )
+6-Block: {
+                let game = new MiniGame();
+                Graphics.init();
+                while (!Graphics.quiting())
+                {
+                        Graphics.update();
+                        Graphics.beginDraw();
+                        game.update();
+                        Graphics.drawFPS();
+                        Graphics.endDraw();
+                }
+        }
+7-OpenBraceToken: {
+7-SyntaxList: let game = new MiniGame();
+                Graphics.init();
+                while (!Graphics.quiting())
+                {
+                        Graphics.update();
+                        Graphics.beginDraw();
+                        game.update();
+                        Graphics.drawFPS();
+                        Graphics.endDraw();
+                }
+8-VariableStatement: let game = new MiniGame();
+9-VariableDeclarationList: let game = new MiniGame()
+10-LetKeyword: let
+10-SyntaxList: game = new MiniGame()
+11-VariableDeclaration: game = new MiniGame()
+12-Identifier: game
+12-EqualsToken: =
+12-NewExpression: new MiniGame()
+13-NewKeyword: new
+13-Identifier: MiniGame
+13-OpenParenToken: (
+13-SyntaxList:
+13-CloseParenToken: )
+9-SemicolonToken: ;
+8-ExpressionStatement: Graphics.init();
+9-CallExpression: Graphics.init()
+10-PropertyAccessExpression: Graphics.init
+11-Identifier: Graphics
+11-DotToken: .
+11-Identifier: init
+10-OpenParenToken: (
+10-SyntaxList:
+10-CloseParenToken: )
+9-SemicolonToken: ;
+8-WhileStatement: while (!Graphics.quiting())
+                {
+                        Graphics.update();
+                        Graphics.beginDraw();
+                        game.update();
+                        Graphics.drawFPS();
+                        Graphics.endDraw();
+                }
+9-WhileKeyword: while
+9-OpenParenToken: (
+9-PrefixUnaryExpression: !Graphics.quiting()
+10-ExclamationToken: !
+10-CallExpression: Graphics.quiting()
+11-PropertyAccessExpression: Graphics.quiting
+12-Identifier: Graphics
+12-DotToken: .
+12-Identifier: quiting
+11-OpenParenToken: (
+11-SyntaxList:
+11-CloseParenToken: )
+9-CloseParenToken: )
+9-Block: {
+                        Graphics.update();
+                        Graphics.beginDraw();
+                        game.update();
+                        Graphics.drawFPS();
+                        Graphics.endDraw();
+                }
+10-OpenBraceToken: {
+10-SyntaxList: Graphics.update();
+                        Graphics.beginDraw();
+                        game.update();
+                        Graphics.drawFPS();
+                        Graphics.endDraw();
+11-ExpressionStatement: Graphics.update();
+12-CallExpression: Graphics.update()
+13-PropertyAccessExpression: Graphics.update
+14-Identifier: Graphics
+14-DotToken: .
+14-Identifier: update
+13-OpenParenToken: (
+13-SyntaxList:
+13-CloseParenToken: )
+12-SemicolonToken: ;
+11-ExpressionStatement: Graphics.beginDraw();
+12-CallExpression: Graphics.beginDraw()
+13-PropertyAccessExpression: Graphics.beginDraw
+14-Identifier: Graphics
+14-DotToken: .
+14-Identifier: beginDraw
+13-OpenParenToken: (
+13-SyntaxList:
+13-CloseParenToken: )
+12-SemicolonToken: ;
+11-ExpressionStatement: game.update();
+12-CallExpression: game.update()
+13-PropertyAccessExpression: game.update
+14-Identifier: game
+14-DotToken: .
+14-Identifier: update
+13-OpenParenToken: (
+13-SyntaxList:
+13-CloseParenToken: )
+12-SemicolonToken: ;
+11-ExpressionStatement: Graphics.drawFPS();
+12-CallExpression: Graphics.drawFPS()
+13-PropertyAccessExpression: Graphics.drawFPS
+14-Identifier: Graphics
+14-DotToken: .
+14-Identifier: drawFPS
+13-OpenParenToken: (
+13-SyntaxList:
+13-CloseParenToken: )
+12-SemicolonToken: ;
+11-ExpressionStatement: Graphics.endDraw();
+12-CallExpression: Graphics.endDraw()
+13-PropertyAccessExpression: Graphics.endDraw
+14-Identifier: Graphics
+14-DotToken: .
+14-Identifier: endDraw
+13-OpenParenToken: (
+13-SyntaxList:
+13-CloseParenToken: )
+12-SemicolonToken: ;
+10-CloseBraceToken: }
+7-CloseBraceToken: }
+4-CloseBraceToken: }
+1-EndOfFileToken:

@@ -22,7 +22,7 @@ THE SOFTWARE.
 */
 
 #include <memory>
-#include <boost/intrusive_ptr.hpp>
+#include "my_intrusive_ptr.h"
 #include <SDL_assert.h>
 #define Assert SDL_assert
 
@@ -34,9 +34,9 @@ public:\
  private: 
 
 #define RefCountClassImpl(cls)\
-typedef boost::intrusive_ptr<class cls> cls ## Ref;\
-inline void intrusive_ptr_add_ref(cls* res) { res->AddRef(); }\
-inline void intrusive_ptr_release(cls* res) { res->ReleaseRef(); }
+typedef boost::my_intrusive_ptr<class cls> cls ## Ref;\
+inline void my_intrusive_ptr_add_ref(cls* res) { res->AddRef(); }\
+inline void my_intrusive_ptr_release(cls* res) { res->ReleaseRef(); }
 
 
 enum class MemorySpace
@@ -48,16 +48,16 @@ enum class MemorySpace
 };
 
 template <typename T, MemorySpace space>
-class space_mark_intrusive_ptr : public boost::intrusive_ptr<T>
+class space_mark_intrusive_ptr : public boost::my_intrusive_ptr<T>
 {
 public:
 	space_mark_intrusive_ptr() :
-		intrusive_ptr<T>()
+		my_intrusive_ptr<T>()
 	{
 	}
 
 	space_mark_intrusive_ptr(T*obj) :
-		intrusive_ptr<T>(obj)
+		my_intrusive_ptr<T>(obj)
 	{
 		if (get())
 			get()->mMemorySpace = space;
@@ -66,9 +66,13 @@ public:
 	~space_mark_intrusive_ptr()
 	{
 		if (get())
-			get()->mMemorySpace = space;
+			get()->mMemorySpace = MemorySpace::None;
 	}
 };
+
+template <typename T>
+using root_mark_intrusive_ptr = boost::my_intrusive_ptr<T>;
+
 
 template <typename T>
 using stack_mark_intrusive_ptr = space_mark_intrusive_ptr<T, MemorySpace::Stack>;

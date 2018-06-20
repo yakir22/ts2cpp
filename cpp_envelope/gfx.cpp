@@ -27,6 +27,7 @@ THE SOFTWARE.
 
 #include "SDL.h"
 #include "SDL_image.h"
+#include "SDL_ttf.h"
 #define SCREEN_WIDTH 1024
 #define SCREEN_HEIGHT 768
 
@@ -49,6 +50,7 @@ void JSGFX::init()
 {
 	SDL_Init(SDL_INIT_EVERYTHING);
 	IMG_Init(~0);
+	TTF_Init();
 	mWindow = SDL_CreateWindow
 	(
 #ifdef WIN32
@@ -83,6 +85,45 @@ void JSGFX::loadTexture(const JSString &path)
 	SDL_Surface *surface = IMG_Load(resource.c_str());
 	mResources[path] = SDL_CreateTextureFromSurface(mRenderer, surface);
 }
+
+
+void JSGFX::drawText(double x, double y, const JSString &text, double _size, double r, double g, double b, double a)
+{
+	int size = int(_size);
+	JSString key = text +JSString(size) + JSString(r) + JSString(g) + JSString(b) + JSString(a);
+	SDL_Color color;
+	color.r = Uint8(r * 255);
+	color.g = Uint8(g * 255);
+	color.b = Uint8(b * 255);
+	color.a = Uint8(a * 255);
+
+	TTF_Font *font = mFonts[size];
+	if (font == nullptr)
+	{
+		font = TTF_OpenFont("normal.ttf", (int)size);
+		mFonts[size] = font;
+	}
+	SDL_Texture *texture = mTexts[key];
+	if (texture == nullptr)
+	{
+		SDL_Surface* textSurface = TTF_RenderText_Solid(font, text.c_str(), color);
+		texture = SDL_CreateTextureFromSurface(mRenderer, textSurface);
+	}
+
+	SDL_Rect srect, drect;
+	int dummyi;
+	unsigned dummyu;
+	SDL_QueryTexture(texture, &dummyu, &dummyi, &srect.w, &srect.h);
+	srect.x = 0;
+	srect.y = 0;
+	drect.x = (int)x;
+	drect.y = (int)y;
+	drect.w = srect.w;
+	drect.h = srect.h;
+	SDL_RenderCopyEx(mRenderer, texture, &srect, &drect, 0, NULL, SDL_FLIP_NONE);
+
+}
+
 
 
 void JSGFX::setResourcesPath(const JSString &path)
@@ -133,9 +174,9 @@ void JSGFX::drawImage(double x, double y, const JSString &_resource,double width
 	SDL_RenderCopyEx(mRenderer, texture, &srect, &drect, 0, NULL, SDL_FLIP_NONE);
 }
 
-void JSGFX::drawRect(double x, double y,double width, double height, unsigned char r, unsigned char g, unsigned char b, unsigned char a)
+void JSGFX::drawRect(double x, double y,double width, double height, double r, double g, double b, double a)
 {
-	SDL_SetRenderDrawColor(mRenderer, r * 255, g * 255, b * 255, a * 255);
+	SDL_SetRenderDrawColor(mRenderer, Uint8(r * 255), Uint8(g * 255), Uint8(b * 255), Uint8(a * 255));
 	//	SDL_SetRenderDrawColor(mRenderer, 255,0,255,255);
 	SDL_Rect rect;
 	rect.x = (int)x;

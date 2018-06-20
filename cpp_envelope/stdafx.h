@@ -5,6 +5,10 @@
 #	include <windows.h>
 #endif
 
+#ifndef MINIMAL_ENGINE
+#include "gfx.h"
+#endif
+
 #pragma warning(disable : 4786)
 #include <set>
 #include <map>
@@ -20,3 +24,4 @@
 #ifdef WIN32
 #include <experimental/filesystem>
 #endif
+

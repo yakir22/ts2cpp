@@ -89,12 +89,12 @@ public:
 class JSString : public std::string
 {
 public:
-	template <class T>
-	JSString operator + (T num) {
+	/*template <class T>
+	JSString operator + (T num) const {
         auto s = std::to_string(num);
 		auto ret = *((std::string*)this) + ToJSNumber(s);
 		return ret;
-	}
+	}*/
 
 	JSString operator + (const JSString &other) {
 		auto ret = *((std::string*)this) + *((std::string*)&other);
@@ -109,6 +109,14 @@ public:
 		:std::string(other)
 	{
 	}
+
+	template <class T>
+	JSString(T num)
+	{
+		*this = std::to_string(num);
+	}
+
+
 	JSString()
 		:std::string("")
 	{
@@ -149,11 +157,13 @@ public:
 	}
 };
 
+/*
 template <class T>
 JSString operator+(T i, const JSString& a)
 {
 	return JSString::ToJSNumber(std::to_string(i)) + a.c_str();
 };
+*/
 
 inline
 JSString operator+(const JSString& b, const JSString& a)
@@ -174,7 +184,7 @@ const JSString JSObject::toString()
 template<class T>
 class JSArray 
 {
-	std::shared_ptr<std::vector<T> > mInternalArray;
+	std::shared_ptr<std::vector<T>> mInternalArray;
 public:
 	JSArray(const std::initializer_list<T>& il)
 	{
@@ -194,6 +204,20 @@ public:
 		mInternalArray->erase(mInternalArray->begin() + start, mInternalArray->begin() + start + deleteCount);
 	}
 
+	auto begin() {
+		return mInternalArray->begin();
+	}
+	auto end() {
+		return mInternalArray->end();
+	}
+
+	size_t getItemSize() const {
+		return sizeof T;
+	}
+
+
+
+
 	JSArray<T>& reverse(){
 		std::reverse(std::begin(*mInternalArray), std::end(*mInternalArray));
 		return *this;
@@ -204,6 +228,8 @@ public:
 	int length() {
 		return (int)mInternalArray->size();
 	}
+
+
 
 	void clear()
 	{

@@ -56,7 +56,7 @@ export class T2CProjectGenerator
         let replacePattern = "<ClCompile Include=\"Main.cpp\" />";
         let projectFiles =  replacePattern + "\n";
 
-        let filesToLink : string[] = ["ts2cpp_envelope","Framework","gfx","stdafx","T2CGC"];
+        let filesToLink : string[] = ["ts2cpp_envelope","Framework","gfx","stdafx","T2CGC","my_intrusive_ptr"];
         let filesToAddToProject : string[] = ["ts2cpp_envelope","Framework","gfx","T2CGC"];
         let ext : string[] = [".h",".cpp"]
         let directoriesToLink : string[] = ["SDL2","vld","boost_mini"];

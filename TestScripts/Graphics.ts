@@ -42,6 +42,12 @@ class JSGraphics
         return this.mCanvas.height;
     }
 
+
+    public drawText(x :number, y:number, text : string,size:number,r: number,g: number,b: number,a: number)
+    {
+        // TODO :: implement
+    }
+
     public drawRect(x :number, y:number,w : number, h:number,  r:number, g:number, b:number,a:number)
     {
         this.mContext.fillStyle="#FF00FF";

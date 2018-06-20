@@ -24,6 +24,7 @@ import {T2CVariable} from "./T2CVariable";
 import {T2CFunction} from "./T2CFunction";
 import {T2CClass} from "./T2CClass";
 import {T2CFile} from "./T2CFile";
+import {T2CEnum} from "./T2CEnum";
 
 export class T2CNamespace{
 	public name 		: string = "";
@@ -32,7 +33,9 @@ export class T2CNamespace{
 	public variables 	: T2CVariable[] = [];
 	public functions 	: T2CFunction[] = [];
     public dependencis	: T2CFile[] = [];
-    
+    public enums        : T2CEnum[] = [];
+
+
     public printState(){
         console.log("namespace name : " + this.name);
         console.log("dependencis : " + this.dependencis.length);
@@ -40,6 +43,7 @@ export class T2CNamespace{
         console.log("classes : " + this.classes.length);
         console.log("variables : " + this.variables.length);
         console.log("functions : " + this.functions.length);
+        console.log("enums : " + this.enums.length);
     }
 
     public nameClean(file : T2CFile) {

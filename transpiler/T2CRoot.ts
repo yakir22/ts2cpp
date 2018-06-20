@@ -59,6 +59,19 @@ export class T2CRoot{
 		return ret;
 	}
 
+	public isEnum(name : string){
+		let ret = false;
+		this.mFiles.forEach(f => {
+			f.namespaces.forEach(ns =>{
+				ns.enums.forEach(enm =>{
+					if ( enm.name == name )
+						ret = true;
+				})
+			})
+		})
+		return ret;
+	}
+
 	public isInterface(v : T2CVariable)
 	{
 		let ret = false;

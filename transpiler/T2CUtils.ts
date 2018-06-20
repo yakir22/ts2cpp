@@ -50,6 +50,7 @@ export class T2CUtils
 	
 	static ArrayIdentifier = 10000;
 	static LengthIdentifier = 10001;
+	static ForEachIdentifier = 10002;
 
     // TODO :: move to T2CTokenizer
 	static buildTokenList(node : ts.Node) : ts.Node[]{
@@ -61,6 +62,8 @@ export class T2CUtils
 					node.kind = T2CUtils.ArrayIdentifier;
 				else if ( node.kind == ts.SyntaxKind.Identifier && node.getText() == "length" )
 					node.kind = T2CUtils.LengthIdentifier;
+				else if ( node.kind == ts.SyntaxKind.Identifier && node.getText() == "forEach" )
+					node.kind = T2CUtils.ForEachIdentifier;
 				ret.push(node);
 				//console.log(J2CKindHelper.getNodeText(node));
 			}
@@ -119,9 +122,18 @@ export class T2CUtils
 
 
 
-	static isWindows() {
+	static isWindows() : boolean{
 		// TODO :: PATCH :: find a better way.
 		return child.execSync("cd",{"encoding" : "utf8"}).trim().length > 0;
 	}
 
+
+	static isAlphaNumeric(ch) : boolean {
+		  if (!(ch > 47 && ch < 58) && // numeric (0-9)
+			  !(ch > 64 && ch < 91) && // upper alpha (A-Z)
+			  !(ch > 96 && ch < 123)) { // lower alpha (a-z)
+				return false;
+			  }
+		return true;
+	}
 }
