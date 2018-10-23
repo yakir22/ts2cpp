@@ -21,6 +21,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+enum class MemorySpace
+{
+	None, // TODO :: naming. since it's not really none but Heap is not a good option either
+	Stack,
+	Global,
+	Static
+};
+
+
 #include <memory>
 #include "my_intrusive_ptr.h"
 #include <SDL_assert.h>
@@ -39,35 +48,33 @@ inline void my_intrusive_ptr_add_ref(cls* res) { res->AddRef(); }\
 inline void my_intrusive_ptr_release(cls* res) { res->ReleaseRef(); }
 
 
-enum class MemorySpace
-{
-	None, // TODO :: naming. since it's not really none but Heap is not a good option either
-	Stack,
-	Global,
-	Static
-};
 
 template <typename T, MemorySpace space>
 class space_mark_intrusive_ptr : public boost::my_intrusive_ptr<T>
 {
 public:
 	space_mark_intrusive_ptr() :
-		my_intrusive_ptr<T>()
+	boost::my_intrusive_ptr<T>()
 	{
 	}
 
 	space_mark_intrusive_ptr(T*obj) :
-		my_intrusive_ptr<T>(obj)
+		px2(obj),
+		boost::my_intrusive_ptr<T>(obj)
 	{
-		if (get())
-			get()->mMemorySpace = space;
+		if (px2) // TODO :: was if (get()) - need to check why macos doesn't give access to it
+			px2->mMemorySpace = space;
 	}
 
 	~space_mark_intrusive_ptr()
 	{
-		if (get())
-			get()->mMemorySpace = MemorySpace::None;
+		if (px2)// TODO :: was if (get()) - need to check why macos doesn't give access to it
+			px2->mMemorySpace = MemorySpace::None;
 	}
+	
+private:
+	
+	T * px2; // TODO :: check why macos doesn't give access to get()
 };
 
 template <typename T>

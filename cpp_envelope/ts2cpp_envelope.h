@@ -212,7 +212,7 @@ public:
 	}
 
 	size_t getItemSize() const {
-		return sizeof T;
+		return sizeof( T);
 	}
 
 

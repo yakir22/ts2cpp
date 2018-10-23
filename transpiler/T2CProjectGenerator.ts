@@ -134,7 +134,8 @@ export class T2CProjectGenerator
 
         if ( !T2CUtils.isWindows() )
         {
-            let command = "g++ -std=c++11 -I$BOOST_DIR/include -o " + name +".out ";
+            let frameworksFlags = " -framework Cocoa -framework CoreAudio -framework OpenGL -framework CoreMedia -framework AudioToolbox -framework FreeType -framework AudioUnit -framework CoreGraphics -framework ForceFeedback -framework IOKit -framework webp -framework Carbon -framework CoreVideo -framework Metal";
+            let command = "clang++ -std=c++14 -I./boost_mini/ -I./SDL2/include -I./SDL2/include -LSDL2/lib/macos/x64 -lSDL2 -lSDL2_image -lSDL2_ttf -FSDL2/lib/macos -F/System/Library/Frameworks " + frameworksFlags + "  -o " + name +".out ";
             filesForGPlusPlus.forEach(file => {
                 command += " " + file;
             }); 
