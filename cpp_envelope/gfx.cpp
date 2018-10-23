@@ -98,7 +98,7 @@ void JSGFX::drawText(double x, double y, const JSString &text, double _size, dou
 	TTF_Font *font = mFonts[size];
 	if (font == nullptr)
 	{
-		font = TTF_OpenFont("normal.ttf", (int)size);
+		font = TTF_OpenFont("SDL2/normal.ttf", (int)size);
 		mFonts[size] = font;
 	}
 	SDL_Texture *texture = mTexts[key];
